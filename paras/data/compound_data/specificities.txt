@@ -1,0 +1,3300 @@
+ACR33075.1.A1	proline
+AEH42484.1.A1	proline
+AAQ82561.1.A1	para-aminobenzoic acid
+AAT28740.1.A1	proline
+ACN69986.1.A1	proline
+AFV52191.1.A1	R-aza-beta-tyrosine
+CAI94718.1.A2	tyrosine
+ABP73646.1.A1	3S-cyclohex-2-enylalanine
+ABP55169.1.A1	4-hydroxyphenylglycine
+ABC35522.1.A1	D-alanine
+ADI58643.1.A1	3-amino-4-hydroxybenzoic acid
+CAE16560.1.A1	acetic acid|malic acid
+ADB02855.1.A1	aspartic acid
+ADB02873.1.A1	cysteine
+CAD91211.1.A1|Q7WZ75.A1	3,5-dihydroxyphenylglycine
+CAD91212.1.A1|Q7WZ74.A1	4-hydroxyphenylglycine
+CAD91212.1.A2|Q7WZ74.A2	4-hydroxyphenylglycine
+CAD91212.1.A3|Q7WZ74.A3	tyrosine
+CAD91220.1.A1|Q7WZ66.A1	4-hydroxyphenylglycine
+CAD91220.1.A2|Q7WZ66.A2	tyrosine
+CAD91221.1.A1|Q7WZ65.A1	3,5-dihydroxyphenylglycine
+AAM80536.1.A1|Q8KLL6.A1	3,5-dihydroxyphenylglycine
+AAM80537.1.A1|Q8KLL5.A1	4-hydroxyphenylglycine
+AAM80537.1.A2|Q8KLL5.A2	4-hydroxyphenylglycine
+AAM80537.1.A3|Q8KLL5.A3	tyrosine
+AAM80538.1.A1|Q8KLL4.A1	3,5-dihydroxyphenylglycine
+AAM80539.1.A1|Q8KLL3.A1	4-hydroxyphenylglycine
+AAM80539.1.A2|Q8KLL3.A2	tyrosine
+AAZ23075.1.A1|Q45R85.A1	tryptophan
+AAZ23075.1.A2|Q45R85.A2	glutamic acid
+AAZ23075.1.A3|Q45R85.A3	3-hydroxyasparagine
+AAZ23075.1.A4|Q45R85.A4	threonine
+AAZ23075.1.A5|Q45R85.A5	glycine
+AAZ23076.1.A1	alanine
+AAZ23076.1.A2	aspartic acid
+AAZ23077.1.A1	lysine
+AAZ23077.1.A2	3-methoxyaspartic acid|3-hydroxyaspartic acid|aspartic acid
+AAZ23077.1.A3	glycine
+AAZ23077.1.A4	asparagine
+AAZ23078.1.A1	3R-methylglutamic acid|glutamic acid
+AAZ23078.1.A2	isoleucine|valine
+EAU36744.1.A1|XP_001212648.1.A1	phenylalanine
+ADG27358.1.A1|O68487.A1|WP_057667184.1.A1	threonine
+ADG27358.1.A2|O68487.A2|WP_057667184.1.A2	valine
+ADG27359.1.A1|Q9L8H4.A1	proline
+ADG27359.1.A2|Q9L8H4.A2	glycine
+ADG27359.1.A3	valine
+CAJ21198.2.A1|Q0W980.A1	leucine
+CAM59606.1.A1	2-carboxy-6-hydroxyoctahydroindole
+ACM68684.1.A1	isoleucine
+ACM68690.1.A1	2-carboxy-6-hydroxyoctahydroindole
+ATD05719.1.A1	asparagine
+ATD05719.1.A2|WP_010369430.1.A2	leucine|isoleucine|valine
+ATD05720.1.A1|ERG36783.1.A1|WP_010369428.1.A1	valine
+ATD05720.1.A2|ERG36783.1.A2	asparagine
+ERG36782.1.A1|WP_010369425.1.A1	threonine
+EFL06864.1.A1	serine
+EFL06865.1.A1	serine
+EFL06865.1.A2	serine
+EFL06866.1.A1	N5-hydroxyornithine
+EFL06867.1.A1	serine
+EFL06867.1.A2	N5-formyl-N5-hydroxyornithine
+EFL06871.1.A1	salicylic acid
+ABV79985.1.A1	arginine
+ABV79985.1.A2	lysine
+ABV79986.1.A1	valine
+ABV79987.1.A1	homotyrosine
+ABV79987.1.A2	homotyrosine
+ABV79988.1.A1	isoleucine
+ACZ55942.1.A1	tyrosine
+ACZ55942.1.A2	lysine
+ACZ55943.1.A1	valine
+ACZ55944.1.A1	homotyrosine
+ACZ55944.1.A2	alanine
+ACZ55945.1.A1	arginine|lysine
+ACZ55945.1.A2	lysine
+ACZ55946.1.A1	phenylalanine
+ACZ66258.1.A1|D2IKP5.A1	pipecolic acid
+ACZ66258.1.A2|D2IKP5.A2	isoleucine
+ACZ66258.1.A3|D2IKP5.A3	N1-methoxytryptophan
+ACZ66258.1.A4|D2IKP5.A4	2S-amino-8-oxodecanoic acid
+BAC67534.2.A1|Q84BQ6.A1|QDF82254.1.A1	leucine
+BAC67534.2.A2|Q84BQ6.A2	aspartic acid
+BAC67535.1.A1|Q84BQ5.A1	threonine
+BAC67535.1.A2	leucine
+BAC67535.1.A3	leucine
+BAC67535.1.A4|Q84BQ5.A4	serine
+BAC67536.1.A1|Q84BQ4.A1	leucine
+BAC67536.1.A2|Q84BQ4.A2	serine
+BAC67536.1.A3|Q84BQ4.A3	isoleucine
+BAC67536.1.A4|Q84BQ4.A4	isoleucine
+BAC67536.1.A5|Q84BQ4.A5	aspartic acid
+EWS95122.1.A1	serine
+EWS95122.1.A2	alanine
+EWS95124.1.A1	glycine
+EWS95124.1.A2	4-hydroxyphenylglycine
+EWS95124.1.A3	alanine
+EWS95124.1.A4	tyrosine
+ACJ04424.1.A1|B6SF67.A1	2R-hydroxy-3-methylpentanoic acid
+ACJ04424.1.A2|ACJ04424.1.A7|ACJ04424.1.A9|B6SF67.A2|B6SF67.A7|B6SF67.A9	valine
+ACJ04424.1.A3|ACJ04424.1.A4|B6SF67.A3|B6SF67.A4	phenylalanine
+ACJ04424.1.A5|B6SF67.A5	proline
+ACJ04424.1.A6|B6SF67.A6	allo-isoleucine
+ACJ04424.1.A8|B6SF67.A8	leucine
+ADL64235.1.A1	valine
+ADL64235.1.A2	tyrosine
+AAD56240.1.A1|CAB15186.3.A1|P45745.A1	glycine
+AAD56240.1.A2|CAB15186.3.A2|P45745.A2	threonine
+AAC44632.1.A1|CAB15188.1.A1	2,3-dihydroxybenzoic acid
+AAC06346.1.A1|O68006.A1	isoleucine
+AAC06346.1.A2|O68006.A2	cysteine
+AAC06346.1.A3|O68006.A3	leucine
+AAC06346.1.A4|O68006.A4	glutamic acid
+AAC06346.1.A5|O68006.A5	isoleucine
+AAC06347.1.A1|O68007.A1	lysine
+AAC06347.1.A2|O68007.A2	ornithine
+AAC06348.1.A1|O68008.A1	isoleucine
+AAC06348.1.A2|O68008.A2	phenylalanine
+AAC06348.1.A3|O68008.A3	histidine
+AAC06348.1.A4|O68008.A4	aspartic acid
+AAC06348.1.A5|O68008.A5	asparagine
+CAC48360.1.A1|Q939Z1.A1	leucine
+CAC48360.1.A2|Q939Z1.A2	R-beta-hydroxytyrosine
+CAC48360.1.A3|Q939Z1.A3	asparagine
+CAC48361.1.A1|Q939Z0.A1	4-hydroxyphenylglycine
+CAC48361.1.A2|Q939Z0.A2	4-hydroxyphenylglycine
+CAC48361.1.A3|Q939Z0.A3	R-beta-hydroxytyrosine
+CAC48362.1.A1|Q939Y9.A1	3,5-dihydroxyphenylglycine
+CAC48369.1.A1|Q939Y2.A1	tyrosine
+ACR78148.1.A1|D1FVF0.A1	2R-hydroxyisovaleric acid
+ACR78148.1.A2|D1FVF0.A2	leucine
+ACI30655.1.A1	2R-hydroxyisovaleric acid
+ACI30655.1.A2	phenylalanine
+WP_010369400.1.A1	coumaric acid
+WP_010369428.1.A2	asparagine
+WP_010369430.1.A1	asparagine
+CAB38517.1.A1|Q9Z4X5.A1	aspartic acid
+CAB38517.1.A2|Q9Z4X5.A2	glycine
+CAB38517.1.A3	3S-hydroxyasparagine|asparagine
+CAB38518.1.A1|Q9Z4X6.A1	serine
+CAB38518.1.A2|Q9Z4X6.A2	threonine
+CAB38518.1.A3|Q9Z4X6.A3	tryptophan
+CAB38518.1.A4|Q9Z4X6.A4	aspartic acid
+CAB38518.1.A5|Q9Z4X6.A5	aspartic acid
+CAB38518.1.A6|Q9Z4X6.A6	4-hydroxyphenylglycine
+CAD55498.1.A1	3R-methylglutamic acid|glutamic acid
+CAD55498.1.A2|Q8CJX2.A2	tryptophan
+ABR67744.1.A1	serine
+ABR67744.1.A2	2,3-diaminopropionic acid
+A6YEH7.A1|ABR67749.1.A1	2,3-diaminopropionic acid
+ABR67750.1.A1	capreomycidine
+ABR67758.1.A1	beta-lysine
+KFH48607.1.A1|P25464.A1	2-aminoadipic acid
+KFH48607.1.A2|P25464.A2	cysteine
+KFH48607.1.A3|P25464.A3	valine
+EDY47118.1.A1	2-aminoadipic acid
+EDY47118.1.A2	cysteine
+EDY47118.1.A3	valine
+ABD14711.1.A1	2-ketoisocaproic acid
+ABD14711.1.A2	alanine
+ABD14712.1.A1	2-ketoisovaleric acid
+ABD14712.1.A2	valine
+chaP_not_in_genbank.A1|ctg1_orf10.A1	tryptophan
+AHZ34232.1.A1	leucine
+AHZ34232.1.A2	leucine
+AHZ34232.1.A3	glutamine
+AHZ34233.1.A1	leucine
+AHZ34233.1.A2	glutamine
+AHZ34233.1.A3	valine
+AHZ34233.1.A4	leucine
+AHZ34233.1.A5	leucine
+CAC17499.1.A1	threonine
+CAC17499.1.A2	cysteine
+CAC17500.1.A1	cysteine
+CAB53322.1.A1|Q9RK14.A1	N5-formyl-N5-hydroxyornithine
+CAB53322.1.A2|Q9RK14.A2	threonine
+CAB53322.1.A3|Q9RK14.A3	N5-hydroxyornithine
+AAK81824.1.A1|Q93N89.A1	3,5-dichloro-4-hydroxybenzoylformic acid
+AAK81824.1.A2|Q93N89.A2	tryptophan
+AAK81825.1.A1|Q93N88.A1	4-hydroxyphenylglycine
+AAK81826.1.A1|Q93N87.A1	4-hydroxyphenylglycine
+AAK81826.1.A2|Q93N87.A2	4-hydroxyphenylglycine
+AAK81826.1.A3|Q93N87.A3	tyrosine
+AAK81827.1.A1|Q93N86.A1	4-hydroxyphenylglycine
+CAJ88610.1.A1	guanidinoacetic acid
+CAJ88630.1.A1	4-acetamidopyrrole-2-carboxylic acid
+AAQ93484.1.A1	allo-isoleucine
+AHY86403.1.A1	serine
+AHY86403.1.A2	isoleucine
+CAJ96468.1.A1	glycine
+CAJ96470.1.A1	N5-hydroxyornithine
+CAJ96471.1.A1	aspartic acid
+CAJ96472.1.A1	aspartic acid
+CAJ96472.1.A2	2,4-diaminobutyric acid
+ABI26077.1.A1	homotyrosine
+ABI26077.1.A2	threonine
+ABI26078.1.A1	homotyrosine
+ABI26078.1.A2	3-amino-6-hydroxy-2-piperidone
+ABI26078.1.A3	isoleucine
+ABI26078.1.A4	phenylalanine
+ABI26079.1.A1	isoleucine
+AAZ03550.1.A1	glutamine
+AAZ03551.1.A1	threonine
+AAZ03552.1.A1	isoleucine
+AAZ03552.1.A2	3-amino-6-hydroxy-2-piperidone
+AAZ03552.1.A3	phenylalanine
+AAZ03552.1.A4	tyrosine|3-chlorotyrosine
+AAZ03554.1.A1	glutamine
+A8M6W3.A1|ABW00331.1.A1	1-(1,1-dimethylallyl)-tryptophan|N-(1-methyl)-tryptophan|N-(1-propargyl)-tryptophan|tryptophan
+ABW00331.1.A2	leucine
+ABW00331.1.A3	alanine
+A8M6W3.A2|ABW00331.1.A4	phenylalanine
+ABW00331.1.A5	valine
+ABW00331.1.A6	leucine
+ABW00331.1.A7	2-amino-3,5-dimethyl-4-hexenoic Acid
+CAA82227.1.A1|Q09164.A1|ctg1_orf003.A1	D-alanine
+CAA82227.1.A2|Q09164.A4|ctg1_orf003.A2	leucine
+CAA82227.1.A3|Q09164.A5|ctg1_orf003.A3	leucine
+CAA82227.1.A4|Q09164.A6|ctg1_orf003.A4	valine
+CAA82227.1.A5|Q09164.A7|ctg1_orf003.A5	4R-E-butenyl-4R-methylthreonine
+CAA82227.1.A6|Q09164.A8|ctg1_orf003.A6	2-aminobutyric acid
+CAA82227.1.A7|Q09164.A9|ctg1_orf003.A7	glycine
+CAA82227.1.A8|Q09164.A10|ctg1_orf003.A8	leucine
+CAA82227.1.A9|Q09164.A11|ctg1_orf003.A9	valine
+CAA82227.1.A10|Q09164.A2|ctg1_orf003.A10	leucine
+CAA82227.1.A11|Q09164.A3|ctg1_orf003.A11	alanine
+AID65222.1.A1|AID65222.1.A2	asparagine
+AID65224.1.A1	asparagine
+AID65224.1.A2	phenylalanine|S-beta-hydroxyphenylalanine
+AID65225.1.A1	tyrosine
+AAX31557.1.A1|Q50E74.A1	tryptophan
+AAX31557.1.A2|Q50E74.A2	asparagine
+AAX31557.1.A3|Q50E74.A3	aspartic acid
+AAX31557.1.A4|Q50E74.A4	threonine
+AAX31557.1.A5|Q50E74.A5	glycine
+AAX31558.1.A1	ornithine
+AAX31558.1.A2	aspartic acid
+AAX31558.1.A3	alanine
+AAX31558.1.A4	aspartic acid
+AAX31558.1.A5	glycine
+AAX31558.1.A6	serine
+AAX31559.1.A1	3R-methylglutamic acid
+AAX31559.1.A2	kynurenine
+MAA_10043.A1	beta-alanine
+MAA_10043.A2	2,4-dihydroxypentanoic acid|2-hydroxypent-4-enoic acid|2-hydroxy-4-methylpentanoic acid
+MAA_10043.A3	proline
+MAA_10043.A4	isoleucine
+MAA_10043.A5	valine
+MAA_10043.A6	alanine
+BAE98151.1.A1	quinoxaline-2-carboxylic acid
+BAE98155.1.A1	serine
+BAE98155.1.A2	alanine
+BAE98156.1.A1	cysteine
+BAE98156.1.A2	valine
+BAE98162.1.A1	tryptophan
+AHN91924.1.A1	phenylpyruvic acid
+ABD65956.1.A1|Q06YZ3.A1	aspartic acid
+ABD65956.1.A2|Q06YZ3.A2	threonine
+ABD65957.1.A1	4-hydroxyphenylglycine
+ABD65957.1.A2	ornithine
+ABD65957.1.A3	threonine
+ABD65957.1.A4	4-hydroxyphenylglycine
+ABD65957.1.A5	4-hydroxyphenylglycine
+ABD65957.1.A6	citrulline
+ABD65958.1.A1	enduracididine
+ABD65958.1.A2	4-hydroxyphenylglycine
+ABD65958.1.A3	serine
+ABD65958.1.A4	4-hydroxyphenylglycine|3,5-dichloro-4-hydroxyphenylglycine
+ABD65958.1.A5	glycine
+ABD65958.1.A6	enduracididine
+ABD65958.1.A7	alanine
+ABD65958.1.A8	4-hydroxyphenylglycine
+ABD65960.1.A1	allo-threonine
+CAA79245.2.A1|Q00869.A1	2R-hydroxyisovaleric acid
+CAA79245.2.A2|Q00869.A2	valine
+CAK15814.1.A1	valine
+CAK15814.1.A2	leucine|isoleucine
+CAK15814.1.A3	serine
+CAK15814.1.A4	leucine|isoleucine
+CAK15815.1.A1	glutamine
+CAK15815.1.A2	valine
+CAK15815.1.A3	leucine|isoleucine
+CAK15815.1.A4	glutamine
+CAK15815.1.A5	valine
+CAK15815.1.A6	leucine|isoleucine
+CAK15815.1.A7	glutamine
+CAK15815.1.A8	serine
+AHB38511.1.A1	leucine
+AHB38515.1.A1	serine
+AHB38515.1.A2	leucine
+AHB38497.1.A1	isoleucine
+AHB38497.1.A2	isoleucine
+AHB38497.1.A3	threonine
+AHB38497.1.A4	leucine
+CAP20363.1.A1	salicylic acid
+CAP20364.1.A1	cysteine
+A4FE38.A1|CAM02313.1.A1	N5-acetyl-N5-hydroxyornithine
+A4FE38.A2|CAM02313.1.A2	serine
+A4FE38.A3|CAM02313.1.A3	N5-hydroxyornithine
+A4FE38.A4|CAM02313.1.A4	N5-acetyl-N5-hydroxyornithine
+ADQ55475.1.A1	3-hydroxy-O-methyl-5-methyltyrosine
+ADQ55476.1.A1	fatty acid
+ADQ55476.1.A2	cysteine
+CAG69514.1.A1	2,3-dihydroxybenzoic acid
+CAG69516.1.A1	serine
+AAC68816.1.A1|Q9ZGA6.A1	pipecolic acid
+CAD32904.2.A1	2,4-diaminobutyric acid
+CAJ18237.2.A1	aspartic acid|asparagine
+CAJ18237.2.A2	pipecolic acid
+CAM56770.1.A1	3S-methylaspartic acid
+CAM56770.1.A2	aspartic acid
+CAM56770.1.A3	glycine
+CAM56770.1.A4	aspartic acid
+CAM56770.1.A5	glycine
+CAM56770.1.A6	2,4-diaminobutyric acid
+CAM56771.1.A1	valine
+CAM56771.1.A2	proline
+EAL89046.1.A1	alanine
+EAL89049.1.A1	2-chlorobenzoic acid|4-chlorobenzoic acid|benzoic acid|anthranilic acid
+EAL89049.1.A2	tryptophan
+EAL89049.1.A3	alanine
+AFUA_8G00170.A1|BAH23995.1.A1	proline|tryptophan
+AFUA_8G00170.A2|BAH23995.1.A2	proline|tryptophan
+CAP93139.1.A1	tyrosine|phenylalanine
+CAP93139.1.A2	isoleucine|valine
+CAP93139.1.A3	phenylalanine|tryptophan
+CAP93139.1.A4	valine
+AAZ55898.1.A1	N5-hydroxyornithine
+AAZ55899.1.A1	serine
+AAZ55900.1.A1	arginine
+AAZ55900.1.A2	glycine
+AAZ55900.1.A3	glycine
+AAZ55904.1.A1	2,3-dihydroxybenzoic acid
+CBL93716.1.A1	pipecolic acid|proline|3S-hydroxypipecolic acid|D-pipecolic acid
+CBL93718.1.A1	4S,5-dihydroxy-2S-aminopentanoic acid|ornithine
+CBL93718.1.A2	histidine
+CBL93720.1.A1	histidine|3S-hydroxy-6-chlorohistidine
+CBL93723.1.A1	histidine
+CBL93730.1.A1	histidine
+EAL88817.1.A1	phenylalanine
+EAL88817.1.A2	serine
+AAD44233.1.A1	phenylalanine
+AAD44233.1.A2	threonine
+AAD44234.1.A1	alanine
+AAD44234.1.A2	alaninol
+CAJ77695.1.A1	phenylalanine
+CAJ77695.1.A2	threonine
+CAJ77696.1.A1	alanine
+CAJ77696.1.A2	alaninol
+CAJ77715.1.A1	phenylalanine
+CAJ77715.1.A2	threonine
+CAJ77716.1.A1	alanine
+CAJ77716.1.A2	alaninol
+AAT01806.1.A1|CAB55600.1.A1|Q9RLP6.A1	phenylalanine
+AAT01806.1.A2|CAB55600.1.A2|Q9RLP6.A2	threonine
+AAT01807.1.A1|CAB55600.1.A3|Q9RLP6.A3	alanine
+AAT01807.1.A2|CAB55600.1.A4|Q9RLP6.A4	alaninol
+AGE11891.1.A1	serine
+AGE11892.1.A1	salicylic acid
+AGE11898.1.A1	histidine
+AGE11898.1.A2	lysine
+AGE11899.1.A1	serine
+AGE11899.1.A2	N5-hydroxyornithine
+CBA63660.1.A1	2,3-dihydroxybenzoic acid
+CBA63680.1.A1|D2TVG0.A1	arginine
+CBA63680.1.A2|D2TVG0.A2	threonine
+AHZ20766.1.A1	2,3-dihydroxyhexadecanoic acid
+AHZ20773.1.A1	threonine
+AHZ20773.1.A2	tyrosine
+AHZ20774.1.A1	threonine
+AHZ20774.1.A2	glutamine
+AHZ20774.1.A3	glycine
+AHZ20781.1.A1	threonine
+AHZ20781.1.A2	threonine
+AHZ20784.1.A1	threonine
+AHZ20784.1.A2	tyrosine|glutamine
+BAH33406.1.A1	2,3-dihydroxybenzoic acid
+BAH33409.1.A1	arginine
+BAH33409.1.A2	glycine
+BAH33409.1.A3	N5-hydroxyornithine
+EAL92291.2.A1	tryptophan
+EAL92291.2.A2	alanine
+AEH41793.1.A1	3-(2-nitrocyclopropylalanine)
+AEH41793.1.A2	threonine
+AEH41793.1.A3	R-beta-methylphenylalanine
+AEH41793.1.A4	3-(2-nitrocyclopropylalanine)
+AEH41794.1.A1	R-beta-methylphenylalanine
+AEH41794.1.A2	valine
+AEH41794.1.A3	4S-propenylproline
+BAP16684.1.A1	tryptophan|6-chlorotryptophan
+BAP16689.1.A1	6-chloro-4-hydroxyindole-3-carboxylic acid
+BAP16693.1.A1	2-methylserine
+BAP16697.1.A1	D-alanine
+BAP16699.1.A1	serine
+AEC14346.1.A1	threonine
+AEC14346.1.A2	leucine
+AEC14347.1.A1	phenylalanine
+AEC14348.1.A1	phenylalanine
+AEC14349.1.A1	valine
+ABV56582.1.A1	leucine|isoleucine|allo-isoleucine|valine
+ABV56585.1.A1	2-(1-methylcyclopropyl)-D-glycine
+ABV56587.1.A1	2-ketoisovaleric acid
+ABV56588.1.A1	piperazic acid
+ABV56588.1.A2	serine
+ABV56588.1.A3	6,7-dichlorotryptophan
+ABV56594.1.A1	glutamic acid
+AEG64689.1.A1	aspartic acid
+AEG64696.1.A1	2,3-diaminopropionic acid
+AEG64696.1.A2	pipecolic acid
+AEG64697.1.A1	glycine
+AEG64697.1.A2	aspartic acid
+AEG64697.1.A3	glycine
+AEG64697.1.A4	aspartic acid
+AEG64697.1.A5	glycine
+AEG64697.1.A6	threonine|allo-threonine
+AEG64698.1.A1	isoleucine
+AEG64698.1.A2	proline
+ADZ24989.1.A1	pyrrole-2-carboxylic acid
+ADZ24995.1.A1	cysteine
+ADZ24999.1.A1	proline
+AAU22002.1.A1|AAU39359.1.A1	glutamine
+AAU22002.1.A2|AAU39359.1.A2	leucine
+AAU22002.1.A3|AAU39359.1.A3	leucine
+AAU39360.1.A1	valine
+AAU39360.1.A2	aspartic acid
+AAU39360.1.A3	leucine
+AIT38302.1.A1	leucine
+CAE14171.1.A1|WP_011146143.1.A1	threonine
+CAE14173.1.A1|WP_232507913.1.A1	4S-hydroxylysine|lysine
+CAE14173.1.A2|WP_232507913.1.A2	alanine
+AAT12283.1.A1	valine
+AAT12283.1.A2	tryptophan
+AEH59099.1.A1	D-leucine|leucine|isoleucine
+AEH59099.1.A2	leucine
+AEH59099.1.A3	phenylalanine|beta-hydroxyphenylalanine
+AEH59099.1.A4	leucine|3R-hydroxyleucine
+AEH59100.1.A1	leucine
+AEH59100.1.A2	arginine
+AEH59100.1.A3	isoleucine
+AEH59100.1.A4	threonine|allo-threonine
+AEH59100.1.A5	glycine
+AEH59100.1.A6	3S-hydroxyasparagine|asparagine
+AEH59100.1.A7	serine
+AAU34202.1.A1|Q643C7.A1	serine
+AAU34202.1.A2|Q643C7.A2	glycine
+AAU34202.1.A3|Q643C7.A3	phenylalanine
+AAU34203.1.A1	tyrosine
+AAU34203.1.A2	S-beta-hydroxyenduracididine
+ABH06368.2.A1	threonine
+ABH06368.2.A2	isoleucine
+ABH06368.2.A3	leucine
+ABH06368.2.A4	serine
+ABH06369.2.A1	leucine
+ABH06369.2.A2	serine
+ABH06369.2.A3	isoleucine
+AFO85453.1.A1	isoleucine|valine
+AFO85453.1.A2	tryptophan
+ACU36654.1.A1	arginine
+ACU36654.1.A2	N5-formyl-N5-hydroxyornithine
+ACU36660.1.A1	2,3-dihydroxybenzoic acid
+ABF87031.1.A2|YP_631961.1.A1	serine
+ABF87031.1.A3|YP_631961.1.A2	leucine
+ABF87031.1.A4|YP_631961.1.A3	3-hydroxyvaline
+ABF87031.1.A5|YP_631961.1.A4	serine
+ABF87031.1.A6|YP_631961.1.A5	valine
+ABF87031.1.A7|YP_631961.1.A6	serine
+ABF87031.1.A8|YP_631961.1.A7	tyrosine
+ABF87031.1.A9|YP_631961.1.A8	beta-lysine
+ABF87031.1.A10|YP_631961.1.A9	alanine
+AGD80616.1.A1	beta-hydroxy-3-hydroxy-O-methyl-5-methyltyrosine
+AGD80623.1.A1	alanine
+AGD80623.1.A2	alanine
+AGD80623.1.A3	alanine
+AAT09804.1.A1	4-hydroxyphenylglycine
+AAT09804.1.A2	arginine
+AAT09804.1.A3	4-hydroxyphenylglycine
+AAT09805.1.A1	serine
+AAT09805.1.A2	4-hydroxyphenylglycine
+AAO23333.1.A1	tyrosine
+AAO23333.1.A2	glycine
+AAO23333.1.A3	glutamine
+AAO23334.1.A1	isoleucine
+AAO23334.1.A2	serine
+AAO23334.1.A3	4S-methylproline
+AAO23334.1.A4	leucine|phenylalanine
+AFH75328.1.A1	leucine
+AFH75328.1.A2	glutamic acid
+AFH75329.1.A1	threonine
+AFH75329.1.A2	valine
+AFH75329.1.A3	leucine
+AFH75329.1.A4	serine
+AFH75330.1.A1	leucine
+AFH75330.1.A2	leucine
+AFH75330.1.A3	serine
+AFH75330.1.A4	valine
+AAY91419.3.A1	leucine
+AAY91419.3.A2	glutamic acid
+AAY91420.2.A1	threonine
+AAY91420.2.A2	isoleucine
+AAY91420.2.A3	leucine
+AAY91420.2.A4	serine
+AAY91421.3.A1	leucine
+AAY91421.3.A2	leucine
+AAY91421.3.A3	serine
+AAY91421.3.A4	valine
+AGM16412.1.A1	ornithine
+AGM16412.1.A2	valine
+AGM16412.1.A3	threonine
+AGM16412.1.A4	ornithine
+AGM16412.1.A5	serine
+AGM16413.1.A1	valine
+AGM16413.1.A2	lysine
+AGM16413.1.A3	serine
+AGM16413.1.A4	isoleucine
+AGM16413.1.A5	proline
+AGM16414.1.A1	valine
+AGM16414.1.A2	lysine
+AGM16414.1.A3	isoleucine
+AEI70245.1.A1	alanine
+AEI70245.1.A2	threonine
+AHD05677.1.A1	asparagine
+AHD05677.1.A2	serine
+AHD05678.1.A1	tyrosine
+AHD05678.1.A2	asparagine
+AHD05678.1.A3	glutamine
+AHD05678.1.A4	proline
+AHD05679.1.A2	asparagine
+AFJ14793.1.A1	2,4-diaminobutyric acid
+AFJ14794.1.A1	isoleucine
+AFJ14794.1.A2	2,4-diaminobutyric acid
+AFJ14794.1.A3	phenylalanine
+AFJ14794.1.A4	leucine
+AFJ14794.1.A5	2,4-diaminobutyric acid
+AFJ14794.1.A6	valine
+AFJ14794.1.A7	leucine
+AFJ14795.1.A1	serine
+AAA63415.1.A1|ABA70582.1.A1|ABR12615.1.A1|P19787.A1|P26046.A1	2-aminoadipic acid
+AAA63415.1.A2|ABA70582.1.A2|ABR12615.1.A2|CAA38195.1.A2|P19787.A2|P26046.A2	cysteine
+AAA63415.1.A3|ABA70582.1.A3|ABR12615.1.A3|P19787.A3|P26046.A3	valine
+ACA97576.1.A1	leucine
+ACA97576.1.A2	threonine
+ACA97576.1.A3	2,4-diaminobutyric acid
+ACA97576.1.A4	2,4-diaminobutyric acid
+ACA97577.1.A1	threonine
+ACA97580.1.A1|B9TTF7.A1	2,4-diaminobutyric acid
+ACA97580.1.A2|AEZ51520.1.A2|B9TTF7.A2	threonine
+ACA97580.1.A3|B9TTF7.A3	2,4-diaminobutyric acid
+ACA97580.1.A4|B9TTF7.A4	2,4-diaminobutyric acid
+ACA97580.1.A5|B9TTF7.A5	2,4-diaminobutyric acid
+AEA29643.1.A1	3-methoxyanthranilic acid
+AEA29644.1.A1	4R-propylproline
+ABS50184.1.A1	threonine
+ABW17375.1.A1	leucine
+ABW17375.1.A2	glutamic acid
+ABW17376.1.A1	leucine
+ABW17376.1.A2	isoleucine
+ABW17376.1.A3	glutamine
+ABW17376.1.A4	serine
+ABW17376.1.A5	valine
+ABW17376.1.A6	isoleucine
+ABW17376.1.A7	serine
+ABW17377.1.A1	leucine
+ABW17377.1.A2	leucine|isoleucine|valine
+ABW17377.1.A3	serine
+AAC83656.1.A1|O85739.A1	cysteine
+AAC83657.1.A1|O85740.A1	cysteine
+AAY93354.1.A1	alanine
+AAY93354.1.A2	N5-formyl-N5-hydroxyornithine
+AAY93354.1.A3	lysine
+AAY93355.1.A1	threonine
+AAY93355.1.A2	alanine
+AAY93356.2.A1	aspartic acid
+AAY93356.2.A2	N5-formyl-N5-hydroxyornithine
+AAY93356.2.A3	lysine
+AAY93445.1.A2	glutamic acid
+AAY93445.1.A3	tyrosine
+AAY93445.1.A4	2,4-diaminobutyric acid
+BAO84861.1.A1	alanine
+BAO84864.1.A1	glycolic acid
+BAO84866.1.A1	4,5-dehydroarginine
+BAO84868.1.A1	meta-tyrosine|3-hydroxy-O-methyl-5-methyltyrosine
+AET98905.1.A1	cysteine
+AET98905.1.A2	valine
+AET98906.1.A1	serine
+AET98906.1.A2	alanine
+AET98914.1.A1	quinoxaline-2-carboxylic acid
+AET98916.1.A1	tryptophan
+CBJ90287.1.A1|WP_013184317.1.A1	leucine
+CBJ90288.1.A1|WP_013184318.1.A1	valine
+CBJ90289.1.A1|WP_013184319.1.A1	valine
+ABG94125.1.A1|YP_702283.1.A1	threonine
+ABG94125.1.A2|YP_702283.1.A2	N5-formyl-N5-hydroxyornithine
+AIE77057.1.A1	4-hydroxyphenylglycine
+AIE77057.1.A2	R-beta-hydroxytyrosine
+AIE77058.1.A1	3,5-dihydroxyphenylglycine
+AIE77059.1.A1	4-hydroxyphenylglycine
+AIE77059.1.A2	4-hydroxyphenylglycine
+AIE77059.1.A3	R-beta-hydroxytyrosine
+AIE77060.1.A1	3,5-dihydroxyphenylglycine
+AIE77076.1.A1	tyrosine
+AIG79224.1.A1	tyrosine
+AIG79240.1.A1	3,5-dihydroxyphenylglycine
+AIG79241.1.A1	4-hydroxyphenylglycine
+AIG79241.1.A2	4-hydroxyphenylglycine
+AIG79241.1.A3	R-beta-hydroxytyrosine
+AIG79242.1.A1	3,5-dihydroxyphenylglycine
+AIG79243.1.A1	4-hydroxyphenylglycine
+AIG79243.1.A2	R-beta-hydroxytyrosine
+CAP96445.1.A1	tryptophan
+CAP96445.1.A2	histidine
+AAL33756.1.A1	glycine
+AAL33757.1.A1	glycine
+AAL33758.1.A1	3-hydroxy-O-methyltyrosine
+ABI22131.1.A2	alanine
+ABI22132.1.A1	glycine
+ABI22133.1.A1	3-hydroxy-O-methyl-5-methyltyrosine
+CBG75492.1.A1	N5-formyl-N5-hydroxyornithine
+CBG75492.1.A2	serine
+CBG75492.1.A3	N5-hydroxyornithine
+CBG75492.1.A4	ornithine
+CBG75492.1.A5	N5-hydroxyornithine
+ADJ63842.1.A2	3-hydroxyaspartic acid
+ADJ63842.1.A3	serine
+ADJ63842.1.A4	3-hydroxyaspartic acid
+ADJ63842.1.A5	threonine
+ADJ63842.1.A6	serine
+ADJ63842.1.A7	N5-hydroxyornithine
+AFH75320.1.A1	threonine
+AFH75320.1.A2	proline
+AFH75320.1.A3	serine
+AFH75320.1.A4	leucine
+AFH75320.1.A5	valine
+AFH75320.1.A6	glutamine
+AFH75321.1.A1	leucine
+AFH75321.1.A2	valine
+AFH75321.1.A3	valine
+AFH75321.1.A4	glutamine
+AFH75321.1.A5	leucine
+AFH75321.1.A6	valine
+AFH75322.1.A1	threonine
+AFH75322.1.A2	threonine
+AFH75322.1.A3	isoleucine
+AFH75322.1.A4	homoserine
+AFH75322.1.A5	2,4-diaminobutyric acid
+AFH75322.1.A6	lysine
+AGZ03650.1.A1	phenylalanine
+AGZ03651.1.A1	alanine
+AGZ03651.1.A2	tryptophan
+ABA23460.1.A1	serine
+AEA30272.1.A1	threonine
+AEA30272.1.A2	alanine
+AEA30272.1.A3	3S-methylaspartic acid|aspartic acid
+AEA30272.1.A4	glycine
+AEA30273.1.A1	phenylalanine
+AEA30273.1.A2	proline
+AEA30273.1.A3	O-methyltyrosine
+AEA30273.1.A4	tryptophan
+AEA30274.1.A1	glycine
+AEA30274.1.A2	leucine
+AEA30274.1.A3	leucine
+AHJ31215.1.A1	homotyrosine
+AHJ31215.1.A2	proline
+AHJ31215.1.A3	arginine
+EFE73308.1.A1	2,3-diaminopropionic acid
+EFE73312.1.A1	cysteic acid
+EFE73312.1.A2	threonine
+EFE73312.1.A3	serine
+EFE73312.1.A4	threonine
+EFE73312.1.A5	valine
+EFE73313.1.A1	serine
+EFE73313.1.A2	lysine
+EFE73313.1.A3	glycine
+BAL15718.1.A1	beta-lysine
+BAL15732.1.A1	beta-lysine
+CAE02630.1.A1	glutamic acid
+CAE02630.1.A2	leucine
+CAE02630.1.A3	leucine
+CAE02631.1.A1	valine
+CAE02631.1.A2	aspartic acid
+CAE02631.1.A3	leucine
+BAI63283.1.A1	tryptophan
+BAI63284.1.A1	3-hydroxyquinaldic acid
+BAI63288.1.A1	serine
+BAI63288.1.A2	alanine
+BAI63289.1.A1	cysteine
+BAI63289.1.A2	norcoronamic acid
+AAO56328.1.A1	leucine
+AAO56328.1.A2	leucine
+AAO56328.1.A3	glutamine
+AAO56329.1.A1	leucine
+AAO56329.1.A2	threonine
+AAO56329.1.A3	valine
+AAO56329.1.A4	leucine
+AAO56329.1.A5	leucine
+EJK79842.1.A1	isoleucine|valine
+AAY37647.1.A1	serine
+AAO72425.1.A6|AAY37647.1.A2|Q83VS0.A9	serine
+AAY37647.1.A3	2,4-diaminobutyric acid
+AAY37647.1.A4	2,4-diaminobutyric acid
+AAY37647.1.A5	arginine
+AAY37647.1.A6	phenylalanine
+AAY37647.1.A7	threonine
+AAY37647.1.A8	aspartic acid
+AAY37650.1.A1|Q52400.A1	threonine
+AAF99707.2.A1|Q9FDB3.A1	threonine
+AAF99707.2.A2	proline
+AAF99707.2.A3|Q9FDB3.A3	valine
+AAF99707.2.A4|Q9FDB3.A4	valine
+AAF99707.2.A5|Q9FDB3.A5	alanine
+AAO72424.1.A1|Q83VS1.A1	alanine
+AAO72424.1.A2|Q83VS1.A2	valine
+AAO72424.1.A3|Q83VS1.A3	valine
+AAO72424.1.A4|Q83VS1.A4	threonine
+AAO72424.1.A5|Q83VS1.A5	alanine
+AAO72425.1.A1|Q83VS0.A1	valine
+AAO72425.1.A2|Q83VS0.A5	alanine
+AAO72425.1.A3|Q83VS0.A6	alanine
+AAO72425.1.A4|Q83VS0.A7	threonine
+AAO72425.1.A5|Q83VS0.A8	allo-threonine
+AAO72425.1.A7|Q83VS0.A10	alanine
+AAO72425.1.A8|Q83VS0.A11	threonine
+AAO72425.1.A9|Q83VS0.A12	alanine
+AAO72425.1.A10	2,4-diaminobutyric acid
+AAO72425.1.A11	2,4-diaminobutyric acid
+AAO72425.1.A12|Q83VS0.A4	tyrosine
+AHH53506.1.A1	tryptophan
+AHH53506.1.A2	aspartic acid
+AHH53506.1.A3	aspartic acid
+AHH53506.1.A4	threonine
+AHH53506.1.A5	glycine
+AHH53507.1.A1	ornithine
+AHH53507.1.A2	aspartic acid
+AHH53507.1.A3	alanine
+AHH53507.1.A4	aspartic acid
+AHH53507.1.A5	glycine
+AHH53507.1.A6	alanine
+AHH53508.1.A1	glutamic acid
+AHH53508.1.A2	kynurenine
+CAE53350.1.A1|CAG15009.1.A1|Q70AZ9.A1	4-hydroxyphenylglycine
+CAE53350.1.A2|CAG15009.1.A2|Q70AZ9.A2	tyrosine
+CAE53351.1.A1|Q70AZ8.A1	3,5-dihydroxyphenylglycine
+CAE53352.1.A1|CAG15011.1.A1|Q70AZ7.A1	4-hydroxyphenylglycine
+CAE53352.1.A2|CAG15011.1.A2|Q70AZ7.A2	4-hydroxyphenylglycine
+CAE53352.1.A3|CAG15011.1.A3|Q70AZ7.A3	tyrosine
+CAE53353.1.A1|CAG15012.1.A1|Q70AZ6.A1	3,5-dihydroxyphenylglycine
+CAG15010.1.A1	3,5-dihydroxyphenylglycine
+AED90002.1.A1	serine
+AED90002.1.A2	ornithine
+AED90002.1.A3	aspartic acid
+AED90002.1.A4	homoserine
+AED90002.1.A5	histidine
+AED90003.1.A1	threonine
+AED90003.1.A2	threonine
+AED90003.1.A3	3-hydroxyaspartic acid
+AED90004.1.A1	threonine
+CAJ34374.1.A1	cysteine
+CAJ34374.1.A2	glycine
+CAJ34375.1.A1	cysteine
+CAJ34375.1.A2	cysteine
+CDG76957.1.A1	2,3-dihydroxybenzoic acid
+CDG76959.1.A1	proline
+CCJ67636.1.A1	threonine
+CCJ67636.1.A2	proline
+CCJ67636.1.A3	serine
+CCJ67637.1.A1	leucine
+CCJ67637.1.A2	valine
+CCJ67637.1.A3	serine
+CCJ67638.1.A1	leucine
+CCJ67638.1.A2	valine
+CCJ67638.1.A3	valine
+CCJ67639.1.A1	glutamine
+CCJ67639.1.A2	leucine
+CCJ67639.1.A3	valine
+CCJ67640.1.A1	threonine
+CCJ67640.1.A2	threonine
+CCJ67640.1.A3	leucine
+CCJ67640.1.A4	homoserine
+CCJ67640.1.A5	2,4-diaminobutyric acid
+CCJ67640.1.A6	lysine
+AHF21228.1.A1	valine
+AHF21228.1.A2	2,4-diaminobutyric acid
+AHF21228.1.A3	glycine
+AHF21228.1.A4	serine
+AHF21228.1.A5	tryptophan
+AHF21228.1.A6	serine
+AHF21228.1.A7	2,4-diaminobutyric acid
+AHF21228.1.A8	2,4-diaminobutyric acid
+AHF21228.1.A9	phenylalanine
+AHF21228.1.A10	glutamic acid
+AHF21229.1.A1	valine
+AHF21229.1.A2	isoleucine
+AHF21229.1.A3	alanine
+BAH04161.1.A1	cysteine
+BAH04161.1.A2	valine
+B7X8D7.A1|BAH04162.1.A1	serine
+BAH04162.1.A2	alanine
+BAH04171.1.A1	quinoxaline-2-carboxylic acid
+BAH04173.1.A1	tryptophan
+BAH43764.1.A1	phenylalanine
+BAH43765.1.A1	proline
+BAH43765.1.A2	phenylalanine
+BAH43765.1.A3	phenylalanine
+BAH43766.1.A1	asparagine
+BAH43766.1.A2	glutamine
+BAH43766.1.A3	tyrosine
+BAH43766.1.A4	valine
+BAH43766.1.A5	ornithine
+BAH43766.1.A6	leucine
+ABA59547.1.A1|Q1PSF4.A1	2R-hydroxyisovaleric acid
+ABA59547.1.A2|Q1PSF4.A2	valine
+ABA59548.1.A1	pyruvic acid
+ABA59548.1.A2	valine
+CAJ45636.1.A1	2,3-dihydroxybenzoic acid
+CAJ45639.1.A1	arginine
+CAJ45639.1.A2	serine
+AEI58865.1.A1	leucine
+AEI58865.1.A2	R-beta-hydroxytyrosine
+AEI58865.1.A3	asparagine
+AEI58866.1.A1	4-hydroxyphenylglycine
+AEI58866.1.A2	4-hydroxyphenylglycine
+AEI58866.1.A3	R-beta-hydroxytyrosine
+AEI58867.1.A1	3,5-dihydroxyphenylglycine
+AEI58879.1.A1	tyrosine
+AAP92491.1.A1	serine
+AAP92491.1.A2	serine
+AAP92505.1.A1	beta-lysine
+AGN74876.1.A1	threonine
+AGN74876.1.A2	leucine
+AGN74880.1.A1	3-hydroxypicolinic acid
+AGN74885.1.A1	glycine
+AGN74885.1.A2	3S-methylleucine
+AGN74885.1.A3	alanine
+AGN74885.1.A4	phenylglycine
+AGN74886.1.A1	4R-hydroxyproline
+AGN74892.1.A1	glycine
+AGN74895.1.A1	serine
+AGN74898.1.A1	cysteine
+AAO07759.1.A1	salicylic acid
+AAO07763.1.A1	salicylic acid|2,3-dihydroxybenzoic acid
+AEP18655.1.A1	glutamic acid
+AEP18655.1.A2	asparagine
+AEP18655.1.A3	tryptophan
+AEP18655.1.A4	ornithine
+AEP18655.1.A5	valine
+AEP18656.1.A1	serine
+AEP18656.1.A2	3R-hydroxyasparagine|asparagine
+AEP18656.1.A3	serine
+AEP18656.1.A4	glycine
+AEP18656.1.A5	phenylalanine
+AEP18656.1.A6	leucine
+AEP18656.1.A7	ornithine
+AGM14933.1.A1	glutamine
+AGM14933.1.A2	valine
+AGM14933.1.A3	leucine
+AGM14933.1.A4	glutamine
+AGM14933.1.A5	serine
+AGM14933.1.A6	valine
+AGM14933.1.A7	leucine
+AGM14933.1.A8	glutamine
+AGM14934.1.A1	leucine
+AGM14934.1.A2	leucine
+AGM14934.1.A3	glutamine
+AGM14934.1.A4	isoleucine|valine
+CDG17980.1.A1	proline
+CDG17980.1.A2	alanine
+CDG17980.1.A3	valine
+CDG17980.1.A4	leucine
+CDG17980.1.A5	isoleucine
+CDG17980.1.A6	threonine
+CDG17980.1.A7	leucine
+CDG17981.1.A1	leucine
+CDG17981.1.A2	leucine
+CDG17982.1.A1	alanine
+CDG17982.1.A2	beta-alanine
+CDG17982.1.A3	proline
+CDG17982.1.A4	leucine
+AGA37267.1.A1	proline
+AGA37267.1.A2	tryptophan
+AGC83576.1.A1	proline
+AGC83576.1.A2	tryptophan
+AGA37269.1.A1	4S-methylproline
+AGA37269.1.A2	tryptophan
+ADQ74618.1.A1	proline
+ADY76664.1.A1	meta-tyrosine
+ADY76667.1.A1	2S,3S-diaminobutyric acid
+ADY76674.1.A1	6-hydroxy-tetrahydro-isoquinoline-3-carboxylic acid
+ADY76684.1.A1	methionine
+CAQ18831.1.A1	serine
+B1GYG6.A1|CAQ18839.1.A1	glycine
+CCA29202.1.A1	glycine
+CCA29202.1.A2	cysteine
+CCA29203.1.A1	serine
+CCA29203.1.A2	cysteine
+CCA29203.1.A3	glycine
+WP_010639240.1.A1	threonine
+WP_010639243.1.A1	pyruvic acid
+AAN32978.1.A1|Q8GAQ6.A1	leucine|valine|(4S)-5,5,5-trichloroleucine
+AAN32981.1.A1|Q8GAQ3.A1	phenylalanine
+AAN32981.1.A2|Q8GAQ3.A2	cysteine
+AAG02355.1.A1|Q9FB27.A1|WP_078587912.1.A1	asparagine
+AAG02355.1.A2	histidine
+AAG02356.1.A1|Q9FB26.A1	alanine
+AAG02358.1.A1|Q9FB24.A1|WP_004942671.1.A1	threonine
+AAG02359.1.A2|Q9FB23.A1	serine
+AAG02359.1.A3|Q9FB23.A2	asparagine
+AAG02364.1.A1|Q9FB18.A1	beta-alanine
+AAG02364.1.A2|Q9FB18.A2|WP_004947051.1.A2	cysteine
+ABC36785.1.A1	methionine
+ABC36785.1.A2	cysteine
+ABC36785.1.A3	isoleucine
+ABC39418.1.A1|ABC39418.1.A2	cysteine
+BAP05589.1.A1	serine
+BAP05590.1.A1	glycine
+BAP05591.1.A1	serine
+BAP05596.1.A1	alanine
+BAP05597.1.A1	serine
+A8KNE2.A1|CAO91861.1.A1	tryptophan
+CAJ46691.1.A1|Q0VZ71.A1	alanine
+CAJ46692.1.A1	tryptophan
+CAJ46692.1.A2	R-beta-tyrosine|tyrosine
+B9ZUK5.A1|CAQ43084.1.A1	tyrosine|3-chlorotyrosine
+CBW54672.1.A1	S-beta-hydroxycyclohex-2S-enylalanine
+CAJ76286.1.A1	asparagine
+CAJ76289.1.A1	cysteine
+CAJ76290.1.A1	glycine
+CAJ76290.1.A2	cysteine
+CAJ76292.1.A1	serine
+CAJ76292.1.A2	S-adenosylmethionine
+CAJ76298.1.A1	alanine
+CCC55921.1.A1	cysteine
+CCC55922.1.A1	leucine
+AIR74926.1.A1|CBD77746.1.A1	glycine
+AIR74925.1.A1|CBD77749.1.A1	glycine
+ABM21571.1.A1	tyrosine
+ABM21572.1.A1	3R-methylbeta-alanine
+ABM21572.1.A2	2-ketoisocaproic acid
+AAT70101.1.A1|AEE88284.1.A1	cysteine
+ABX60161.1.A1	guanidinoacetic acid
+AAW03326.1.A1	cysteine
+EAW09117.1.A1	phenylalanine
+ABX37382.1.A1	threonine
+ABX37382.1.A2	ornithine
+ABX37382.1.A3	serine
+ABX37382.1.A4	arginine
+ABX37382.1.A5	N5-hydroxyornithine
+ABX37383.1.A1	aspartic acid
+ABX37383.1.A2	threonine
+ABX37383.1.A3	glycine
+ABX37385.1.A2	serine
+AFK57212.1.A1	glutamine
+AFK57212.1.A2	glutamine
+AFK57214.1.A1	proline
+AFK57215.1.A1	leucine
+AFK57215.1.A2	threonine
+AFK57215.1.A3	isoleucine
+AFK57219.1.A1	leucine
+AFK57220.1.A1	proline
+AFK57221.1.A1	tyrosine
+AAF62881.1.A1	cysteine
+AAV66110.2.A1	tyrosine
+ABP57745.1.A2	cysteine
+ABP57748.1.A1	valine
+ABP57748.1.A2	cysteine
+ABP57749.1.A1	threonine
+AAF86395.1.A1|Q9KID8.A1	pipecolic acid
+ADH01485.1.A1|AIC32693.1.A1	threonine
+EFL02193.1.A1	ornithine
+AAY42397.1.A1|AAY42398.1.A1|Q1EDB1.A1	2-ketoisovaleric acid
+AAY42397.1.A2|Q1EDB1.A2	cysteine
+AAY42398.1.A2	cysteine
+AAS98786.1.A1	alanine
+AHI59108.1.A1	threonine
+AHI59109.1.A1	glutamine
+AHI59109.1.A2	aspartic acid
+AHI59109.1.A3	glycine
+AHI59110.1.A1	tyrosine
+AHI59110.1.A2	valine
+CAD89774.1.A1|Q70P97.A1	cysteine
+CAD89775.1.A1	cysteine
+CAD15508.1.A1|CAD15508.1.A2	cysteine
+CAD15513.1.A1	cysteine
+CAD29794.1.A1	D-glutamic acid branched
+CAD29795.1.A1	cinnamic acid
+CAD29797.1.A1	serine
+CAD29797.1.A2	alanine
+CAD29798.1.A1|Q8G982.A1	arginine
+CAD29798.1.A2	D-aspartic acid branched
+CAD29799.1.A1	arginine
+AAO62582.1.A1	D-glutamic acid branched
+AAO62585.1.A1	cinnamic acid
+AAO62586.1.A1	serine
+AAO62586.1.A2	alanine
+AAO62587.1.A1	leucine|arginine
+AAO62587.1.A2	3S-methyl-D-aspartic acid branched|aspartic acid branched
+AAO62588.1.A1	arginine
+AAF00957.1.A1|AAX73195.1.A1|BAB12213.1.A1	cinnamic acid
+AAF00958.1.A1	D-glutamic acid branched
+AAF00960.1.A1|Q9RNB1.A1	serine
+AAF00960.1.A2|Q9RNB1.A2	alanine
+AAF00961.1.A1|Q9RNB0.A1	leucine|tyrosine|valine
+AAF00961.1.A2	3S-methyl-D-aspartic acid branched|D-aspartic acid branched
+AAF00962.1.A1|Q9RNA9.A1	leucine|isoleucine|valine
+BAH22762.1.A1	aspartic acid
+BAH22763.1.A1	threonine
+BAH22764.1.A1	arginine
+BAH22764.1.A2	3-amino-6-hydroxy-2-piperidone
+BAH22764.1.A3	isoleucine
+BAH22764.1.A4	tyrosine
+BAH22765.1.A1	isoleucine
+AHB82056.1.A1	asparagine
+AHB82058.1.A1	glycine
+AHB82058.1.A2	tryptophan
+AHB82058.1.A3	glycine
+AHB82059.1.A1	glycine
+CCP45167.1.A1|O05819.A1|Q7TYQ8.A1	lysine
+AAK57184.1.A1	alanine
+APZ78821.1.A1|CAG29031.1.A1|Q50JA3.A1	threonine
+APZ78821.1.A2|CAG29031.1.A2|Q50JA3.A2	leucine
+APZ78822.1.A1|CAG29032.1.A1	alanine
+APZ78822.1.A3|CAG29032.1.A3	alanine
+APZ78822.1.A4|CAG29032.1.A4	glutamine
+AAF19811.1.A1	cysteine
+AAF19812.1.A1|Q9RFK8.A1	cysteine
+BAD55611.1.A1|YP_116975.1.A1	N6-hydroxylysine
+BAD55612.1.A1|YP_116976.1.A1	N6-hydroxylysine
+BAD55613.1.A1|YP_116977.1.A1	threonine
+AAF15891.2.A1|Q9RAH4.A1	isoleucine
+AAF15891.2.A2|Q9RAH4.A2	serine
+AAF15891.2.A3	4S-methylproline
+AAF15891.2.A4|Q9RAH4.A4	leucine
+AAF17280.1.A1|Q9RAH2.A1	leucine
+AAF17280.1.A2|Q9RAH2.A2	glycine
+AAF17280.1.A3	asparagine
+AAF17281.1.A1|Q9RAH1.A1	tyrosine
+AAF17281.1.A2	proline
+AEU11003.1.A1	proline
+AEU11003.1.A2	phenylalanine
+AEU11003.1.A3	isoleucine
+AEU11003.1.A4	proline
+AEU11006.1.A1	glutamine
+AEU11006.1.A2	glycine
+AHD05614.1.A1	arginine|lysine
+AHD05615.1.A1	D-alanine
+AHD05616.1.A1|AHD05621.1.A2	2,3-diaminopropionic acid
+AHD05617.1.A1	lysine
+AHD05618.1.A1	serine
+AHD05621.1.A3	glycine
+AHD05627.1.A1	asparagine
+EPE34341.1.A1	4,5-dihydroxyornithine
+EPE34341.1.A2	threonine
+EPE34341.1.A3	4R-hydroxyproline
+EPE34341.1.A4	3S,4S-dihydroxyhomotyrosine
+EPE34341.1.A5	3-hydroxyglutamine
+EPE34341.1.A6	3S-hydroxy-4S-methylproline|3S-hydroxyproline
+AGZ15455.1.A1	leucine|alanine|valine
+AGZ15458.1.A1	piperazic acid
+AGZ15458.1.A2	alanine
+AGZ15459.1.A1	piperazic acid
+AGZ15459.1.A2	R-3-hydroxy-3-methylproline
+AGZ15460.1.A1	valine
+AGZ15476.1.A1	3S-hydroxyleucine
+A7UC77.A1|ABS87601.1.A1|EAL85113.2.A1	phenylalanine
+AGC24265.1.A1	proline
+AEF33078.1.A1	threonine
+AEF33078.1.A2	3-(3-pyridyl)-alanine
+CAA60461.1.A1|Q54298.A1	pipecolic acid
+ACY06285.1.A1	valine
+ACY06285.1.A2	meta-tyrosine
+ACY06285.1.A3	piperazic acid
+AFR69334.1.A1	alanine
+AFR69334.1.A2	cysteine
+AFR69334.1.A3	isoleucine|valine
+CAD70194.1.A1|Q83Y49.A1	valine
+CAD70195.1.A1	3,4-dehydrolysine
+CAD70195.1.A2	valine
+ABL74936.1.A1	asparagine
+ABL74936.1.A2	histidine
+ABL74937.1.A1	alanine
+ABL74939.1.A1	threonine
+ABL74940.1.A2	serine
+ABL74940.1.A3	asparagine
+ABL74945.1.A1	beta-alanine
+ABL74945.1.A2	cysteine
+CAL69597.1.A1	tyrosine
+AGC65516.1.A1	valine
+AGC65516.1.A2	serine
+AGC65517.1.A1	tyrosine
+ADH04641.1.A1	cysteine
+ADC79642.1.A1|D3Y1I8.A1	glycine
+CAF05647.1.A1|Q5ZPB0.A1	pipecolic acid
+CCM44336.1.A1	aspartic acid
+CCM44336.1.A2	histidine
+CCM44336.1.A3	asparagine
+CCM44336.1.A4	asparagine
+CCM44337.1.A1	threonine
+CCM44337.1.A2	valine
+ACG60772.1.A1	beta-alanine
+ACG60772.1.A2	cysteine
+ACG60773.1.A1	homoserine
+ACG60776.1.A2|B9UJ01.A1	serine
+ACG60776.1.A3|B9UJ01.A2	asparagine
+ACG60778.1.A1	valine
+ACG60782.1.A1	asparagine
+ACG60782.1.A2	histidine
+AAY89051.1.A1|Q2N3S9.A1	serine
+B0B504.A1|CAN89633.1.A1	glycine
+CAN89638.1.A1	beta-alanine
+ADA69239.2.A1	glycine
+ADA69239.2.A2	proline
+ADM34138.1.A1	proline
+ADM34138.1.A2	tryptophan
+CAE52342.1.A1	asparagine
+ABS74179.1.A1|CAE11248.1.A1	serine
+ABS74179.1.A2|CAE11248.1.A2	threonine
+ABS74180.1.A1|CAE11249.1.A1	tyrosine
+ABS74180.1.A2|CAE11249.1.A2	asparagine
+ABS74180.1.A3|CAE11249.1.A3	proline
+ABS74180.1.A4|CAE11249.1.A4	glutamic acid
+ABS74181.1.A2|CAE11250.1.A1|CAE11250.1.BGC0001090	asparagine
+ABS74205.1.A1	isoleucine
+ABS74206.1.A1	proline
+ABS74206.1.A2	glutamine
+ABS74206.1.A3	tyrosine
+ABS74207.1.A1	glutamic acid
+ABS74207.1.A2	alanine|valine
+ABS74208.1.A1	tyrosine
+ABS74208.1.A2	threonine
+ABS74209.1.A1|CAE11277.1.A1	glutamic acid
+ABS74209.1.A2|CAE11277.1.A2	ornithine
+BAB69698.1.A1|BAB69698.1.A2|Q93I56.A1	asparagine
+BAB69699.1.A1|Q93I55.A1	tyrosine
+BAB69699.1.A2|Q93I55.A2	asparagine
+BAB69699.1.A3	glutamine
+BAB69699.1.A4|Q93I55.A4	proline
+BAB69700.1.A1|Q93I54.A1	asparagine
+BAB69700.1.A2	serine
+ADD82940.1.A1|D4NZD4.A1	glycine
+AAN85522.1.A1	cysteine
+AAN85530.1.A1	D-alanine
+ABC36203.1.A1	dimethylsulfoniopropionic acid
+AAF08795.1.A1|AAF08795.1.A2|Q9R9J1.A1	asparagine
+AAF08796.1.A1|Q9R9J0.A1	tyrosine
+AAF08796.1.A2|Q9R9J0.A2	asparagine
+AAF08796.1.A3	glutamine
+AAF08796.1.A4|Q9R9J0.A4	proline
+AAF08797.1.A1	serine
+AAF08797.1.A2|Q9R9I9.A2	asparagine
+AAV97877.1.A1	glycine
+AAS47562.1.A1	arginine
+AAS47564.1.A1	glycine
+ADA82585.1.A1	glycine
+CCA89326.1.A1	glycine
+CCA89328.1.A1	serine
+AGN11881.1.A1	threonine
+CBK62746.1.A1	cysteine
+BAF50711.1.A1	threonine
+BAF50711.1.A2	2-aminobutyric acid
+BAF50720.1.A1	serine
+A4PHN0.A1|BAF50727.1.A1	glycine
+CBZ42140.1.A1	piperazic acid
+CBZ42143.1.A1	valine
+CBZ42145.1.A1	2-ketoisovaleric acid
+CBZ42146.1.A1	leucine
+CBZ42146.1.A2	threonine
+CBZ42146.1.A3	tryptophan
+AIW82277.1.A1	asparagine
+AIW82277.1.A2	proline
+AIW82282.1.A1	valine
+AIW82283.1.A1	threonine
+AIW82283.1.A2	glutamine|asparagine
+AIW82284.1.A1	threonine
+AIW82284.1.A2	asparagine
+AIW82284.1.A3	alanine
+AIW82285.1.A1	threonine
+CCJ67645.1.A1	threonine
+CCJ67646.1.A1	threonine
+CCJ67646.1.A2	tyrosine
+CCJ67647.1.A1	threonine
+CCJ67647.1.A2	glutamine
+CCJ67647.1.A3	glycine
+CCJ67648.1.A1	allo-threonine
+CCJ67648.1.A2	histidine
+CAE15637.1.A1|WP_011147463.1.A1	isoleucine|valine
+CAE15637.1.A2|WP_011147463.1.A2	leucine
+CAE15637.1.A3|WP_011147463.1.A3	leucine|methionine|valine|phenylalanine|4-aminophenylalanine|tyrosine
+CAE15637.1.A4|WP_011147463.1.A4	leucine
+CAE15637.1.A5|WP_011147463.1.A5	leucine
+PHM26612.1.A1	aspartic acid branched
+PHM26612.1.A2	phenylalanine|histidine
+PHM26612.1.A3	asparagine
+PHM26612.1.A4	asparagine
+PHM26613.1.A1	threonine
+PHM26613.1.A2	proline
+PHM49485.1.A1	serine
+PHM49485.1.A2	glutamine
+PHM49485.1.A3	phenylalanine
+PHM49485.1.A4	leucine
+PHM49485.1.A5	phenylalanine
+PHM49485.1.A6	lysine
+CBJ90082.1.A1	valine
+CBJ90082.1.A2	leucine
+CBJ90082.1.A3	valine
+CBJ90082.1.A4	valine
+CBJ79915.1.A1	leucine
+CBJ79915.1.A2	leucine
+CBJ79915.1.A3|CBJ79916.1.A2	serine
+CBJ79916.1.A1	threonine
+CBJ79916.1.A3	tyrosine|phenylalanine
+CBJ79916.1.A4	leucine
+AFP87549.1.A1	arginine
+AFP87549.1.A2	leucine
+AFP87549.1.A3	arginine
+AFP87549.1.A4	arginine
+AFP87549.1.A5	arginine
+ADY16689.1.A1	2-aminoisobutyric acid
+ADY16697.1.A1	anthranilic acid
+ADY16697.1.A2	tryptophan
+ADY16697.1.A3	alanine
+CDF96614.1.A1	serine
+CDF96614.1.A2	proline
+ABQ96384.2.A1	threonine
+ABQ96384.2.A2	valine
+ABQ96384.2.A3	tyrosine
+ABQ96384.2.A4	threonine
+ABQ96384.2.A5	asparagine
+ABQ96384.2.A6	D-alanine
+AEZ51516.1.A1	phenylalanine
+AEZ51516.1.A2	leucine
+AEZ51516.1.A3	2,4-diaminobutyric acid
+AEZ51516.1.A4	2,4-diaminobutyric acid
+AEZ51517.1.A1	threonine
+AEZ51520.1.A1	2,4-diaminobutyric acid
+AEZ51520.1.A3	2,4-diaminobutyric acid
+AEZ51520.1.A4	2,4-diaminobutyric acid
+AEZ51520.1.A5	2,4-diaminobutyric acid
+AGQ43600.1.A1	proline
+AGQ43600.1.A2	alanine
+AGQ43600.1.A3	D-alanine
+AGQ43600.1.A4	2S-amino-9,10-epoxy-8-oxodecanoic acid
+EOY45602.1.A1	arginine
+AGS77307.1.A1	4-hydroxyphenylglycine
+AGS77307.1.A2	tyrosine
+AGS77308.1.A1	3,5-dihydroxyphenylglycine
+AGS77309.1.A1	4-hydroxyphenylglycine
+AGS77309.1.A2	4-hydroxyphenylglycine
+AGS77309.1.A3	tyrosine
+AGS77310.1.A1	3,5-dihydroxyphenylglycine
+EAQ93004.1.A1|XP_001220460.1.A1	tryptophan
+ABS75232.1.A1	glycine
+ABS75232.1.A2	threonine
+ABS75234.1.A1	2,3-dihydroxybenzoic acid
+AKL78825.1.A1	glycine
+CAQ71827.1.A1	aspartic acid
+CAQ71828.1.A1	threonine
+CAQ71828.1.A2	aspartic acid
+CAQ71829.1.A1	ornithine
+CAQ71829.1.A2	serine
+CAQ71829.1.A3	ornithine
+AJM89734.1.A1	threonine
+AJM89735.1.A1	leucine
+AJM89735.1.A2	leucine
+AJM89735.1.A3	2,4-diaminobutyric acid
+AJM89735.1.A4	2,4-diaminobutyric acid
+AJM89738.1.A1	2,4-diaminobutyric acid
+AJM89738.1.A2	threonine
+AJM89738.1.A3	2,4-diaminobutyric acid
+AJM89738.1.A4	2,4-diaminobutyric acid
+AJM89738.1.A5	2,4-diaminobutyric acid
+AJW76709.1.A1	tryptophan
+AJW76709.1.A2	leucine
+AJW76710.1.A1	leucine
+AJW76710.1.A2	valine
+AJW76711.1.A1	asparagine
+AJW76711.1.A2	glycine
+AKA59436.1.A1	leucine
+AKA59436.1.A2	threonine
+AKA59440.1.A1	leucine
+AKA59447.1.A1	leucine
+AKA59447.1.A2	valine
+AKA59447.1.A3	threonine
+AKA59447.1.A4	alanine
+AJF34463.1.A1	phenylalanine
+AJF34463.1.A2	isoleucine
+AJF34463.1.A3	serine
+AJF34463.1.A4	glutamine
+AJF34463.1.A5	isoleucine
+AJF34463.1.A6	isoleucine
+AJF34464.1.A1	serine
+AJF34464.1.A2	threonine
+AJF34464.1.A3	alanine
+AJF34464.1.A4	enduracididine
+AJF34464.1.A5	isoleucine
+WP_084702182.1.A1	N5-formyl-N5-hydroxyornithine
+WP_084702182.1.A2	serine
+WP_084702182.1.A3	N5-hydroxyornithine
+WP_084702182.1.A4	serine
+WP_084702182.1.A5	serine
+WP_084702182.1.A6	N5-hydroxyornithine
+AJV88375.1.A1	allo-isoleucine|valine
+AJV88375.1.A2	threonine
+AJV88375.1.A3	tyrosine
+AJV88376.1.A1	allo-isoleucine|valine
+AJV88377.1.A1	leucine
+AJV88377.1.A2	valine
+AJV88383.1.A1	piperazic acid
+BAN91483.1.A1	ornithine
+BAN91483.1.A2	threonine
+BAN91483.1.A3	4R-hydroxyproline
+BAN91483.1.A4	3R-hydroxyhomotyrosine
+BAN91483.1.A5	threonine
+BAN91483.1.A6	3S-hydroxy-4S-methylproline
+WP_028678148.1.A1	cysteine
+WP_028678148.1.A2	norcoronamic acid
+WP_028678149.1.A1	threonine
+WP_028678149.1.A2	alanine
+DAB41476.1.A1	serine
+DAB41477.1.A1	4-hydroxyphenylglycine
+DAB41477.1.A2	phenylalanine
+DAB41477.1.A3	threonine
+DAB41478.1.A1	isoleucine|valine
+DAB41479.1.A1	glycine
+DAB41484.1.A1	threonine
+AHB82069.1.A1	asparagine
+AHB82071.1.A1	glycine
+AHB82071.1.A2	tryptophan
+AHB82071.1.A3	glycine
+AHB82072.1.A1	glycine
+ALK27914.1.A1	4-hydroxyphenylglycine
+ALK27914.1.A2	3,5-dihydroxyphenylglycine
+ALK27914.1.A3	valine
+ALK27914.1.A4	3,5-dihydroxyphenylglycine
+ALK27915.1.A1	4-hydroxyphenylglycine
+ALK27915.1.A2	3,5-dihydroxyphenylglycine
+ALK27915.1.A3	4-hydroxyphenylglycine
+ALK27915.1.A4	3,5-dihydroxyphenylglycine
+ALK27915.1.A5	valine
+ALK27915.1.A6	3,5-dihydroxyphenylglycine
+ALK27916.1.A1	4-hydroxyphenylglycine
+ALK27916.1.A2	phenylalanine
+ALK27916.1.A3	aspartic acid
+ANI24100.1.A1	valine
+ANI24100.1.A2	cysteine
+ANI24100.1.A3	phenylalanine
+EXU96269.1.A1	1-aminocyclopropane-1-carboxylic acid
+EXU96269.1.A2	4R-hydroxyproline
+EXU96269.1.A3	serine
+EXU96269.1.A4	4S-hydroxylysine|lysine
+EXU96269.1.A5	beta-alanine
+EXU96269.1.A6	serine
+EXU96269.1.A7	serine
+AET13875.1.A1	glycine
+AET13875.1.A2|AET13879.1.A2	glutamine
+AET13875.1.A3	N5-trans-anhydromevalonyl-N5-hydroxyornithine
+AET13879.1.A1	glycine
+AET13879.1.A3	N5-trans-anhydromevalonyl-N5-hydroxyornithine
+AGO86662.1.A1	serine
+AN2545.A1|CBF87069.1.A1	glycine
+AN2545.A2|CBF87069.1.A2	valine
+AN2545.A3|CBF87069.1.A3	leucine
+AN2545.A4|CBF87069.1.A4	alanine
+CBF87069.1.A5	alanine
+ALG65313.1.A1	asparagine
+ALG65314.1.A1	threonine
+ALG65317.1.A1	serine
+ALG65318.1.A1	valine
+ALG65318.1.A2	phenylalanine
+ALG65319.1.A1	threonine
+ALG65319.1.A2	phenylalanine
+AGY30674.1.A1	2-amino-3-hydroxycyclopent-2-enone
+AGY30675.1.A1	5-aminolevulinic acid
+CAY48788.1.A1	threonine
+CAY48788.1.A2	valine
+CAY48788.1.A3	leucine
+CAY48788.1.A4	serine
+CAY48789.1.A1	leucine
+CAY48789.1.A2	serine
+CAY48789.1.A3	isoleucine
+WP_030498974.1.A1	serine
+WP_030498977.1.A1	3S-hydroxyasparagine
+WP_052165466.1.A1	glycine
+EWM63002.1.A1	serine
+EWM63005.1.A1	glycine
+EWM63007.1.A1	3S-hydroxyasparagine
+WP_053065269.1.A1	glycine
+WP_053065269.1.A2	serine
+WP_053065270.1.A1	glycine
+WP_019032753.1.A1	glycine
+WP_019032755.1.A1	glycine
+WP_019032755.1.A2	serine
+WP_018540603.1.A1	serine
+WP_018540607.1.A1	alanine
+WP_018540607.1.A2	valine
+ORC16617.1.A1	pyruvic acid
+ORC16617.1.A2	valine
+ORC16618.1.A1	2-ketoisovaleric acid
+ORC16618.1.A2	valine
+ADH04678.1.A1	pipecolic acid
+ADH04679.1.A1	isoleucine
+ADH04679.1.A2	valine
+ADH04680.1.A1	cysteine
+AAG31128.1.A1	2,3-dihydroxybenzoic acid
+AAG31130.1.A1	lysine
+AOA33121.1.A1	leucine
+AOA33121.1.A2	aspartic acid
+AOA33122.1.A1	threonine
+AOA33122.1.A2	leucine
+AOA33122.1.A3	leucine
+AOA33122.1.A4	glutamine
+AOA33123.1.A1	leucine
+AOA33123.1.A2	isoleucine
+OAQ83766.1.A1	(E)-4-methylhex-2-enoic acid
+OAQ83772.1.A1	4-methylproline
+OAQ83772.1.A2	2-amino-6-hydroxy-4-methyl-8-oxodecanoic acid
+OAQ83772.1.A3	3-hydroxyleucine
+OAQ83772.1.A4	2-aminoisobutyric acid
+OAQ83772.1.A5	leucine
+OAQ83772.1.A6	leucine
+OAQ83772.1.A7	2-aminoisobutyric acid
+OAQ83772.1.A8	2-aminoisobutyric acid
+OAQ83772.1.A9	beta-alanine
+OAQ83772.1.A10	alanine
+CAD17792.1.A2	threonine
+CAD17792.1.A3	tyrosine
+CAD17792.1.A4	serine
+CAD17792.1.A5	homoserine
+CAD17793.1.A1	valine
+CAD17793.1.A2	serine
+CAD17793.1.A3	glycine
+CAD17793.1.A4	alanine
+CAD17793.1.A5	beta-alanine
+WP_051700105.1.A1	6-chlorotryptophan
+WP_051700122.1.A1	6-chloro-4-hydroxy-1-methyl-indole-3-carboxylic acid
+WP_078857609.1.A1	2-methylserine
+WP_078857610.1.A1	lysine
+WP_078857611.1.A1	2-methylserine
+ALV82356.1.A1	serine
+ALV82356.1.A2	threonine
+ALV82356.1.A3	tryptophan
+ALV82356.1.A4	aspartic acid
+ALV82356.1.A5	aspartic acid
+ALV82356.1.A6	4-hydroxyphenylglycine
+ALV82384.1.A1	aspartic acid
+ALV82384.1.A2	glycine
+ALV82384.1.A3	3-hydroxyasparagine|asparagine
+ALV82388.1.A1	glutamic acid
+ALV82388.1.A2	tryptophan
+AMM63162.1.A1	ornithine
+AMM63162.1.A2	threonine
+AMM63162.1.A3	proline
+AMM63162.1.A4	homotyrosine
+AMM63162.1.A5	threonine
+AMM63162.1.A6	3S-hydroxy-4S-methylproline
+AMM63166.1.A1	linoleic acid
+AHZ34238.1.A1	threonine
+AHZ34238.1.A2	proline
+AHZ34238.1.A3	alanine
+AHZ34238.1.A4	alanine
+AHZ34239.1.A1	alanine
+AHZ34239.1.A2	alanine
+AHZ34239.1.A3	valine
+AHZ34240.1.A1	threonine
+AHZ34240.1.A2	glycine
+AHZ34241.1.A1	valine
+AHZ34241.1.A2	isoleucine
+AHZ34241.1.A3	glycine
+AHZ34241.1.A4	alanine
+AHZ34242.1.A1	valine
+AHZ34242.1.A2	alanine
+AHZ34242.1.A3	valine
+AHZ34243.1.A1	threonine
+AHZ34243.1.A2	threonine
+AHZ34243.1.A3	alanine
+AHZ34243.1.A4	2,4-diaminobutyric acid
+AHZ34243.1.A5	serine
+AHZ34243.1.A6	leucine|isoleucine|valine
+CCB53264.1.A1	valine
+CCB53264.1.A2	tryptophan
+CCB53266.1.A1	leucine
+CCB53267.1.A1	valine
+CCB53269.1.A1	cysteine
+AGC45618.1.A1	alanine
+ALU98443.1.A1	R-beta-tyrosine|S-beta-tyrosine
+CBF76036.1.A1	asparagine
+CBF76036.1.A2	glutamine
+CBF76038.1.A1	leucine
+CRG85572.1.A1	serine
+CRG85572.1.A2	proline|3R-chloroproline|3S,4R-dichloroproline
+CRG85572.1.A3	2-aminobutyric acid
+CRG85572.1.A4	serine
+CRG85572.1.A5	R-beta-phenylalanine
+ALV86866.1.A1	aspartic acid branched
+ALV86866.1.A2	serine
+ALV86866.1.A3	threonine
+ALV86866.1.A4	threonine|allo-threonine
+ALV86867.1.A1	alanine
+ALV86867.1.A2	glycine
+ALV86867.1.A3	proline
+ALV86867.1.A4	dehydrotryptophan
+ALV86867.1.A5	R-beta-methyltryptophan
+ALV86868.1.A1	leucine
+ALV86868.1.A2	proline
+AKP45395.1.A1	3-hydroxy-para-aminobenzoic acid
+AKP45395.1.A2	2,3-dihydroxy-para-aminobenzoic acid
+AKP45396.1.A1	asparagine
+AKP45399.1.A1|AKP45399.1.A4	para-aminobenzoic acid
+AKP45399.1.A2	para-aminobenzoic acid
+AKP45400.1.A1	para-aminobenzoic acid
+AKC91849.1.A1	valine
+AKC91849.1.A2	4R-methylproline
+AKC91849.1.A3	threonine
+AKC91849.1.A4	leucine
+AKC91849.1.A5	4R-methylproline
+AKC91849.1.A6	leucine
+AKC91856.1.A1	valine
+AKC91856.1.A2	proline
+AKC91856.1.A3	leucine
+AKC91857.1.A1	glycine
+CDG12864.1.A1	glycine
+CDG12864.1.A2	cysteine
+CDG12864.1.A3	serine
+CDG12865.1.A1	cysteine
+CDG12865.1.A2	glycine
+KPN90369.1.A1	threonine
+KPN90369.1.A2	threonine
+KPN90369.1.A3	aspartic acid
+KPN90374.1.A1	threonine
+KPN90376.1.A1	valine
+KPN90376.1.A2	alanine
+KPN90376.1.A3	valine
+KPN90376.1.A4	threonine
+KPN90376.1.A5	threonine
+KPN90376.1.A6	alanine
+KPN90376.1.A7	2,4-diaminobutyric acid
+KPN90376.1.A8	serine
+KPN90376.1.A9	isoleucine
+KPN93063.1.A1	threonine
+KPN93063.1.A2	proline
+KPN93063.1.A3	alanine
+KPN93063.1.A4	alanine
+KPN93063.1.A5	alanine
+KPN93063.1.A6	valine
+KPN93063.1.A7	alanine
+KPN93063.1.A8	threonine
+KPN93063.1.A9	serine
+KPN93064.1.A1	valine
+KPN93064.1.A2	isoleucine
+KPN93064.1.A3	serine
+KPN93064.1.A4	alanine
+KPN93065.1.A1	serine
+KPN93065.1.A2	2,4-diaminobutyric acid
+KPN93065.1.A3	glycine
+KPN93065.1.A4	homoserine
+APZ78679.1.A1	threonine
+APZ78679.1.A2	alanine
+APZ78680.1.A1	leucine
+APZ78680.1.A2	alanine
+APZ78680.1.A3	glutamine
+APZ78691.1.A1	threonine
+APZ78691.1.A2	alanine
+APZ78692.1.A1	leucine
+APZ78692.1.A3	alanine
+APZ78692.1.A4	glutamine
+APZ78703.1.A1	threonine
+APZ78703.1.A2	alanine
+APZ78704.1.A1	leucine
+APZ78704.1.A3	alanine
+APZ78704.1.A4	glutamine
+APZ78715.1.A1	threonine
+APZ78715.1.A2	alanine
+APZ78716.1.A1	leucine
+APZ78716.1.A3	alanine
+APZ78716.1.A4	glutamine
+APZ78728.1.A1	threonine
+APZ78728.1.A2	alanine
+APZ78729.1.A1	leucine
+APZ78729.1.A2	leucine
+APZ78729.1.A3	proline
+APZ78729.1.A4	alanine
+APZ78729.1.A5	glutamine
+APZ78743.1.A1	threonine
+APZ78743.1.A2	alanine
+APZ78744.1.A1	leucine
+APZ78744.1.A2	proline
+APZ78744.1.A3	alanine
+APZ78744.1.A4	glutamine
+APZ78755.1.A1	threonine
+APZ78755.1.A2	alanine
+APZ78756.1.A1	leucine
+APZ78756.1.A2	proline
+APZ78756.1.A3	glutamine
+AQM37583.1.A1	threonine
+AQM37583.1.A2	alanine
+AQM37584.1.A1	leucine
+AQM37584.1.A2	proline
+AQM37584.1.A3	glutamine
+APZ78768.1.A1	threonine
+APZ78768.1.A2	alanine
+APZ78769.1.A1	leucine
+APZ78769.1.A2	proline
+APZ78769.1.A3	alanine
+APZ78769.1.A4	glutamine
+APZ78781.1.A1	threonine
+APZ78781.1.A2	alanine
+APZ78782.1.A1	leucine
+APZ78782.1.A2	proline
+APZ78782.1.A3	alanine
+APZ78782.1.A4	glutamine
+APZ78794.1.A1	threonine
+APZ78794.1.A2	alanine
+APZ78795.1.A1	leucine
+APZ78795.1.A2	proline
+APZ78795.1.A3	alanine
+APZ78795.1.A4	glutamine
+APZ78808.1.A1	threonine
+APZ78808.1.A2	alanine
+APZ78809.1.A1	leucine
+APZ78809.1.A2	proline
+APZ78809.1.A3	alanine
+APZ78809.1.A4	glutamine
+APZ78833.1.A1	threonine
+APZ78833.1.A2	leucine
+APZ78834.1.A1	alanine
+APZ78834.1.A3	alanine
+APZ78834.1.A4	glutamine
+APZ78845.1.A1	threonine
+APZ78845.1.A2	leucine
+APZ78846.1.A1	alanine
+APZ78846.1.A3	alanine
+APZ78846.1.A4	glutamine
+APZ78855.1.A1	threonine
+APZ78855.1.A2	alanine
+APZ78856.1.A1	leucine
+APZ78856.1.A3	alanine
+APZ78856.1.A4	glutamine
+AQZ26587.1.A1	2,3-dihydroxybenzoic acid
+AQZ26587.1.A2	(2S,3R)-2-amino-3-hydroxy-4-(4-nitrophenyl)butanoic acid
+ATJ34002.1.A1	proline
+ATJ34005.1.A1	threonine
+WP_019634550.1.A1	isoleucine
+ARU08063.1.A1	2,3-diamino-3-methylpropanoic acid
+ARU08073.1.A1	3-methylaspartic acid
+ARU08073.1.A2	valine
+ARU08074.1.A1	lysine
+ARU08074.1.A2	3-hydroxyaspartic acid
+ARU08074.1.A3	aspartic acid
+ARU08074.1.A4	glycine
+ARU08074.1.A5	3-methylaspartic acid
+ARU08075.1.A1	valine
+ARU08075.1.A2	4R-methylproline
+AEO57481.1.A1	3S-methylproline
+WP_050383082.1.A1	leucine
+WP_050383082.1.A2	threonine
+WP_050383084.1.A1	alanine
+WP_050383084.1.A2	alanine
+WP_050383088.1.A1	leucine
+WP_050383094.1.A1	leucine
+WP_082191961.1.A1	D-phenyllactic acid
+WP_082191961.1.A2	serine
+antaC.A1	threonine
+antaF.A1	anthranilic acid
+OKA09423.1.A1	leucine
+OKA09423.1.A2	R-beta-hydroxytyrosine
+OKA09423.1.A3	asparagine
+OKA09424.1.A1	4-hydroxyphenylglycine
+OKA09424.1.A2	4-hydroxyphenylglycine
+OKA09424.1.A3	R-beta-hydroxytyrosine
+OKA09425.1.A1	3,5-dihydroxyphenylglycine
+OKA09664.1.A1	tyrosine
+EME52974.1.A1	tyrosine
+EME52988.1.A1	3,5-dihydroxyphenylglycine
+EME52989.1.A1	4-hydroxyphenylglycine
+EME52989.1.A2	4-hydroxyphenylglycine
+EME52989.1.A3	R-beta-hydroxytyrosine
+EME52990.1.A1	leucine
+EME52990.1.A2	R-beta-hydroxytyrosine
+EME52990.1.A3	asparagine
+BS330_28385.A1	4-hydroxyphenylglycine
+BS330_28385.A2	R-beta-hydroxytyrosine
+AYA22334.1.A1|OLZ50885.1.A1	4-hydroxyphenylglycine
+OLZ50885.1.A2	4-hydroxyphenylglycine
+OLZ50885.1.A3	R-beta-hydroxytyrosine
+AYA22333.1.A1|OLZ50886.1.A1	3,5-dihydroxyphenylglycine
+OLZ50899.1.A1	tyrosine
+BS329_14150.A1	4-hydroxyphenylglycine
+BS329_14150.A2	R-beta-hydroxytyrosine
+OLZ52442.1.A1	tyrosine
+OLZ52456.1.A1	3,5-dihydroxyphenylglycine
+OLZ52457.1.A1	4-hydroxyphenylglycine
+OLZ52457.1.A2	4-hydroxyphenylglycine
+OLZ52457.1.A3	tyrosine
+WP_051206727.1.A1	phenylalanine
+WP_081656241.1.A1	2S-hydroxyisovaleric acid
+RAT94090.1.A1	serine
+RAT94090.1.A2	cysteine
+RAT94090.1.A3	cysteine
+RAT94090.1.A4	cysteine
+RAT94090.1.A5	cysteine
+RAT94091.1.A1	isoleucine
+AVV61987.1.A1	glycine
+ACC81021.1.A1	phenylalanine
+ACC81021.1.A2	lysine
+ACC81022.1.A1	isoleucine
+ACC81023.1.A1	homotyrosine|homophenylalanine
+ACC81023.1.A2	glycine
+ACC81024.1.A1	homotyrosine|homophenylalanine
+YP_856987.1.A1	glycine
+YP_856988.1.A1	phenylalanine|tryptophan
+YP_856990.1.A1	lysine
+YP_856992.1.A1	2,3-dihydroxybenzoic acid
+ATV95610.1.A1	p-hydroxymandelate
+ATV95617.1.A1	6-methylsalicylic acid
+WP_064118559.1.A1	leucine
+WP_064118559.1.A2	alanine
+WP_064118559.1.A3	threonine
+WP_064118559.1.A4	leucine
+WP_064118559.1.A5	leucine
+WP_064118560.1.A1	serine
+WP_064118560.1.A2	leucine
+WP_064118560.1.A3	serine
+WP_064118560.1.A4	leucine
+WP_064118561.1.A1	isoleucine
+WP_064118561.1.A2	aspartic acid
+CBF73453.1.A1	serine
+CBF73453.1.A2	threonine
+CBF73453.1.A3	isoleucine
+CBF73453.1.A4	2S-aminooctanoic acid
+CBF73453.1.A5	asparagine
+CBF73453.1.A6	2S-aminododecanoic acid
+WP_016638466.1.A1	leucine|serine|valine
+WP_016638469.1.A1	piperazic acid
+WP_016638469.1.A2	serine|alanine
+WP_016638470.1.A1	glycine
+WP_016638470.1.A2	piperazic acid
+WP_016638471.1.A1	alanine
+WP_078620912.1.A1	3S-hydroxyleucine
+ATY37588.1.A1	4R-E-butenyl-4R-methylthreonine
+ATY37589.1.A1	valine
+ATY37589.1.A2	lysine
+ATY37590.1.A1	isoleucine
+ATY37590.1.A2	valine
+ATY37590.1.A3	valine
+ATY37590.1.A4	lysine
+ATY37591.1.A1	valine
+ATY37591.1.A2	leucine
+ATY37591.1.A3	lysine
+ATY37591.1.A4	phenylalanine
+ATY37592.1.A1	leucine
+ATY37592.1.A2	valine
+ATY37596.1.A1	2-ketoisovaleric acid
+ATY37608.1.A1	asparagine
+ATY37608.1.A2	tyrosine
+ATY37608.1.A3	tryptophan
+ATY37608.1.A4	ornithine
+ATY37608.1.A5	ornithine
+ATY37608.1.A6	glycine
+ATY37608.1.A7	ornithine
+ATY37608.1.A8	tryptophan
+ATY37608.1.A9	threonine
+ATY37609.1.A1	isoleucine
+ATY37609.1.A2	glycine
+ATY37609.1.A3	serine
+ARO38317.1.A1	cysteine
+ARO38317.1.A2	valine
+ARO38317.1.A3	valine
+AVR48535.1.A1	glycine
+AVR48535.1.A2	proline
+AVR48535.1.A3	glycine
+ATQ39428.1.A1	D-alanine
+ATQ39428.1.A2	leucine
+ATQ39428.1.A3	leucine
+ATQ39428.1.A4	valine
+ATQ39428.1.A5	4R-E-butenyl-4R-methylthreonine
+ATQ39428.1.A6	threonine
+ATQ39428.1.A7	glycine
+ATQ39428.1.A8	leucine
+ATQ39428.1.A9	valine
+ATQ39428.1.A10	leucine
+ATQ39428.1.A11	alanine
+WP_067426775.1.A1	valine
+WP_067426775.1.A2	lysine
+WP_079164394.1.A1	threonine
+WP_107406787.1.A1	valine
+WP_107406787.1.A2	aspartic acid
+ANZ15839.1.A1	ornithine
+ANZ15839.1.A2	3S-hydroxyasparagine|asparagine
+ANZ15840.1.A1	5-chlorotryptophan
+ANZ15840.1.A2	valine
+ANZ15840.1.A3	leucine|phenylalanine
+ANZ15840.1.A4	isoleucine|valine
+OAL11435.1.A1	arginine
+OAL11436.1.A1	phenylalanine
+OAL11475.1.A1	valine
+WP_008704344.1.A1	leucine|tryptophan|valine|phenylalanine|isoleucine|tyrosine
+WP_008704344.1.A2	leucine|tryptophan|valine|phenylalanine|isoleucine|tyrosine
+WP_008704344.1.A3	leucine|tryptophan|valine|phenylalanine|isoleucine|tyrosine
+AIW58892.1.A1	valine
+AIW58892.1.A2	valine
+AIW58892.1.A3	isoleucine|allo-isoleucine
+AIW58892.1.A4	threonine
+AIW58892.1.A5	threonine
+AIW58892.1.A6	valine
+AIW58892.1.A7	leucine
+AIW58892.1.A8	valine
+AIW58892.1.A9	valine
+AIW58892.1.A10	tryptophan
+AIW58892.1.A11	valine
+AIW58892.1.A12	phenylalanine
+AIW58892.1.A13	valine
+BAV56002.1.A1	alanine
+BAV56017.1.A1	aspartic acid
+WP_047195042.1.A1	lysine
+WP_047195042.1.A2	threonine
+WP_047195042.1.A3	leucine
+WP_047195042.1.A4	2,4-diaminobutyric acid
+WP_047197778.1.A1	serine
+WP_047197778.1.A2	glutamic acid
+WP_047197778.1.A3	2,4-diaminobutyric acid
+WP_047197779.1.A1	serine
+WP_047197779.1.A2	threonine
+WP_047197779.1.A3	asparagine
+WP_047197779.1.A4	glycine
+WP_047197779.1.A5	dehydrovaline|valine
+ATY69551.1.A1	D-alanine
+ATY69568.1.A1	1-aminocyclopropane-1-carboxylic acid
+CZT62784.1.A1	2,3-dihydroxyhexadecanoic acid
+CZT62784.1.A2	threonine
+CZT62784.1.A3	threonine
+CZT62785.1.A1	threonine
+CZT62785.1.A2	tyrosine
+CZT62792.1.A1	threonine
+CZT62792.1.A2	glutamine
+CZT62794.1.A1	glycine
+CZT62794.1.A2	threonine
+ASX95241.1.A1	1-(1,1-dimethylallyl)-tryptophan
+ASX95241.1.A2	leucine
+ASX95241.1.A3	3-nitrotyrosine
+ASX95241.1.A4	alanine
+ASX95241.1.A5	leucine
+ASX95241.1.A6	leucine
+ASX95241.1.A7|BBA20967.1.A7	trans-2-crotylglycine
+XP_002379984.1.A1	tryptophan
+XP_002379984.1.A2	tyrosine
+BAX64244.1.A1	glycine
+BAX64244.1.A2	leucine
+BAX64246.1.A1	serine
+BAX64246.1.A2	serine
+BAX64247.1.A1	threonine
+BAX64247.1.A2	isoleucine
+CCP42824.1.A1	butyric acid|pentanoic acid
+CCP42826.1.A1	lysine
+CCP42826.1.A2	phenylalanine
+BAX89998.1.A1	valine
+BAX89998.1.A2	cysteic acid|aspartic acid
+BAX89999.1.A1	alanine
+BAX89999.1.A2	leucine
+BAX90000.1.A1	glycine
+BAX90000.1.A2	alanine
+BAX90000.1.A3	phenylalanine
+BAW32322.1.A1	phenylpyruvic acid
+BAW32323.1.A1	beta-alanine
+BAW32323.1.A2	tryptophan
+BAW32324.1.A1	arginine
+BAW32324.1.A2	R-beta-hydroxyphenylalanine
+BAW32332.1.A1	phenylpyruvic acid
+BAW32333.1.A1	beta-alanine
+BAW32333.1.A2	tryptophan
+BAW32334.1.A1	arginine
+BAW32334.1.A2	R-beta-hydroxyphenylalanine
+AQZ69227.1.A1	3,5-dihydroxyphenylglycine
+AQZ69228.1.A1	4-hydroxyphenylglycine
+AQZ69228.1.A2	4-hydroxyphenylglycine
+AQZ69228.1.A3	tyrosine
+AQZ69229.1.A1	4-hydroxyphenylglycine
+AQZ71347.1.A1	tryptophan
+BBC83957.1.A1	lactic acid
+BBC83957.1.A2	pipecolic acid
+BBC83957.1.A3|BBC83957.1.A6	valine
+BBC83957.1.A4	valine
+BBC83957.1.A5	aspartic acid
+BBC83957.1.A7	isoleucine
+BBC83957.1.A8	glycine
+BBC83957.1.A9	valine
+BBC83957.1.A10	O-methyltyrosine
+WP_011146892.1.A1	leucine
+WP_011146892.1.A2	alanine
+WP_011146892.1.A3	leucine
+WP_011146892.1.A4	valine
+WP_011146892.1.A5	tyrosine
+WP_011146892.1.A6	leucine
+WP_011146892.1.A7	valine
+WP_011146892.1.A8	threonine
+WP_011146892.1.A9	valine
+WP_011146892.1.A10	leucine
+WP_011146892.1.A11	valine
+WP_011146892.1.A12	threonine
+WP_011146892.1.A13	leucine
+WP_011146892.1.A14	valine
+WP_011146892.1.A15	valine
+ATD51279.1.A1	proline
+ATD51279.1.A2	leucine|isoleucine|valine
+ATD51280.1.A1	proline
+BAV56270.1.A1	threonine
+BAV56270.1.A2	arginine
+BAV56270.1.A3	serine
+BAV56270.1.A4	glycine
+BAV56270.1.A5	phenylalanine
+BAV56270.1.A6	leucine
+BAV56270.1.A7	arginine
+BAV56271.1.A1	glutamic acid
+BAV56271.1.A2	glutamine
+BAV56271.1.A3	tryptophan
+BAV56271.1.A4	isoleucine|valine
+BAV56271.1.A5	threonine
+AQH32481.1.A1	glutamic acid
+AQH32484.1.A1	serine
+AQH32484.1.A2	alanine
+AQH32485.1.A1	leucine
+AQH32485.1.A2	tyrosine
+AQH32486.1.A1	serine
+CBF82791.1.A1	phenylpyruvic acid
+AWX24482.1.A1	threonine
+AWX24488.1.A1	anthranilic acid
+CBF87869.1.A1	phenylalanine
+CBF87869.1.A2	kynurenine
+CBF87869.1.A3	valine
+CBF87869.1.A4	valine
+ATP76239.1.A1	glutamic acid
+ATP76243.1.A1	threonine
+ATP76243.1.A2	3R-methyl-D-aspartic acid branched
+ATP76244.1.A1	arginine
+KFL51883.1.A1	serine
+KFL51885.1.A1	R-beta-hydroxytyrosine
+KFL51886.1.A1	2,4-diaminobutyric acid
+KFL51886.1.A2	glycine
+KFL51887.1.A1	asparagine
+KFL51887.1.A2	serine
+CUX79060.1.A1	2,4-diaminobutyric acid
+CUX79060.1.A2	2,4-diaminobutyric acid
+CUX79060.1.A3	2,4-diaminobutyric acid
+CUX79061.1.A1	leucine|phenylalanine
+CUX79061.1.A2	leucine
+CUX79061.1.A3	2,4-diaminobutyric acid
+CUX79061.1.A4	2,4-diaminobutyric acid
+CUX79062.1.A1	leucine
+WP_013184461.1.A1	N6-hydroxylysine|lysine
+SOV25622.1.A2|WP_013184461.1.A2	arginine|beta-hydroxyarginine|dehydroarginine
+SOV25622.1.A3|WP_013184461.1.A3	N6-hydroxylysine|lysine
+WP_013184462.1.A1	histidine
+WP_013184463.1.A1	glycine
+WP_013184463.1.A2	ornithine
+WP_013184463.1.A3	proline
+SOV25619.1.A1|WP_013184464.1.A1	lysine
+WP_013184464.1.A2	2,4-diaminobutyric acid|3R-hydroxy-2,4-diaminobutyric acid
+BBB04327.1.A1	tryptophan
+XP_020057667.1.A1	tryptophan
+EPS29069.1.A1	(S,E)-2-amino-4-decenoic acid
+APD26279.1.A1	ornithine
+WP_013310342.1.A1	serine
+WP_013310343.1.A1	2,4-diaminobutyric acid
+WP_043882190.1.A1	tryptophan
+WP_043882190.1.A2	valine
+WP_043882190.1.A3	phenylalanine
+WP_043882190.1.A4	tyrosine
+WP_043882190.1.A5	glutamic acid
+BBA21068.1.A1	glycine
+BBA21071.1.A1	glycine
+BBA21073.1.A1	serine
+BBA21073.1.A2	tyrosine
+ATP76246.1.A1	leucine
+ATP76246.1.A2	isoleucine
+ATP76246.1.A3	arginine
+ATG32071.1.A1	proline
+ATG32076.1.A1	serine
+ctg1_orf1264.A1	serine
+ctg1_orf1264.A2	ornithine
+ctg1_orf1264.A3	serine
+ctg1_orf1265.A1	serine
+ctg1_orf1265.A2	ornithine
+ctg1_orf1265.A3	ornithine
+WP_013428324.1.A1	leucine
+WP_013428324.1.A2	threonine
+WP_013428324.1.A3	tyrosine
+WP_013428324.1.A4	alanine
+WP_013428324.1.A5	alanine
+WP_013428324.1.A6	alanine
+WP_013428324.1.A7	valine
+WP_004571777.1.A1	isoleucine
+WP_004571777.1.A2	proline
+WP_004571779.1.A1	glycine
+WP_078586793.1.A1	phenylalanine
+BBA20967.1.A1	1-(1,1-dimethylallyl)-tryptophan
+BBA20967.1.A2	leucine
+BBA20967.1.A3	3-nitrotyrosine
+BBA20967.1.A4	alanine
+BBA20967.1.A5	leucine
+BBA20967.1.A6	leucine
+BAW27693.1.A1	(2S,6R)-diamino-(5R,7)-dihydroxy-heptanoic acid
+ctg1_orf20.A1	N5-hydroxyornithine
+ctg1_orf20.A2	arginine
+ctg1_orf20.A3	N5-hydroxyornithine
+ctg1_orf20.A4	N5-hydroxyornithine
+XP_003044554.1.A1	phenylalanine
+XP_003044554.1.A2	leucine
+XP_003044554.1.A3	2S-hydroxyisocaproic acid
+XP_003044554.1.A4	valine
+XP_003044554.1.A5	leucine
+ANH11404.1.A1	3S-methylaspartic acid
+ANH11405.1.A1	3S-aminobutyric acid
+WP_078889006.1.A1	proline
+ARR97036.1.A1	3,4-dihydroxybenzoic acid
+ARR97036.1.A2	threonine
+ARR97038.1.A1	threonine
+ARR97039.1.A1	glycine
+AOZ21316.1.A1	glutamic acid
+AOZ21320.1.A1	alanine
+AOZ21320.1.A2	2,3-diaminopropionic acid
+WP_044618979.1.A1	phenylalanine
+WP_044618979.1.A2	cysteine
+WP_044618979.1.A3	cysteine
+WP_015507661.1.A1	isoleucine
+WP_015507661.1.A2	phenylalanine
+WP_015507661.1.A3	leucine
+WP_015507662.1.A1	isoleucine
+WP_015507662.1.A2	leucine
+WP_015507662.1.A3	valine
+WP_015507662.1.A4	alanine
+WP_015507662.1.A5	valine
+WP_015507662.1.A6	alanine
+WP_015507663.1.A1	tryptophan
+WP_015507663.1.A2	leucine
+WP_015507663.1.A3	valine
+WP_015507663.1.A4	threonine
+WP_041826607.1.A1	isoleucine
+WP_041826607.1.A2	alanine
+WP_041826607.1.A3	isoleucine
+WP_041826607.1.A4	allo-isoleucine
+WP_041826607.1.A5	lysine
+AQV04224.1.A1	pipecolic acid
+AQV04230.1.A1	benzoxazolinate
+ATO51563.1.A1	tyrosine
+ATO51563.1.A2	serine
+ATO51563.1.A3	leucine
+ATO51563.1.A4	tryptophan
+ATO51563.1.A5	arginine
+AVI26390.1.A1	serine
+AVI26390.1.A2	asparagine
+AVI26393.1.A1	threonine
+AVI26393.1.A2	serine
+AVI26393.1.A3	phenylalanine
+CCA53797.1.A1	salicylic acid
+CCA53799.1.A1	cysteine
+CCA53804.1.A1	cysteine
+APU91750.1.A1	threonine
+APU91750.1.A2	proline
+APU91750.1.A3	serine
+APU91750.1.A4	leucine
+APU91750.1.A5	valine
+APU91750.1.A6	serine
+APU91750.1.A7	leucine
+APU91750.1.A8	valine
+APU91750.1.A9	valine
+APU91750.1.A10	glutamine
+APU91750.1.A11	leucine
+APU91750.1.A12	valine
+APU91751.1.A1	threonine
+APU91751.1.A2	threonine
+APU91751.1.A3	isoleucine
+APU91751.1.A4	homoserine
+APU91751.1.A5	2,4-diaminobutyric acid
+APU91751.1.A6	lysine
+ATL73036.1.A1	threonine
+ATL73036.1.A2	alanine
+ATL73036.1.A3	2,4-diaminobutyric acid
+ATL73036.1.A4	3,5-dihydroxyphenylglycine|2-chloro-3,5-dihydroxy-4-methylphenylglycine
+ATL73036.1.A5	isoleucine
+ATL73045.1.A1	glycine
+WP_003981346.1.A1	tyrosine
+WP_003981346.1.A2	tyrosine
+WP_003981346.1.A3	3-hydroxyleucine
+WP_032920652.1.A1	alanine
+ATU31794.1.A1	6-chlorotryptophan
+ATU31794.1.A2	valine
+ATU31794.1.A3	leucine
+ATU31794.1.A4	allo-isoleucine
+ATU31795.1.A1	ornithine
+ATU31795.1.A2	asparagine
+AQM58286.1.A1	valine
+AQM58286.1.A2	isoleucine
+AWI62626.1.A2	alanine
+AWI62626.1.A3	leucine
+AWI62627.1.A1	proline
+AWI62627.1.A2	cysteine
+AWI62628.1.A1	threonine
+AWI62628.1.A2	pipecolic acid
+AWI62628.1.A3	threonine
+AWI62629.1.A1	valine
+ATY69584.1.A1	cysteine
+ATY69590.1.A1	D-alanine
+OTA20325.1.A1	leucine
+OTA20325.1.A2	leucine
+OTA20325.1.A3	leucine
+WP_013184596.1.A1	threonine
+WP_013184596.1.A2	phenylalanine
+WP_013184596.1.A3	phenylalanine
+WP_013184596.1.A4	beta-alanine
+CUX96954.1.A1	serine
+CUX96954.1.A2	leucine
+AYA44686.1.A1	leucine
+AYA44686.1.A2|AYA44686.1.A3	serine
+AYA44686.1.A4	leucine
+AFJ23825.1.A1	threonine
+AFJ23825.1.A2	valine
+AFJ23825.1.A3	leucine
+AFJ23825.1.A4	serine
+AFJ23826.1.A1	leucine
+AFJ23826.1.A2	serine
+AFJ23826.1.A3	isoleucine
+ABA73954.1.A1	leucine
+ABA73954.1.A2	aspartic acid
+ABA73955.1.A1	glutamine
+ABA73955.1.A2	isoleucine
+ABA73955.1.A3	leucine
+ABA73955.1.A4	glutamine
+ABA73955.1.A5	serine
+ABA73956.1.A1	leucine
+ABA73956.1.A2	leucine
+ABA73956.1.A3	serine
+ABA73956.1.A4	isoleucine
+WP_013428774.1.A1	valine
+WP_013428774.1.A2	phenylalanine
+WP_013428774.1.A3	glutamic acid
+WP_013428774.1.A4	isoleucine
+WP_013428774.1.A5	alanine
+WP_013428774.1.A6	isoleucine
+RLV71192.1.A1	lactic acid
+RLV71192.1.A2	valine
+RLV71193.1.A1	2R-hydroxyisovaleric acid
+RLV71193.1.A2	valine
+QBE85649.1.A1	4R-hydroxyproline
+WP_051462298.1.A1	serine
+WP_051462298.1.A2	proline
+AFA26384.1.A1|BAI43678.1.A1	tryptophan
+QCS37521.1.A1	O-methyltyrosine
+DAB41917.1.A1	cysteine
+DAC76731.1.A1	glycine
+DAC76734.1.A1	glycine
+DAC76736.1.A1	serine
+ABU70375.1.A1	2,3-dihydroxybenzoic acid
+ABU70377.1.A1	serine
+ACO31297.1.A1	3-amino-2,4-dihydroxybenzoic acid
+CDN62030.1.A1	valine
+AJY78094.1.A1	lysine
+BAV57443.1.A1	(2S,6R)-diamino-(5R,7)-dihydroxy-heptanoic acid
+BAV57451.1.A1	valine
+BBD17741.1.A1	threonine
+BBD17745.1.A1	anthranilic acid
+BBD17759.1.A1	threonine
+BBD17766.1.A1	anthranilic acid
+BBE36469.1.A1	glycine
+BBG06551.1.A1	R-beta-methylphenylalanine
+BBG06561.1.A1	2-sulfamoylacetic acid
+AWS21276.1.A1|AZY92000.1.A1	proline
+AXM42922.1.A1	serine
+AXM42949.1.A1	cysteine
+AYJ71720.1.A1	serine
+AYJ71720.1.A2	aspartic acid branched
+AYJ71721.1.A1	2,3-diaminopropionic acid
+AXM43052.1.A1	valine
+AXM43052.1.A2	pipecolic acid
+AXM43052.1.A3	hydroxyproline
+AXM43064.1.A1	glutamic acid
+AXA20090.1.A1	glycine
+AXA20091.1.A1	glycine
+AXN93575.1.A1|AXN93584.1.A1	asparagine
+AXN93575.1.A2|AXN93584.1.A2	proline
+AXN93580.1.A1|AXN93589.1.A1	valine
+AXN93581.1.A1	threonine
+AXN93581.1.A2	asparagine
+AXN93581.1.A3|AXN93590.1.A1	threonine
+AXN93581.1.A4|AXN93590.1.A4	asparagine
+AXN93581.1.A5	alanine
+AXN93582.1.A1|AXN93591.1.A1	threonine
+AXN93590.1.A2	asparagine
+AXN93590.1.A3	threonine
+AXN93590.1.A5	alanine
+AXN93592.1.A1	asparagine
+AXN93592.1.A2	proline
+AXN93601.1.A1	valine
+AXN93602.1.A1	threonine
+AXN93602.1.A2	asparagine
+AXN93602.1.A3	threonine
+AXN93602.1.A4	asparagine
+AXN93602.1.A5	alanine
+AXN93603.1.A1	threonine
+AXN93605.1.A1	asparagine
+AXN93605.1.A2	proline
+AXN93613.1.A1	valine
+AXN93614.1.A1	threonine
+AXN93614.1.A2	asparagine
+AXN93615.1.A1	asparagine
+AXN93615.1.A2	glycine|alanine
+AXN93616.1.A1	threonine
+AYA22318.1.A1	tyrosine
+AYA22334.1.A2	4-hydroxyphenylglycine
+AYA22334.1.A3	R-beta-hydroxytyrosine
+AYA22335.1.A1	phenylalanine
+AYA22336.1.A1	4-hydroxyphenylglycine
+AYA22336.1.A2	R-beta-hydroxytyrosine
+QCX41944.1.A1	2-ketoglutaric acid
+QCX41962.1.A1	succinic semialdehyde
+QCE20598.1.A1|QKW60383.1.A1	glycine
+QCE20608.1.A1|QKW60392.1.A1	glycine
+QCE20609.1.A1|QKW60393.1.A1	alanine
+QCE20614.1.A1|QKW60398.1.A1	benzoxazolinate
+QCC62999.1.A1	alanine
+QCC62999.1.A2	glutamic acid
+QCC62999.1.A3	asparagine
+QCC62999.1.A4	serine
+QCC62999.1.A5	serine
+QCC62999.1.A6	serine
+QCC62999.1.A7	threonine
+QCC62999.1.A8	glycine
+QED88054.1.A1	phenylalanine
+QED88054.1.A2	serine
+QED88054.1.A3	proline
+QED88054.1.A4	alanine
+QED88055.1.A1	alanine
+QED88055.1.A2	proline|4R-methylproline
+QBC75021.1.A1	3R-methylbeta-alanine
+QBC75021.1.A2	glycine
+QBC75021.1.A3	glutamic acid
+QBC75021.1.A4	tyrosine
+QBC75021.1.A5	threonine
+QBC75021.1.A6	isoleucine
+QBC75022.1.A1	aspartic acid
+QBC75022.1.A2	aspartic acid
+QBC75022.1.A3	proline
+QBC75022.1.A4	glycine
+QBC75022.1.A5	glutamic acid
+QBC75023.1.A1	glutamic acid
+QBC75023.1.A2	glycine
+AZH23792.1.A1	glycine
+AZH23822.1.A1	glycine
+QBG38782.1.A1	glycine
+QBG38782.1.A2	leucine
+QBG38782.1.A3	tyrosine
+QBG38783.1.A1	beta-hydroxyphenylalanine
+QBG38783.1.A2	proline
+QBG38783.1.A3	valine
+QBG38784.1.A1	threonine
+QBG38784.1.A2	serine
+QBG38784.1.A3	tryptophan
+QBG38784.1.A4	asparagine
+QDF82254.1.A2	aspartic acid
+QDF82255.1.A1	threonine
+QDF82255.1.A2	leucine
+QDF82255.1.A3	leucine
+QDF82255.1.A4	serine
+QDF82259.1.A1	leucine
+QDF82259.1.A2	serine
+QDF82259.1.A3	leucine
+QDF82259.1.A4	isoleucine
+QDF82259.1.A5	aspartic acid
+QCT05750.1.A1	An acid hydrazine polyene (intermediate 14)
+QCT05762.1.A1	succinyl-hydrazinoacetic acid
+QED55421.1.A1	glycine
+QED55421.1.A2	alanine
+QED55421.1.A3	glycine
+QED55422.1.A1	aspartic acid
+QED55422.1.A2	glycine
+QED55422.1.A3	proline
+QED55422.1.A4	glycine
+QED55423.1.A1	glycine
+QED55423.1.A2	aspartic acid
+QED55423.1.A3	tyrosine
+QED55423.1.A4	threonine
+QED55423.1.A5	leucine
+BGRAMDRAFT_RS22640.A1	graminine
+WP_006051170.1.A1	aspartic acid
+WP_006051170.1.A2	threonine
+WP_006051170.1.A3	threonine
+WP_006051170.1.A4	graminine
+WP_006051170.1.A5	glycine
+WP_039806850.1.A1	serine
+WP_039806850.1.A2	serine
+WP_039806852.1.A1	aspartic acid
+WP_039806856.1.A2	2,4-diaminobutyric acid
+WP_144411596.1.A1	N5-formyl-N5-hydroxyornithine
+D581_RS0125520.A1	phenazine-1,6-dicarboxylic acid
+D581_RS01000000137735.A1	N-formylglycine
+WP_054234617.1.A1	tyrosine
+WP_054234617.1.A2	tyrosine
+WP_054234643.1.A1	phenylalanine
+WP_054234643.1.A2	serine
+WP_054234643.1.A3	glycine
+DAC74137.1.A1	5-chloroanthranilic acid
+CAE14766.1.A1	glycine
+AXG22420.1.A1	proline
+QDA77045.1.A1	asparagine
+QDA77045.1.A2	tyrosine
+QDA77045.1.A3	glycine
+QDA77045.1.A4	beta-alanine
+QDA77045.1.A5	tyrosine
+QDA77059.1.A1	serine
+QDA77059.1.A2	threonine
+QDA77059.1.A3	tyrosine
+QDA77059.1.A4	glycine
+QDA77059.1.A5	beta-alanine|3R-methylbeta-alanine
+QDA77059.1.A6	tyrosine
+AVI10276.1.A1	4-hydroxy-3-nitrobenzoic acid|3-amino-4-hydroxybenzoic acid
+TXL86009.1.A1	Compound 4 (formed by the decarboxylative condensation of L-Phe and succinyl-CoA)
+gene3.A1|iliA.A1	tyrosine
+AAG06715.1.A1|NP_252017.1.A1	serine
+AAG06715.1.A2|NP_252017.1.A2	azetidine-2-carboxylic acid
+AXA91301.1.A1	proline
+AXA91301.1.A2	aspartic acid
+AXA91302.1.A1	proline
+AXA91302.1.A2	serine
+AXA91302.1.A3	proline
+AXA91302.1.A4	arginine
+AXA91302.1.A5	aspartic acid
+AXA94654.1.A1	serine
+WP_044617900.1.A1	glycine
+WP_052830344.1.A1	glycine
+CBW75451.1.A1|QIH29229.1.A1	serine
+CBW75451.1.A2|QIH29229.1.A2	tyrosine
+CBW75451.1.A3|QIH29229.1.A3	tyrosine
+CBW75452.1.A1|QIH29228.1.A4	valine
+CBW75452.1.A2|QIH29228.1.A5	threonine
+CBW75453.1.A1|QIH29228.1.A1	valine
+CBW75453.1.A2|QIH29228.1.A2	proline
+CBW75453.1.A3	valine
+CBW75455.1.A1|QIH29226.1.A1	proline
+QIE07359.1.A1	lysine
+QIE07362.1.A1	glycine
+QIE07364.1.A1	glycine
+QOE83923.1.A1	arginine
+QOE83924.1.A1	phenylalanine
+QOE83925.1.A1	valine
+ctg1_6.A1	glycine
+DAC82026.1.A1	glycine
+DAC82028.1.A2	cysteine
+QCY50741.1.A1|ctg1_42.A1	leucine
+DAD54486.1.A1	threonine
+WP_012408783.1.A1	isoleucine
+WP_012408783.1.A2	serine
+WP_012408783.1.A3	4S-methylproline
+WP_012408783.1.A4	leucine
+WP_012408785.1.A1	leucine
+WP_012408785.1.A2	glycine
+WP_012408785.1.A3	asparagine
+WP_012408786.1.A1	proline
+WP_012408786.1.A2	tyrosine
+KKP04599.1.A1	tyrosine
+EPS34234.1.A1	tyrosine
+QDG75035.1.A1	glycine
+QDG75033.1.A1	arginine
+WP_100939442.1.A1	leucine
+WP_100939442.1.A2	leucine
+WP_100939442.1.A3	glutamine
+WP_100939443.1.A1	leucine
+WP_100939443.1.A2	serine
+WP_100939443.1.A3	isoleucine|valine
+WP_100939443.1.A4	leucine
+WP_100939443.1.A5	leucine
+WP_064118616.1.A1	proline
+QEO74981.1.A1	aspartic acid branched
+QEO74981.1.A2	beta-hydroxytyrosine
+QEO74981.1.A3	serine
+QEO74981.1.A4	glutamic acid
+QEO74982.1.A1	threonine
+QEO74982.1.A2	serine
+QEO74982.1.A4	3-methylasparagine
+QEO74982.1.A5	6-chlorotryptophan
+QEO74982.1.A6	valine
+QEO74983.1.A1	phenylalanine
+QEO74983.1.A2	3-hydroxy-4-methylproline
+QEO75073.1.A1	aspartic acid branched
+QEO75073.1.A2	beta-hydroxytyrosine
+QEO75073.1.A3	serine
+QEO75074.1.A1	glutamic acid
+QEO75075.1.A1	threonine
+QEO75075.1.A2	serine
+QEO75075.1.A4	3-methylasparagine
+QEO75075.1.A5	6-chlorotryptophan
+QEO75076.1.A1	valine
+QEO75077.1.A1	phenylalanine
+QEO75077.1.A2	3-hydroxy-4-methylproline
+WP_010350605.1.A1	phenylalanine
+WP_010350604.1.A1	4-nitrotryptophan
+MBA5221218.1.A1	proline
+MBA5221219.1.A1	pyrrole-2-carboxylic acid
+WP_004721331.1.A1	cysteine
+QNL34616.1.A1	leucine
+QNL34616.1.A2	aspartic acid
+QNL34617.1.A1	threonine
+QNL34617.1.A2	leucine
+QNL34617.1.A3	leucine
+QNL34617.1.A4	serine
+QNL34618.1.A1	leucine
+QNL34618.1.A2	glutamine
+QNL34618.1.A3	leucine
+QNL34618.1.A4	leucine
+QNL34618.1.A5	glutamic acid
+QBQ83704.1.A1	tyrosine
+WP_010973235.1.A1	beta-alanine
+WP_010973247.1.A1	alanine
+WP_010973247.1.A2	cysteine
+WP_010973248.1.A1	glycine
+WP_010973248.1.A2	alanine
+WP_010973240.1.A1	3-hydroxytyrosine
+QNH67550.1.A1	threonine
+QNH67550.1.A2	phenylalanine
+QNH67550.1.A3	leucine
+QNH67550.1.A4	tyrosine
+QNH67550.1.A5	lysine
+QNH67551.1.A1	3S-hydroxyleucine
+QNH67551.1.A2	serine
+QNH67551.1.A3	tyrosine
+QNH67551.1.A4	threonine
+QNH67552.1.A1	3S-hydroxyleucine
+QDJ74273.1.A1	threonine
+QDJ74273.1.A2	asparagine
+QDJ74273.1.A3	isoleucine
+QDJ74273.1.A4	phenylalanine
+QDJ74274.1.A1	valine
+QDJ74275.1.A1	glycine
+QDJ74275.1.A2	glycine
+QDJ74275.1.A3	valine
+QDJ74275.1.A4	leucine
+ctg1_37.A1	2R-hydroxyisovaleric acid
+ctg1_37.A2	phenylalanine
+QRN75754.1.A1	2,3-diaminopropionic acid
+QRN75755.1.A1	valine
+QRN75755.1.A2	leucine
+NAO96317.1.A1	aspartic acid
+NAO96318.1.A1	serine
+NAO96318.1.A2	glycine
+NAO96319.1.A1	serine
+NAO96319.1.A2	serine
+NAO96320.1.A1	aspartic acid
+NAO96320.1.A2	threonine
+NAO96320.1.A3	serine
+NAO96320.1.A4	N5-hydroxyornithine
+MCC5025983.1.A1|MCC5026027.1.A1	glycine
+QUS58939.1.A1	tyrosine
+QUS58939.1.A2	threonine
+QUS58939.1.A3	alanine
+QUS58938.1.A1	arginine
+QUS58938.1.A2	proline
+QUS58938.1.A3	cysteine
+QUS58937.1.A1	glutamine
+QUS58936.1.A1	valine
+QUS58936.1.A2	proline
+QPI18723.1.A1|QPI18729.1.A1	leucine
+QPI18726.1.A1	leucine
+QPI18727.1.A1	phenylalanine
+QPI18727.1.A2	serine
+QPI18728.1.A1	alanine
+QPI18728.1.A2	alanine
+QPI18729.1.A2	O-methylthreonine
+QWP75305.1.A1	alanine
+QWP75305.1.A2	leucine
+QWP75305.1.A3	arginine
+QWP75305.1.A4	asparagine
+QWP75305.1.A5	asparagine
+QWP75305.1.A6	tyrosine
+QWP75304.1.A1	leucine
+QWP75304.1.A2	isoleucine
+MBV7329455.1.A1	asparagine
+CBJ79718.1.A1	arginine
+EHA53213.1.A1	isoleucine
+BAE06845.2.A1	1-pyrroline-5-carboxylic acid
+BAE06845.2.A2	arginine
+AZC86156.1.A1	1-pyrroline-5-carboxylic acid
+AZC86156.1.A2	arginine
+OJJ98497.1.A1	serine
+EHA27898.1.A1|PYH50506.1.A1	phenylalanine|D-phenylalanine
+ESU17760.1.A2	alanine
+ESU17760.1.A3	isoleucine
+ESU17760.1.A4	serine
+ESU17760.1.A5	valine
+ESU17760.1.A6	serine
+ESU17760.1.A7	leucine
+ESU17760.1.A8	leucine
+ESU17758.1.A1	4-aminobutyric acid
+FGSG_15673.A1	2-aminoadipic acid|glutamic acid
+FGSG_15673.A2	leucine
+FGSG_15673.A3	serine
+FGSG_15673.A4	4-hydroxyglutamine|glutamine
+FGSG_15673.A5	2S-aminodecanoic acid
+FGSG_15673.A6	cysteine
+FGSG_15673.A7	cysteine
+AMT84997.1.A1	glycine
+AMT84997.1.A2	alanine
+AMT84997.1.A3	leucine
+AMT84997.1.A4	dehydrophenylalanine|S-beta-hydroxyphenylalanine
+ctg1_114.A1	serine
+ctg1_116.A1	2,3-dihydroxybenzoic acid
+ESU15173.1.A1	serine
+ESU15173.1.A2	3-aminoisobutyric acid
+ESU15173.1.A3	glutamine
+EKJ70673.1.A1	threonine
+EKJ70673.1.A2	alanine
+EKJ70673.1.A3	alanine
+EKJ70673.1.A4	glutamine
+EKJ70673.1.A5	tyrosine
+EKJ70673.1.A6	isoleucine|valine
+BN849_0052030.A1	serine
+BN849_0052030.A2	3-aminoisobutyric acid
+BN849_0052030.A3	glutamine
+QBK15049.1.A1	malic acid
+QMS79067.1.A1	anthranilic acid
+QMS79067.1.A2	kynurenine
+EJP62835.1.A1	phenylalanine|tryptophan|valine
+EJP62835.1.A2	phenylalanine
+EJP62835.1.A3	isoleucine
+QOG08944.1.A1	leucine
+OJJ96433.1.A1	tryptophan
+OJJ96433.1.A2	D-phenyllactic acid
+ThnA.A1	malic acid
+QXF14600.1.A1	tyrosine
+cseA.A1	phenylalanine
+QMW30133.1.A1	5,5-dimethylpipecolic acid
+astN.A1	2-aminobutyric acid
+astN.A2	proline
+astN.A3	2-aminobutyric acid
+astN.A4	serine
+astN.A5	R-beta-phenylalanine
+DAD54576.1.A1	tryptophan
+DAD54574.1.A1	4-hydroxy-D-kynurenine
+EGX96627.1.A1	phenylalanine
+EGX96627.1.A2	alanine
+EGX96627.1.A3	leucine
+EFY95969.1.A1|EXU97982.1.A1	pipecolic acid
+dfcA.A1	N5-cis-anhydromevalonyl-N5-hydroxyornithine
+KAF7597139.1.A1	cinnamic acid
+KAF7597140.1.A1	phenylalanine
+SOV25619.1.A2	3R-hydroxy-2,4-diaminobutyric acid
+SOV25620.1.A1	glycine
+SOV25620.1.A2	ornithine
+SOV25620.1.A3	proline
+SOV25621.1.A1	histidine
+SOV25622.1.A1	lysine
+EAU35432.1.A1	5-methylorsellinic acid
+QNH68024.1.A1	phenylalanine
+EAL86624.1.A1	N5-cis-anhydromevalonyl-N5-hydroxyornithine
+A05163.A1	aspartic acid
+EAU39346.1.A1	tryptophan
+EAU29302.1.A1	tryptophan
+EAU29302.1.A2	anthranilic acid
+EAU36089.1.A1	4-hydroxyphenylpyruvic acid
+EAU36966.1.A1	4-hydroxyphenylpyruvic acid
+EAA62478.1.A1	betaine
+CAD18570.1.A1	phenylpyruvic acid
+AFB76152.1.A1	4-hydroxyphenylpyruvic acid
+CEO59272.1.A1	phenylalanine
+smbA.A1	phenylalanine
+AlaC.A1	2,3-diaminopropionic acid
+CAE15497.1.A1	arginine
+CAE15497.1.A2	isoleucine|valine
+CAE15497.1.A3	arginine
+CAE15497.1.A4	isoleucine
+CAE15497.1.A5	tryptophan
+QGA70148.1.A1	valine
+QGA70148.1.A2	valine
+QGA70148.1.A3	threonine
+QGA70148.1.A4	threonine
+QGA70148.1.A5	valine
+QGA70148.1.A6	leucine
+QGA70148.1.A7	valine
+QGA70148.1.A8	valine
+QGA70148.1.A9	4-methoxytryptophan
+QGA70148.1.A10	valine
+QGA70148.1.A11	phenylalanine
+QGA70148.1.A12	valine
+QDX19369.1.A1	glutamine
+QCP68969.1.A1	tyrosine
+QCP68976.1.A1	alanine
+QCP68971.1.A1	valine
+QCP68975.1.A1	glycine
+QCQ67877.1.A1	cinnamic acid
+QCQ67875.1.A1	D-glutamic acid branched
+QCQ67879.1.A1	serine
+QCQ67879.1.A2	alanine
+QCQ67880.1.A1	leucine
+QCQ67880.1.A2	3S-methyl-D-aspartic acid branched
+QCQ67881.1.A1	arginine
+AFJ20782.1.A1	N5-acetyl-N5-hydroxyornithine
+AZZ09613.1.A1	isoleucine
+AZM57022.1.A1	4-hydroxyphenylglycine
+AZM57022.1.A2	3,5-dihydroxyphenylglycine
+AZM57022.1.A3	tryptophan
+AZM57023.1.A1	4-hydroxyphenylglycine
+AZM57024.1.A1	4-hydroxyphenylglycine
+AZM57024.1.A2	tyrosine
+AZM57024.1.A3	tyrosine
+DMA15_34345.A1	3,5-dihydroxyphenylglycine
+AZM58102.1.A1	3,5-dihydroxyphenylglycine
+Ga0173608_11674.A12	threonine
+Ga0173608_11674.A13	valine
+Ga0173608_11675.A7	isoleucine
+Ga0173608_11675.A8	threonine
+Ga0173608_11675.A9	isoleucine
+Ga0173608_11675.A10	valine
+Ga0173608_11675.A11	phenylalanine
+Ga0173608_11676.A1	valine
+Ga0173608_11676.A2	threonine
+Ga0173608_11676.A3	valine
+Ga0173608_11676.A4	valine
+Ga0173608_11676.A5	proline
+Ga0173608_11676.A6	ornithine
+WP_129549303.1.A1	glycine
+WP_129549303.1.A2	2,4-diaminobutyric acid
+WP_129549303.1.A3	glycine
+WP_129549303.1.A4	serine
+WP_129549303.1.A5	tryptophan
+WP_129549303.1.A6	serine
+WP_129549303.1.A7	2,4-diaminobutyric acid
+WP_129549303.1.A8	2,4-diaminobutyric acid
+WP_129549303.1.A9	isoleucine
+WP_129549303.1.A10	glutamic acid
+WP_129549209.1.A1	isoleucine
+WP_129549209.1.A2	isoleucine
+WP_129549209.1.A3	serine
+QRK05499.1.A1	nicotinic acid|benzoic acid
+QRK05501.1.A1	lysine
+ctg1_3269.A1	4-hydroxybenzoic acid
+QIH29228.1.A3	valine
+QNH85840.1.A1	serine
+QNH85840.1.A2	isoleucine|valine
+QNH85840.1.A3	homoserine
+QNH85840.1.A4	serine
+QNH85847.1.A1	aspartic acid branched
+TRX17524.1.A1	3R-hydroxyaspartic acid
+TRX17524.1.A2	threonine
+TRX17524.1.A3	threonine
+TRX17524.1.A4	graminine
+TRX17524.1.A5	glycine
+TRX17523.1.A1	graminine
+BolO.A1	aspartic acid branched
+BolH.A1	serine
+BolH.A2	isoleucine|valine
+BolH.A3	homoserine
+BolH.A4	serine
+E0F75_025360.A1	cysteine
+QYC40287.1.A1	4-hydroxyphenylglycine
+QYC40287.1.A2	tyrosine
+QYC40288.1.A1	3,5-dihydroxyphenylglycine
+QYC40289.1.A1	4-hydroxyphenylglycine
+QYC40289.1.A2	4-hydroxyphenylglycine
+QYC40289.1.A3	tyrosine
+QYC40290.1.A1	3,5-dihydroxyphenylglycine
+AND66115.1.A1	4-hydroxyphenylpyruvic acid
+WP_078587912.1.A2	histidine
+WP_004942674.1.A1	alanine
+WP_004947051.1.A1	beta-alanine
+AAG02365.1.A1|Q9FB17.A1|WP_004947046.1.A1	cysteine
+QKM21619.1.A1	valine
+QKM21619.1.A2	alanine
+QKM21619.1.A3	glutamine
+QKM21620.1.A1	alanine
+QKM21620.1.A2	valine
+QKM21620.1.A3	alanine
+QKM21620.1.A4	proline
+QKM21620.1.A5	threonine
+NSC20094.1.A1	valine
+NSC20093.1.A1	serine
+NSC20090.1.A1	threonine
+NSC23530.1.A1	lysine
+UEF20591.1.A1	tyrosine
+UEF20592.1.A1	tyrosine
+UEF20578.1.A1	leucine
+UEF20578.1.A2	aspartic acid
+UEF20578.1.A3	serine
+UEF20580.1.A1	5-methoxytyrosine
+UEF20580.1.A2	leucine
+UEF20580.1.A3	glycine
+QKF54440.2.A1|UEF20583.1.A1	tyrosine
+OKJ61999.1.A1	serine
+OKJ61999.1.A2	5S-methylproline
+CBG67531.1.A1	allo-threonine
+CBG67541.1.A1	citrulline
+CBG67541.1.A2	2,4-diaminobutyric acid
+CBG67541.1.A3	3-hydroxyasparagine
+CBG67541.1.A4	asparagine
+ctg16_307.A1	6S-methyl-pipecolic acid
+ctg16_307.A2	tryptophan
+QXJ26485.1.A1	threonine
+QXJ21807.1.A1	2S-methyl-3-oxobutyrine
+QXJ21807.1.A2	glycine
+QXJ21808.1.A1	alanine
+QXJ21808.1.A2	cysteine
+QXJ21808.1.A3	tryptophan
+QXJ21809.1.A1	2-aminobutyric acid
+QXJ21809.1.A2	glycine
+QVQ62868.1.A1	threonine
+QVQ62868.1.A2	leucine
+QVQ62868.1.A3	4S-acetyl-5S-methylproline
+QVQ62868.1.A4	leucine
+QVQ62855.1.A1	N-hydroxyvaline
+QVQ62855.1.A2	4S-methylazetidine-2S-carboxylic acid
+QVQ62856.1.A1	valine
+QVQ62857.1.A1	tyrosine
+ClsI.A1	valine
+QBA57735.1.A1	threonine
+QBA57735.1.A2	tyrosine
+QBA57736.1.A1	leucine
+QBA57736.1.A2	phenylalanine
+QBA57737.1.A2	serine
+QBA57740.1.A1	allo-threonine
+QBA57741.1.A1	asparagine
+QRG35013.1.A1	alanine
+QRG35013.1.A2	serine
+QRG35014.1.A1	leucine
+QRG35014.1.A2	valine
+QRG35014.1.A3	2,3-diaminopropionic acid
+QRG35014.1.A4	3S-methylaspartic acid
+BCJ07600.1.A1	leucine
+BCJ07599.1.A1	glutamic acid
+BCJ07533.1.A1	glutamine
+BCJ07533.1.A2	valine
+BCJ07532.1.A1	leucine
+BCJ07532.1.A2	glutamine
+BCJ07532.1.A3	serine
+BCJ07532.1.A4	valine
+BCJ07532.1.A5	leucine
+BCJ07532.1.A6	glutamine
+BCJ07531.1.A1	leucine
+BCJ07529.1.A1	leucine
+BCJ07529.1.A2	glutamine
+BCJ07529.1.A3	isoleucine
+THA23581.1.A1	anthranilic acid
+THA23581.1.A2	serine
+THA23576.1.A1	cysteine branched
+THA23575.1.A1	serine
+THA23574.1.A1	beta-alanine
+THA23574.1.A2	leucine
+QWM97319.1.A1	threonine
+QWM97319.1.A2	arginine
+QWM97319.1.A3	serine
+QWM97319.1.A4	glycine
+QWM97319.1.A5	phenylalanine
+QWM97319.1.A6	leucine
+QWM97319.1.A7	arginine
+QWM97320.1.A1	glutamic acid
+QWM97320.1.A2	glutamine
+QWM97320.1.A3	tryptophan
+QWM97320.1.A4	isoleucine
+QWM97320.1.A5	threonine
+Ga0173608_112053.A1	tryptophan
+Ga0173608_112053.A2	proline
+Ga0173608_112053.A3	arginine
+Ga0173608_111792.A1	phenylalanine
+Ga0173608_111792.A2	proline
+Ga0173608_111792.A3	alanine
+Ga0173608_111792.A4	valine
+Ga0173608_111792.A5	asparagine
+Ga0173608_111792.A6	tyrosine
+Ga0173608_111990.A1	alanine
+Ga0173608_111990.A2	alanine
+Ga0173608_111990.A3	leucine
+Ga0173608_111990.A4	proline
+Ga0173608_111990.A5	leucine
+Ga0173608_111990.A6	tryptophan
+Ga0173608_112187.A1	phenylalanine
+Ga0173608_112187.A2	threonine
+Ga0173608_112187.A3	tyrosine
+Ga0173608_112187.A4	arginine
+Ga0173608_112187.A5	tyrosine
+Ga0173608_112187.A6	isoleucine
+Ga0173608_111498.A1	tyrosine
+Ga0173608_111498.A2	serine
+Ga0173608_111498.A3	phenylalanine
+Ga0173608_111498.A4	leucine
+Ga0173608_111498.A5	proline
+Ga0173608_111498.A6	threonine
+Ga0173608_111498.A7	glycine
+Ga0173608_111474.A1	phenylalanine
+Ga0173608_111474.A2	threonine
+Ga0173608_111474.A3	leucine
+Ga0173608_111474.A4	phenylalanine
+Ga0173608_111474.A5	leucine
+Ga0173608_111474.A6	threonine
+Ga0173608_111474.A7	serine
+Ga0173608_111989.A1	glycine
+Ga0173608_111989.A2	threonine
+Ga0173608_111989.A3	tyrosine
+Ga0173608_111989.A4	tryptophan
+Ga0173608_111989.A5	threonine
+Ga0173608_111989.A6	isoleucine
+Ga0173608_111989.A7	valine
+Ga0173608_112008.A1	aspartic acid
+Ga0173608_112008.A2	phenylalanine
+Ga0173608_112008.A3	serine
+Ga0173608_112008.A4	valine
+Ga0173608_112008.A5	proline
+Ga0173608_112008.A6	serine
+Ga0173608_112008.A7	leucine
+Ga0173608_112008.A8	phenylalanine
+Ga0173608_112008.A9	lysine
+Ga0173608_112008.A10	proline
+QKF54435.2.A1	tyrosine
+QKF54435.2.A2	tyrosine
+QKF54436.1.A1	leucine
+QKF54436.1.A2	aspartic acid
+QKF54436.1.A3	serine
+QKF54438.1.A1	5-methoxytyrosine
+QKF54438.1.A2	leucine
+QKF54438.1.A3	glycine
+RSO11553.1.A1	4-hydroxyphenylglycine
+RSO11554.1.A1	4-hydroxyphenylglycine
+RSO11554.1.A2	4-hydroxyphenylglycine
+RSO11554.1.A3	tyrosine
+RSO11555.1.A1	4-hydroxyphenylglycine
+RSO11556.1.A1	4-hydroxyphenylglycine
+RSO11556.1.A2	tryptophan
+DMH02_027320.A1	4-hydroxyphenylglycine
+MCC5036783.1.A1	tryptophan
+MCC5036784.1.A1	4-hydroxyphenylglycine
+MCC5036785.1.A1	4-hydroxyphenylglycine
+MCC5036785.1.A2	4-hydroxyphenylglycine
+MCC5036785.1.A3	4-hydroxyphenylglycine
+MCC5036786.1.A1	4-hydroxyphenylglycine
+WP_012118250.1.A1	cysteine
+WP_012118250.1.A2|WP_012118250.1.A3	cysteine
+WP_108867380.1.A1	alanine
+WP_108867381.1.A1	isoleucine
+WP_234859471.1.A1	leucine
+WP_234859471.1.A2	isoleucine
+WP_234859471.1.A3	valine
+WP_234859471.1.A4	arginine
+WP_234859471.1.A5	alanine
+WP_234859472.1.A1	valine
+WP_234859472.1.A2	tryptophan
+WP_234859472.1.A3	valine
+WP_234859472.1.A4	leucine
+WP_234859472.1.A5	valine
+UHJ79948.1.A1	4-amino-2-hydroxy-3-isopropoxybenzoic acid
+UHJ79948.1.A2	para-aminobenzoic acid
+UHJ79951.1.A1	para-aminobenzoic acid
+UHJ79951.1.A2	cysteine
+UHJ79951.1.A3	cysteine
+UHJ79951.1.A4	asparagine
+UHJ79951.1.A5	para-aminobenzoic acid
+UHJ79953.1.A1	alanine
+UHJ79953.1.A2	serine
+UHJ79953.1.A3	alanine
+WP_014143997.1.A1	serine
+WP_014143997.1.A2	azetidine-2-carboxylic acid
+WP_125938383.1.A1	tryptophan
+WP_125938384.1.A1	4-hydroxyphenylglycine
+WP_125938384.1.A2	3,5-dihydroxyphenylglycine
+WP_125938384.1.A3	tyrosine
+WP_125939455.1.A1	3,5-dihydroxyphenylglycine
+WP_125939455.1.A2	3,5-dihydroxyphenylglycine
+WP_125939455.1.A3	valine
+WP_125939456.1.A1	3,5-dihydroxyphenylglycine
+WP_125939457.1.A1	3,5-dihydroxyphenylglycine
+WP_011145262.1.A1	valine
+WP_011145263.1.A1	valine
+WP_011145264.1.A1	valine
+WP_011146562.1.A1	cysteine
+WP_011146563.1.A1	cysteine
+WP_126900393.1.A1	4-hydroxyphenylglycine
+WP_126900393.1.A2	tryptophan
+WP_126900392.1.A1	4-hydroxyphenylglycine
+WP_126902739.1.A1	4-hydroxyphenylglycine
+WP_126902739.1.A2	4-hydroxyphenylglycine
+WP_126902739.1.A3	tyrosine
+WP_126902740.1.A1	4-hydroxyphenylglycine
+NHN68324.1.A1	valine
+NHN68324.1.A2	alanine
+NHN68324.1.A3	glutamine
+NHN68325.1.A1	alanine
+NHN68325.1.A2	valine
+NHN68325.1.A3	alanine
+NHN68325.1.A4	proline
+NHN68325.1.A5	threonine
+XP_024668732.1.A1	3-hydroxykynurenine
+BAB94679.1.A1|P68878.A1	alanine
+BAB57094.1.A1|P68876.A1	alanine
+AAX16360.1.A1	glycine
+AAX16360.1.A2	threonine
+AAX16360.1.A3	serine
+AAX16360.1.A4	N5-hydroxyornithine
+BAA08846.1.A1|P94873.A1	2-aminoadipic acid
+BAA08846.1.A2|P94873.A2	cysteine
+BAA08846.1.A3|P94873.A3	valine
+AAX16297.1.A1	serine
+AAX16297.1.A2	arginine
+AAX16297.1.A3	serine
+AAX16297.1.A4	N5-hydroxyornithine
+AAX16361.1.A1	serine
+AAX16361.1.A2	N5-formyl-N5-hydroxyornithine
+AAX16361.1.A3	ornithine
+AAC44129.1.A1|Q50858.A1	glycine
+CAD92850.1.A1	alanine
+CAD92850.1.A2	leucine
+CAD92850.1.A3	alanine
+CAD92850.1.A4	valine
+CAA67249.1.A1|O07944.A1	proline
+CAA67249.1.A2|O07944.A2	phenylalanine
+CAA67249.1.A3|O07944.A3	pipecolic acid
+CAA67249.1.A4|O07944.A4	phenylglycine
+CAA84361.1.A1|P39846.A1	tyrosine
+CAA84361.1.A2|P39846.A2	threonine
+AAA03914.1.A1|P27742.A1	2-aminoadipic acid
+AAA03914.1.A2|P27742.A2	cysteine
+AAA03914.1.A3|P27742.A3	valine
+AAC45929.1.A1|O30408.A1	proline
+AAC45929.1.A2|O30408.A2	phenylalanine
+AAC45929.1.A3|O30408.A3	phenylalanine
+BAO73252.1.A1	serine|allo-threonine
+BAO73252.1.A2	alanine
+BAO73252.1.A3	proline
+BAO73252.1.A4	glutamine
+BAO73252.1.A5	tyrosine
+BAO73252.1.A6	valine
+simA_not_in_genbank.A1	D-alanine
+simA_not_in_genbank.A2	leucine
+simA_not_in_genbank.A3	leucine
+simA_not_in_genbank.A4	valine
+simA_not_in_genbank.A5	4R-E-butenyl-4R-methylthreonine
+simA_not_in_genbank.A6	2-aminobutyric acid
+simA_not_in_genbank.A7	glycine
+simA_not_in_genbank.A8	leucine
+simA_not_in_genbank.A9	valine
+simA_not_in_genbank.A10	leucine
+simA_not_in_genbank.A11	alanine
+AGC65514.1.A1	valine
+AGC65514.1.A2	serine
+AGC65514.1.A3	valine
+AHF20583.1.A1	3,5-dihydroxyphenylglycine
+AAA33023.2.A1|Q01886.A1	proline
+AAA33023.2.A2|Q01886.A2	alanine
+A45086.A3|AAA33023.2.A3|Q01886.A3	alanine
+AAA33023.2.A4|Q01886.A4	2S-amino-9,10-epoxy-8-oxodecanoic acid
+AAK1902.1.A1|AAK21902.1.A1|Q9C1G0.A1	2-aminoadipic acid
+AAK1902.1.A2|AAK21902.1.A2|Q9C1G0.A2	cysteine
+AAK1902.1.A3|AAK21902.1.A3|Q9C1G0.A3	valine
+ABB80392.1.A1	alanine
+ABB80392.1.A2	alanine
+ABB80392.1.A3	arginine
+AAO55667.1.A1|Q884E3.A1	aspartic acid
+AAO55667.1.A2|Q884E3.A2	serine
+CAA11796.1.A1|O52821.A1	3,5-dihydroxyphenylglycine
+AAO55665.1.A1	aspartic acid
+AAO55665.1.A2	threonine
+AAA92015.1.A1|P11454.A1	serine
+CAA67248.1.A1|Q54959.A1	threonine
+CAA67248.1.A2|Q54959.A2	2-aminobutyric acid|isovaline
+AAY29580.1.A1	isoleucine
+AAY29580.1.A2	valine
+AAY29580.1.A3	valine
+AAY29580.1.A4	lysine
+AIS24862.1.A1	guanidinoacetic acid
+AAM78457.1.A1	2-aminobutyric acid|isovaline
+AAM78457.1.A2	glycine
+AAM78457.1.A3	alanine
+AAM78457.1.A4	valine
+AAM78457.1.A5	2-aminobutyric acid|isovaline
+AAM78457.1.A6	glutamine
+AAM78457.1.A7	2-aminobutyric acid|isovaline
+AAM78457.1.A8	alanine
+AAM78457.1.A9	2-aminobutyric acid|isovaline
+AAM78457.1.A10	serine
+AAM78457.1.A11	leucine
+AAM78457.1.A12	2-aminobutyric acid|isovaline
+AAM78457.1.A13	proline
+AAM78457.1.A14	leucine|valine
+AAM78457.1.A15	2-aminobutyric acid|isovaline
+AAM78457.1.A16	2-aminobutyric acid|isovaline
+AAM78457.1.A17	glutamine
+AAM78457.1.A18	valinol
+CAB39315.1.A1|O94205.A1	alanine
+CAB39315.1.A2|O94205.A2	phenylalanine
+CAB39315.1.A3|O94205.A3	proline
+CAB38084.1.A1|Q9Z5F4.A1	glycine
+CAD92851.1.A1	valine
+CAD92851.1.A2	valine
+CAD92851.1.A3	tryptophan
+CAD92851.1.A4	leucine
+CAD92851.1.A5	tryptophan
+CAD92851.1.A6	leucine
+AGM14925.1.A1	leucine
+AGM14925.1.A2	glutamic acid
+AAX16325.1.A1	glutamine
+AAX16325.1.A2	N5-formyl-N5-hydroxyornithine
+AAX16325.1.A3	glycine
+CAA40561.1.A1|P27743.A1	2-aminoadipic acid
+CAA40561.1.A2|P27743.A2	cysteine
+CAA40561.1.A3|P27743.A3	valine
+Q45675.A1|WP_069322367.1.A1	valine
+Q45675.A2|WP_069322367.1.A2	aspartic acid
+Q45675.A3|WP_069322367.1.A3	leucine
+AAD55799.1.A1	salicylic acid|2,3-dihydroxybenzoic acid
+AAA25234.1.A1|P35854.A1	alanine
+CAB13715.1.A1|P39847.A1	glutamic acid
+CAB13715.1.A2|P39847.A2	valine
+CAD92852.1.A1	tryptophan
+CAD92852.1.A2	leucine
+CAD92852.1.A3	tryptophan
+CAD92852.1.A4	glycine
+CAA71336.1.A1|O33743.A1	beta-lysine
+AAX16296.1.A1	lysine
+AAX16296.1.A2	N5-formyl-N5-hydroxyornithine
+CAA49818.1.A1|Q08787.A1	leucine
+AAN00653.1.A1|P59591.A1	alanine
+AAC82550.1.A1|AAC82550.1.A3|O87314.A1	ornithine
+AAC82550.1.A2|O87314.A2	threonine
+BAA02522.1.A1	glutamic acid
+BAA02522.1.A2|P27206.A2	leucine
+BAA02522.1.A3|P27206.A3	leucine
+AAB00093.1.A1|Q45563.A1	isoleucine
+CAA06323.1.A1	glutamine
+CAA06323.1.A2|O66069.A2|Q45295.A2	leucine
+CAA06323.1.A3|Q45295.A3	leucine
+AAD04757.1.A1	glutamine
+BAA06146.1.A1|P0C063.A1|Q44928.A1	proline
+BAA06146.1.A2|CAA43838.1.A2|P0C063.A2|Q44928.A2	valine
+BAA06146.1.A3|Q44928.A3	ornithine
+BAA06146.1.A4|CAA43838.1.A4|P0C063.A4|Q44928.A4	leucine
+CAA43838.1.A1	proline
+CAA43838.1.A3	ornithine
+AAN07013.1.A1	tyrosine
+AAN07013.1.A2	asparagine
+AAN07013.1.A3	proline
+AAN07013.1.A4	glutamic acid
+AAC05774.1.A1	alanine
+AF047828.1.A1|O85168.A1	serine
+AF047828.1.A2|O85168.A2	serine
+AF047828.1.A3	2,4-diaminobutyric acid
+AF047828.1.A4	2,4-diaminobutyric acid
+AF047828.1.A5|O85168.A5	arginine
+AF047828.1.A6|O85168.A6	phenylalanine
+AF047828.1.A7|O85168.A7	Z-dehydroaminobutyric acid|Z-dehydrotyrosine|threonine
+AF047828.1.A8|O85168.A8	aspartic acid
+CAA84363.1.A1|P94459.A1	proline
+CAA84363.1.A2|P94459.A2	glutamic acid
+CAA84363.1.A3|P94459.A3	tyrosine
+AAB80955.2.A1|O30980.A1	proline
+AAB80955.2.A2|O30980.A2	glutamic acid
+AAB80955.2.A3|O30980.A3	tyrosine
+AAX16327.1.A1	serine
+AAX16327.1.A2	2,4-diaminobutyric acid
+AAX16327.1.A3	N5-formyl-N5-hydroxyornithine
+AGC65513.1.A1	tyrosine|phenylalanine
+AGC65515.1.A2	tyrosine
+CP001614.2.A1	ornithine
+CP001614.2.A2	serine
+CAC01604.1.A3|Q9K5M1.A1	threonine
+CAC01604.1.A4	tyrosine
+BAC12912.1.A1	salicylic acid|2,3-dihydroxybenzoic acid
+AAB80956.1.A1|O30981.A1	glutamic acid
+AAB80956.1.A2|O30981.A2	alanine|valine
+BAA83994.1.A1|Q9S1A7.A1	arginine
+BAA83992.1.A1|Q9S1A9.A1	serine
+BAA83992.1.A2|Q9S1A9.A2	alanine
+AFZ61525.1.A1	threonine
+AFZ61525.1.A2	valine
+AFZ61525.1.A3	leucine
+AFZ61525.1.A4	serine
+AFZ61526.1.A1	leucine
+AFZ61526.1.A2	serine
+AFZ61526.1.A3	isoleucine
+CAA72310.1.A1|O05647.A1	proline
+CAA72310.1.A2|O05647.A2	phenylalanine
+AAN07014.1.A1	serine
+AAN07014.1.A2	threonine
+CAA84360.1.A1|P39845.A1	glutamic acid
+CAA84360.1.A2|P39845.A2	ornithine
+AAC15909.1.A1|P40976.A1	2-aminoadipic acid
+AAO64403.1.A1	threonine
+AAO64403.1.A2	3S-methylaspartic acid
+CAA06324.1.A1|O69246.A1	valine
+CAA06324.1.A2|O69246.A2	aspartic acid
+CAA06324.1.A3|O66070.A3|O69246.A3	leucine
+WP_044649525.1.A2	isoleucine
+AAB60198.1.A1|Q51338.A1|Q9I182.A1	threonine
+AAB60198.1.A2|Q51338.A2|Q9I182.A2	threonine
+AAG05812.1.A1|Q9I157.A1	glutamic acid
+AAG05812.1.A3	2,4-diaminobutyric acid
+AAY29578.1.A1	4R-E-butenyl-4R-methylthreonine
+CAA51561.1.A1|P39581.A1	alanine
+AAC36721.1.A1|O87606.A1	glutamic acid
+AAC36721.1.A2|O87606.A2	ornithine
+CAA55749.1.A1|Q54356.A1	4R-propylproline
+AAG00564.1.A1	2,3-dihydroxybenzoic acid
+AAK46746.1.A1|P71717.A1|Q7TYQ4.A1	serine|threonine
+AAO92378.1.A1|P19828.A1	cysteine
+AAA93464.1.A1	salicylic acid|2,3-dihydroxybenzoic acid
+BAA83993.1.A1|Q9S1A8.A1	leucine
+BAA83993.1.A2	3S-methylaspartic acid
+AAN07012.1.A1	asparagine
+AAC44128.1.A1	alanine
+CAD92849.1.A1	valine
+CAD92849.1.A2	glycine
+CAD28788.1.A1|Q8J0L6.A1	D-lysergic acid
+AAA27636.1.A1|P48633.A1|Q8ZF24.A1	cysteine
+AHF20582.1.A1	4-hydroxyphenylglycine
+AHF20582.1.A2	R-beta-hydroxytyrosine
+AHF20584.1.A1	4-hydroxyphenylglycine
+AHF20584.1.A3	R-beta-hydroxytyrosine
+AHF20585.1.A1	3,5-dihydroxyphenylglycine
+AHF20584.1.A2	4-hydroxyphenylglycine
+AAC82549.1.A1|O87313.A1	ornithine
+AAD50521.1.A1	threonine
+AAB39900.1.A1|Q01757.A1	2-aminoadipic acid
+CAA11795.1.A1|O52820.A1	4-hydroxyphenylglycine
+CAA11795.1.A2|O52820.A2	4-hydroxyphenylglycine
+CAA11795.1.A3|O52820.A3	R-beta-hydroxytyrosine
+CAA09819.1.A1|O87704.A1	tyrosine
+CAA09819.1.A2|O87704.A2	threonine
+AAN42148.1.A1|P29698.A1	serine
+CAA11794.1.A1|O52819.A1	leucine
+CAA11794.1.A2|O52819.A2	R-beta-hydroxytyrosine
+CAA11794.1.A3|O52819.A3	asparagine
+CAA33158.1.A1	salicylic acid|2,3-dihydroxybenzoic acid
+AAO69874.1.A1	salicylic acid|2,3-dihydroxybenzoic acid
+CAC01606.1.A1|Q9K5L9.A1	isoleucine
+AAL82383.1.A1|Q8RTG4.A1	arginine
+AAO55666.1.A1|Q884E4.A1	threonine
+AAO55666.1.A2|Q884E4.A2	serine
+BAA00406.1.A1|P14687.A1	phenylalanine
+CAA11962.1.A1|O76858.A1	beta-alanine
+AAD04759.1.A1|O66071.A1|O69247.A1	isoleucine
+AAG00566.1.A1|Q9FDB0.A1	threonine
+AAA34747.1.A1|P07702.A1	2-aminoadipic acid
+CFJ82030.1.A1|O86329.A1|Q7D791.A1	lysine
+AAC82549.1.A2|O87313.A2	beta-alanine
+AAK76230.1.A1|P0A398.A1	alanine
+AFZ61501.1.A1	leucine
+AFZ61501.1.A2	glutamic acid
+CAA84364.1.A1|P94460.A1	isoleucine
+chaP_not_in_genbank.A2	serine
+CAA31623.1.A1|P09095.A1	phenylalanine
+AFT91378.1.A1	ornithine
+AFT91378.1.A2	threonine
+AFT91378.1.A3	proline
+AFT91378.1.A4	homotyrosine
+AFT91378.1.A5	threonine
+AFT91378.1.A6	4-methylproline
+AFJ23819.1.A1	leucine
+AFJ23819.1.A2	glutamic acid
+CAD89778.1.A1	glycine
+AAF19815.1.A1	glycine
+ACG60771.1.A1	beta-alanine
+AGS06887.1.A1	glycine
+AGE25479.1.A1	threonine
+AGE25479.1.A2	leucine
+AGE25479.1.A3	leucine
+AGE25479.1.A4	serine
+AGE25480.1.A1	isoleucine
+AGE25480.1.A2	leucine
+AGE25480.1.A3	leucine
+AGE25480.1.A4	serine
+AGE26255.1.A1	leucine
+AGE26255.1.A2	glutamic acid
+ANQ43347.1.A1	leucine
+ANQ43347.1.A2	glutamic acid
+ANQ43348.1.A1	threonine
+ANQ43348.1.A2	isoleucine
+ANQ43348.1.A3	leucine
+ANQ43348.1.A4	serine
+ANQ43349.1.A1	leucine
+ANQ43349.1.A2	leucine
+ANQ43349.1.A3	serine
+ANQ43349.1.A4	isoleucine
+O30409.A1	asparagine
+O30409.A2	glutamine
+O30409.A3	tyrosine
+O30409.A4	valine
+O30409.A5	ornithine
+O30409.A6	leucine
+O66069.A1|Q45295.A1	glutamine
+O66069.A3	leucine
+O66070.A1	valine
+O66070.A2	aspartic acid
+O85168.A3	2,4-diaminobutyric acid
+O85168.A4	2,4-diaminobutyric acid
+O87314.A3	ornithine
+P10378.A1	2,3-dihydroxybenzoic acid
+P27206.A1	glutamic acid
+P40871.A1	2,3-dihydroxybenzoic acid
+P71716.A1	salicylic acid
+P95819.A1	pipecolic acid
+Q04747.A1	valine
+Q04747.A2	aspartic acid
+Q04747.A3	leucine
+Q50857.A1	alanine
+Q53526.A1	alanine
+Q56950.A1	2,3-dihydroxybenzoic acid
+Q7BN95.A1	cysteine
+Q7WRI6.A1	glutamic acid
+Q81DQ0.A1	glycine
+Q81QP7.A1	glycine
+Q81QP7.A2	threonine
+Q81QP9.A1	2,3-dihydroxybenzoic acid
+Q83M10.A1	2,3-dihydroxybenzoic acid
+Q83VS0.A2	2,4-diaminobutyric acid
+Q83VS0.A3	2,4-diaminobutyric acid
+Q840D1.A1	2,3-dihydroxybenzoic acid
+Q84BQ5.A2	leucine
+Q84BQ5.A3	leucine
+Q884E5.A1	threonine
+Q88VM6.A1	alanine
+Q8CJX2.A1	3-methylglutamic acid
+Q8CV01.A1	2,3-dihydroxybenzoic acid
+Q8CZT9.A1	cysteine
+Q8FK18.A1	2,3-dihydroxybenzoic acid
+Q8FK25.A1	serine
+Q8FXQ0.A1	2,3-dihydroxybenzoic acid
+Q8GA86.A1	2,3-dihydroxybenzoic acid
+Q8GAQ5.A1	(4S)-5,5,5-trichloroleucine
+Q8GGP3.A1	cysteine
+Q8K744.A1|Q8P0J9.A1|Q99ZA6.A1	alanine
+Q8P449.A1	glycine
+Q8PFQ6.A1	glycine
+Q8VM38.A1	beta-lysine
+Q8VM67.A1	alanine
+Q8XBV3.A1	2,3-dihydroxybenzoic acid
+Q8XBV9.A1	serine
+Q8Y8D4.A1	alanine
+Q8Z8L1.A1	2,3-dihydroxybenzoic acid
+Q8Z8L5.A1|Q8ZR37.A1	serine
+Q8ZR32.A1	2,3-dihydroxybenzoic acid
+Q92D47.A1	alanine
+Q93I54.A2	serine
+Q93I55.A3	glutamine
+Q93LR1.A1	arginine
+Q9CG49.A1	alanine
+Q9EZ79.A1	2,3-dihydroxybenzoic acid
+Q9FDB2.A1	2,3-dihydroxybenzoic acid
+Q9FDB3.A2	proline
+Q9HWG4.A1|Q9RFM7.A1	cysteine
+Q9K5M2.A1|Q9K5M2.A3	glutamine
+Q9K5M2.A2|Q9K5M2.A4	threonine
+Q9KWY7.A1	proline
+Q9KWY8.A1	serine
+Q9L6D0.A1	glutamic acid
+Q9L8H4.A3	valine
+Q9R9I9.A1	serine
+Q9R9J0.A3	glutamine
+Q9RAH1.A2	proline
+Q9RAH2.A3	asparagine
+Q9RAH4.A3	proline
+Q9RFM8.A1	cysteine
+Q9RFM9.A1	salicylic acid
+Q9RNB3.A1	glutamic acid
+Q9X2N4.A1	alanine
+Q9Z4X5.A3	asparagine
+A9LJA2.A1	threonine
+A9LJA2.A2	isoleucine|valine
+A9LJA2.A3	isoleucine|allo-isoleucine|valine
+A9LJA2.A4	allo-threonine
+A9LJA2.A5	glutamine|asparagine
+A9LJA2.A6	alanine
+P0C063.A3	ornithine
+B8RG41.A1	asparagine
+B8RG41.A2	serine
+P40806.A1	2S-hydroxyisocaproic acid
+P40806.A2	glycine
+A8KCJ2.A1	threonine
+Q4U445.A1	serine
+A6P624.A1	tyrosine
+B5X0I1.A1	threonine
+Q2HQW8.A1	cysteine
+C0JRF0.A1	asparagine
+Q84CG4.A1	capreomycidine
+A8BB73.A1	ornithine
+A0FCL0.A1	pipecolic acid
+Q6E7J8.A1	beta-alanine
+C0LTL8.A1	tyrosine|tryptophan
+B6F209.A1	tryptophan
+Triat1_40498.A1	2-aminobutyric acid
+Triat1_40498.A2	alanine
+Triat1_40498.A3	alanine
+Triat1_40498.A4	2-aminobutyric acid
+Triat1_40498.A5	2-aminobutyric acid|isovaline
+Triat1_40498.A6	glutamine
+Triat1_40498.A7	2-aminobutyric acid
+Triat1_40498.A8	2-aminobutyric acid
+Triat1_40498.A9	2-aminobutyric acid
+Triat1_40498.A10	serine
+Triat1_40498.A11	leucine
+Triat1_40498.A12	2-aminobutyric acid
+Triat1_40498.A13	proline
+Triat1_40498.A14	leucine|valine
+Triat1_40498.A15	2-aminobutyric acid
+Triat1_40498.A16	leucine|isoleucine
+Triat1_40498.A17	glutamine
+Triat1_40498.A18	glutamine|glutamic acid
+AN0607.4.A1	2-aminoadipic acid
+AN0607.4.A2	cysteine
+AN0607.4.A3	valine
+AFI_55290.A1	anthranilic acid
+AFI_55290.A2	tryptophan
+AN2545.A5	alanine
+EAA67034.1.A1	tyrosine
