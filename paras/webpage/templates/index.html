@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Hello World!</h1>
+
+    <p>This is my first webpage!!!</p>
+
+    <p>My name is {{ first_name }}</p>
+
+    <p>{{ stuff | title }}</p>
+    <br/>
+    {{ "one\ntwo\nthree" | title }}
+
+    <h3>Favourite pizza</h3>
+    {% for topping in favourite_pizza|reverse %}
+        {% if topping == 41 %}
+            {{ topping + 200}}<br/>
+        {% else %}
+            {{ topping }}<br/>
+        {% endif %}
+
+    {% endfor %}
+
+{% endblock %}

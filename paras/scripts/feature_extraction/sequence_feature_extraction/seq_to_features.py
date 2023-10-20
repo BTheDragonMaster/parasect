@@ -6,6 +6,25 @@ PROPERTIES_FILE = os.path.join(os.path.dirname(paras.data.sequence_data.amino_ac
 PROPERTIES = parse_amino_acid_properties(PROPERTIES_FILE)
 
 
+def domains_to_features(domains, signature="extended"):
+    sequence_ids = []
+    feature_vectors = []
+
+    for domain in domains:
+        sequence_ids.append(domain.domain_id)
+
+        if signature == "extended":
+            feature_vector = get_sequence_features(domain.extended_signature)
+        elif signature == "short":
+            feature_vector = get_sequence_features(domain.signature)
+        else:
+            raise ValueError(f"Expected 'extended' or 'short'. Got {signature}.")
+
+        feature_vectors.append(feature_vector)
+
+    return sequence_ids, feature_vectors
+
+
 def get_sequence_features(sequence):
     features = []
 

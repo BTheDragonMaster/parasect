@@ -1,72 +1,15 @@
 #!/usr/bin/env python
 
-import subprocess
 import os
 
 from Bio import SearchIO
 
-from paras.scripts.parsers.clear_temp import clear_temp
-from paras.scripts.parsers.fasta import read_fasta
+from paras.scripts.parsers.fasta import read_fasta, remove_spaces
 
-import paras.data.temp
-import paras.data.sequence_data.hmm
-
-
-HMM_FILE = os.path.join(os.path.dirname(paras.data.sequence_data.hmm.__file__), 'AMP-binding_full.hmm')
-TEMP_DIR = os.path.dirname(paras.data.temp.__file__)
-
-
-def run_hmmscan(hmm_dir, fasta_file, hmm_out):
-    """
-    Run hmmscan from command line
-
-    Input:
-    hmm_dir: str, dir of .hmm file containing the HMMs to be used in the scan
-    fasta_dir: str, dir of .fasta file containing the sequences to be scanned
-    out_dir: str, file location containing results of hmmscan
-
-    """
-
-    with open(hmm_out, 'w') as out:
-        command = ['hmmscan', hmm_dir, fasta_file]
-        subprocess.call(command, stdout=out)
-
-
-def remove_insertions(seq):
-    """
-    Remove insertion states from a sequence matched to an HMM
-
-    Input:
-    seq: str, amino acid sequence where uppercase characters are match states
-        and lowercase characters are insertion states
-
-    Output:
-    new_seq: str, amino acid sequence with all insertion states (lowercase
-        characters) removed.
-    """
-    new_seq = []
-    for character in seq:
-        if not character.islower():
-            new_seq.append(character)
-
-    new_seq = ''.join(new_seq)
-    return new_seq
-
-
-def make_header(ID, hit_id, start, end):
-    """
-    Return header (str) for .fasta output file
-
-    Input:
-    ID: str, sequence identifier
-    hit_id: str, HMM the sequence matched to
-    start: int, first aa in the query sequence that the HMM matches to
-    end: int, last aa in the query sequence that the HMM matches to
-
-    Output:
-    str, sequence properties separated by '|'
-    """
-    return f'{ID}|===|{hit_id}|===|{start}-{end}'
+from paras.scripts.data_processing.temp import clear_temp, TEMP_DIR
+from paras.scripts.feature_extraction.sequence_feature_extraction.sequence_labels import parse_domain_id, \
+    make_domain_id
+from paras.scripts.feature_extraction.sequence_feature_extraction.hmm.run_hmmscan import run_hmmscan, HMM_FILE
 
 
 def remove_gaps(sequence):
@@ -97,33 +40,13 @@ def parse_hmm_results(hmm_results, fasta_out):
     fasta_file = open(fasta_out, 'w')
     for result in SearchIO.parse(hmm_results, 'hmmer3-text'):
         for hsp in result.hsps:
-            if hsp.evalue < 0.00001:
+            if hsp.bitscore > 20:
                 if hsp.hit_id == 'AMP-binding' or hsp.hit_id == 'AMP-binding_C':
                     seq = remove_gaps(hsp.query.seq)
-                    header = make_header(result.id, hsp.hit_id, hsp.query_start, hsp.query_end)
+                    header = make_domain_id(result.id, hsp.hit_id, hsp.query_start, hsp.query_end)
                     fasta_file.write(">%s\n%s\n" % (header, seq))
 
     fasta_file.close()
-
-
-def parse_fasta_id(fasta_id):
-    """
-    Return id, domain type and domain location from common id
-
-    Input:
-    fasta_id: str
-
-    Output:
-    id: str, sequence id
-    hit_id: str, domain id
-    hit_start: int, start position of domain in protein
-    hit_end: int, end position of domain in protei
-    """
-    id, hit_id, hit_location = fasta_id.split('|===|')
-    hit_start, hit_end = hit_location.split('-')
-    hit_start = int(hit_start)
-    hit_end = int(hit_end)
-    return id, hit_id, hit_start, hit_end
 
 
 def merge_adomains(original_fasta_dir, fasta_dir, new_fasta_dir):
@@ -147,7 +70,7 @@ def merge_adomains(original_fasta_dir, fasta_dir, new_fasta_dir):
     fasta = read_fasta(fasta_dir)
     hits_by_seq_id = {}
     for id in fasta:
-        seq_id, hit_id, hit_start, hit_end = parse_fasta_id(id)
+        seq_id, hit_id, hit_start, hit_end = parse_domain_id(id)
         if not seq_id in hits_by_seq_id:
             hits_by_seq_id[seq_id] = []
 
@@ -167,8 +90,6 @@ def merge_adomains(original_fasta_dir, fasta_dir, new_fasta_dir):
 
                 if not match_found:
                     amp_nc_pairs.append((seq_id, hit_1[1], hit_1[2]))
-
-
 
     original_fasta = read_fasta(original_fasta_dir)
     amp_nc_pairs = sorted(amp_nc_pairs, key=lambda x: x[1])
@@ -208,12 +129,15 @@ def find_adomains(fasta_in, out_dir):
     file_label = file_label.split(r'/')[-1]
 
     hmm_out = os.path.join(TEMP_DIR, f'{file_label}_.hmm_result')
+    fasta_renamed = os.path.join(TEMP_DIR, f'{file_label}_proteins_renamed.fasta')
     fasta_subdomains_out = os.path.join(TEMP_DIR, f'{file_label}_subdomains.fasta')
     fasta_out = os.path.join(out_dir, f'{file_label}_adomains.fasta')
 
-    run_hmmscan(HMM_FILE, fasta_in, hmm_out)
+    remove_spaces(fasta_in, fasta_renamed)
+
+    run_hmmscan(HMM_FILE, fasta_renamed, hmm_out)
     parse_hmm_results(hmm_out, fasta_subdomains_out)
-    merge_adomains(fasta_in, fasta_subdomains_out, fasta_out)
+    merge_adomains(fasta_renamed, fasta_subdomains_out, fasta_out)
     clear_temp()
 
     return fasta_out

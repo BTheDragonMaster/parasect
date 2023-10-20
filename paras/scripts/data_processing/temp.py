@@ -1,9 +1,9 @@
 import os
-import paras.data.temp
 
-import paras.data.temp
+import paras.tmp
+import shutil
 
-TEMP_DIR = os.path.dirname(paras.data.temp.__file__)
+TEMP_DIR = os.path.dirname(paras.tmp.__file__)
 
 
 def clear_temp():
@@ -13,3 +13,5 @@ def clear_temp():
             file_location = os.path.join(TEMP_DIR, temp_name)
             if os.path.isfile(file_location):
                 os.remove(file_location)
+            elif os.path.isdir(file_location):
+                shutil.rmtree(file_location)

@@ -11,6 +11,7 @@ def read_fasta(fasta_dir):
     with open(fasta_dir, 'r') as fasta_file:
         fasta_dict = {}
         sequence = []
+        ID = None
         for line in fasta_file:
             line = line.strip()
 
@@ -26,9 +27,21 @@ def read_fasta(fasta_dir):
             else:
                 sequence.append(line)
 
-        fasta_dict[ID] = ''.join(sequence)
+        if ID is not None:
+            fasta_dict[ID] = ''.join(sequence)
         fasta_file.close()
     return fasta_dict
+
+
+def remove_spaces(fasta_in, fasta_out):
+    id_to_seq = read_fasta(fasta_in)
+    new_id_to_seq = {}
+
+    for old_id, seq in id_to_seq.items():
+        new_id = old_id.replace(' ', '_')
+        new_id_to_seq[new_id] = seq
+
+    write_fasta(new_id_to_seq, fasta_out)
 
 
 def write_fasta(id_to_seq, out_file):
