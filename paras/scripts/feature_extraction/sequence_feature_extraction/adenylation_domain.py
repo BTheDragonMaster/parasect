@@ -1,5 +1,6 @@
 from paras.scripts.feature_extraction.sequence_feature_extraction.read_positions import \
-    HMM_POSITIONS_EXTENDED_SIGNATURE, HMM_POSITIONS_SIGNATURE, HMM_POSITION_K, POSITIONS_SIGNATURE, POSITIONS_EXTENDED_SIGNATURE, \
+    HMM2_POSITIONS_EXTENDED_SIGNATURE, HMM2_POSITIONS_SIGNATURE, HMM2_POSITION_K, POSITIONS_SIGNATURE, \
+    POSITIONS_EXTENDED_SIGNATURE, \
     get_reference_positions_hmm, get_reference_positions
 
 from paras.scripts.feature_extraction.sequence_feature_extraction.profile_alignment.align import align_adomain, \
@@ -27,18 +28,26 @@ class AdenylationDomain:
     def set_domain_signatures_hmm(self, hit_n_terminal, hit_c_terminal=None):
         """Extract (extended) signatures from adenylation domains using HMM"""
 
+
+        signature_positions = HMM2_POSITIONS_SIGNATURE
+        extended_signature_positions = HMM2_POSITIONS_EXTENDED_SIGNATURE
+        position_k = HMM2_POSITION_K
+
         profile = hit_n_terminal.aln[1].seq
         query = hit_n_terminal.aln[0].seq
         offset = hit_n_terminal.hit_start
 
-        self.signature = get_reference_positions_hmm(query, profile, [p - offset for p in HMM_POSITIONS_SIGNATURE])
+        signature = get_reference_positions_hmm(query, profile, [p - offset for p in signature_positions])
+        if signature:
+            self.signature = signature
 
         lysine = None
+
         if hit_c_terminal:
             profile_c = hit_c_terminal.aln[1].seq
             query_c = hit_c_terminal.aln[0].seq
             offset_c = hit_c_terminal.hit_start
-            lysine = get_reference_positions_hmm(query_c, profile_c, [p - offset_c for p in HMM_POSITION_K])
+            lysine = get_reference_positions_hmm(query_c, profile_c, [p - offset_c for p in position_k])
 
         if self.signature:
             if lysine:
@@ -46,7 +55,9 @@ class AdenylationDomain:
             else:
                 self.signature += "K"
 
-        self.extended_signature = get_reference_positions_hmm(query, profile, [p - offset for p in HMM_POSITIONS_EXTENDED_SIGNATURE])
+        extended_signature = get_reference_positions_hmm(query, profile, [p - offset for p in extended_signature_positions])
+        if extended_signature:
+            self.extended_signature = extended_signature
 
     def set_domain_signatures_profile(self):
         """Extract (extended) signatures from adenylation domains using profile alignment"""

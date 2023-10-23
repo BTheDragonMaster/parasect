@@ -41,7 +41,7 @@ def get_mean(numbers):
 
 
 def get_stdev(numbers):
-    if numbers:
+    if numbers and len(numbers) > 1:
         return stdev(numbers)
     else:
         return "N/A"
@@ -346,9 +346,6 @@ class Dataset:
                             substrate_to_metrics[substrate]["incorrect probabilities"].append(probability)
                             substrate_to_metrics[substrate]["incorrect"] += 1
                             incorrect_probabilities.append(probability)
-
-
-        print(correct, incorrect)
 
         with open(metrics_file, 'w') as out:
             if self.type != 'tandem':

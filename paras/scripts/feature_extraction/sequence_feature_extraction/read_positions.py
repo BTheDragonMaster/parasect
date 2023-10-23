@@ -5,8 +5,12 @@ import paras.data.sequence_data.residue_positions
 
 APOSITION_FILE = os.path.join(os.path.dirname(paras.data.sequence_data.residue_positions.__file__), 'stachelhaus.txt')
 APOSITION_FILE_34 = os.path.join(os.path.dirname(paras.data.sequence_data.residue_positions.__file__), 'active_site.txt')
-APOSITION_FILE_HMM = os.path.join(os.path.dirname(paras.data.sequence_data.residue_positions.__file__), 'stachelhaus_hmm.txt')
-APOSITION_FILE_34_HMM = os.path.join(os.path.dirname(paras.data.sequence_data.residue_positions.__file__), 'active_site_hmm.txt')
+APOSITION_FILE_HMM3 = os.path.join(os.path.dirname(paras.data.sequence_data.residue_positions.__file__), 'stachelhaus_hmm3.txt')
+APOSITION_FILE_34_HMM3 = os.path.join(os.path.dirname(paras.data.sequence_data.residue_positions.__file__), 'active_site_hmm3.txt')
+APOSITION_FILE_HMM2 = os.path.join(os.path.dirname(paras.data.sequence_data.residue_positions.__file__), 'stachelhaus_hmm2.txt')
+APOSITION_FILE_34_HMM2 = os.path.join(os.path.dirname(paras.data.sequence_data.residue_positions.__file__), 'active_site_hmm2.txt')
+
+
 START_POSITION = 66
 
 
@@ -83,6 +87,15 @@ def get_reference_positions_hmm(query, reference, ref_positions):
 
 POSITIONS_SIGNATURE = read_positions(APOSITION_FILE, START_POSITION)
 POSITIONS_EXTENDED_SIGNATURE = read_positions(APOSITION_FILE_34, START_POSITION)
-HMM_POSITIONS_SIGNATURE = read_positions(APOSITION_FILE_HMM, 0)
-HMM_POSITIONS_EXTENDED_SIGNATURE = read_positions(APOSITION_FILE_34_HMM, 0)
-HMM_POSITION_K = [75]
+
+HMM2_POSITIONS_SIGNATURE = read_positions(APOSITION_FILE_HMM2, 0)
+HMM2_POSITIONS_EXTENDED_SIGNATURE = read_positions(APOSITION_FILE_34_HMM2, 0)
+
+HMM3_POSITIONS_SIGNATURE = read_positions(APOSITION_FILE_HMM3, 0)
+HMM3_POSITIONS_EXTENDED_SIGNATURE = read_positions(APOSITION_FILE_34_HMM3, 0)
+
+# Hmmer2:
+HMM2_POSITION_K = [36]
+
+# Hmmer3:
+HMM3_POSITION_K = [75]

@@ -9,7 +9,7 @@ from paras.scripts.parsers.fasta import read_fasta, remove_spaces
 from paras.scripts.data_processing.temp import clear_temp, TEMP_DIR
 from paras.scripts.feature_extraction.sequence_feature_extraction.sequence_labels import parse_domain_id, \
     make_domain_id
-from paras.scripts.feature_extraction.sequence_feature_extraction.hmm.run_hmmscan import run_hmmscan, HMM_FILE
+from paras.scripts.feature_extraction.sequence_feature_extraction.hmm.run_hmmscan import run_hmmscan, HMM2_FILE
 
 
 def remove_gaps(sequence):
@@ -135,7 +135,7 @@ def find_adomains(fasta_in, out_dir):
 
     remove_spaces(fasta_in, fasta_renamed)
 
-    run_hmmscan(HMM_FILE, fasta_renamed, hmm_out)
+    run_hmmscan(HMM2_FILE, fasta_renamed, hmm_out)
     parse_hmm_results(hmm_out, fasta_subdomains_out)
     merge_adomains(fasta_renamed, fasta_subdomains_out, fasta_out)
     clear_temp()

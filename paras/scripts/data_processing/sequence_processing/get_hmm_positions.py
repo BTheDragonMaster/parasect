@@ -1,8 +1,12 @@
+#!/usr/bin/env python
+
 import os
 
-from paras.scripts.feature_extraction.sequence_feature_extraction.read_positions import POSITIONS_EXTENDED_SIGNATURE, POSITIONS_SIGNATURE
-from paras.scripts.feature_extraction.sequence_feature_extraction.extract_domains import parse_hmm_results, parse_fasta_id
-from paras.scripts.feature_extraction.sequence_feature_extraction.hmm.run_hmmscan import run_hmmscan
+from paras.scripts.feature_extraction.sequence_feature_extraction.read_positions import POSITIONS_EXTENDED_SIGNATURE, \
+    POSITIONS_SIGNATURE
+from paras.scripts.feature_extraction.sequence_feature_extraction.extract_domains import parse_hmm_results, \
+    parse_domain_id, parse_hmm2_results
+from paras.scripts.feature_extraction.sequence_feature_extraction.hmm.run_hmmscan import run_hmmscan, run_hmmpfam2
 import paras.data.sequence_data.hmm
 import paras.data.sequence_data.sequences
 
@@ -10,12 +14,16 @@ REF_SEQ_FILE = os.path.join(os.path.dirname(paras.data.sequence_data.sequences._
 HMM_FILE_SEQUENCE = os.path.join(os.path.dirname(paras.data.sequence_data.hmm.__file__), 'AMP-binding_full.hmm')
 HMM_FILE_HYBRID = os.path.join(os.path.dirname(paras.data.sequence_data.hmm.__file__), 'AMP-binding_hybrid.hmm')
 HMM_FILE_STRUCTURE = os.path.join(os.path.dirname(paras.data.sequence_data.hmm.__file__), 'AMP-binding_structure.hmm')
+HMM_FILE_NRPSPREDICTOR = os.path.join(os.path.dirname(paras.data.sequence_data.hmm.__file__), 'AMP-binding_nrpspredictor.hmm')
+HMM_FILE_HMMER2 = os.path.join(os.path.dirname(paras.data.sequence_data.hmm.__file__), 'AMP-binding_hmmer2.hmm')
 
 
 def find_hmm_positions(id_to_hit, original_positions):
     for seq_id, hit in id_to_hit.items():
-        sequence_id, hit_id, hit_start, hit_end = parse_fasta_id(seq_id)
+        sequence_id, hit_id, hit_start, hit_end = parse_domain_id(seq_id)
         if hit_id == 'AMP-binding':
+            print(hit.aln[0].seq)
+            print(hit.aln[1].seq)
             hmm_seq = hit.aln[1].seq
             query_seq = hit.aln[0].seq
             hmm_start = hit.hit_start
@@ -44,14 +52,26 @@ def find_hmm_positions(id_to_hit, original_positions):
 
 
 if __name__ == "__main__":
-    run_hmmscan(HMM_FILE_SEQUENCE, REF_SEQ_FILE, 'sequence.hmm_result')
-    run_hmmscan(HMM_FILE_STRUCTURE, REF_SEQ_FILE, 'structure.hmm_result')
-    run_hmmscan(HMM_FILE_HYBRID, REF_SEQ_FILE, 'hybrid.hmm_result')
+    # run_hmmscan(HMM_FILE_SEQUENCE, REF_SEQ_FILE, 'sequence.hmm_result')
+    # run_hmmscan(HMM_FILE_STRUCTURE, REF_SEQ_FILE, 'structure.hmm_result')
+    # run_hmmscan(HMM_FILE_HYBRID, REF_SEQ_FILE, 'hybrid.hmm_result')
+    run_hmmscan(HMM_FILE_NRPSPREDICTOR, REF_SEQ_FILE, 'nrpspredictor.hmm_result')
+    run_hmmpfam2(HMM_FILE_HMMER2, REF_SEQ_FILE, 'hmmer2.hmm_result')
 
-    sequence_hit_to_id = parse_hmm_results('sequence.hmm_result', 'sequence_test.fasta')
-    structure_hit_to_id = parse_hmm_results('structure.hmm_result', 'structure_test.fasta')
-    hybrid_hit_to_id = parse_hmm_results('hybrid.hmm_result', 'hybrid_test.fasta')
+    sequence_hit_to_id = parse_hmm_results('sequence.hmm_result')
+    nrpspredictor_hit_to_id = parse_hmm_results('nrpspredictor.hmm_result')
+    hmmer_2_hit_to_id = parse_hmm2_results('hmmer2.hmm_result')
+    # structure_hit_to_id = parse_hmm_results('structure.hmm_result')
+    # hybrid_hit_to_id = parse_hmm_results('hybrid.hmm_result')
 
-    print('\t'.join(map(str, find_hmm_positions(sequence_hit_to_id, POSITIONS_EXTENDED_SIGNATURE))))
-    print('\t'.join(map(str, find_hmm_positions(sequence_hit_to_id, POSITIONS_SIGNATURE))))
+    # print('\t'.join(map(str, find_hmm_positions(sequence_hit_to_id, POSITIONS_EXTENDED_SIGNATURE))))
+    # print('\t'.join(map(str, find_hmm_positions(sequence_hit_to_id, POSITIONS_SIGNATURE))))
+
+    print('\nHmmer3:')
+    print('\t'.join(map(str, find_hmm_positions(nrpspredictor_hit_to_id, POSITIONS_EXTENDED_SIGNATURE))))
+    print('\t'.join(map(str, find_hmm_positions(nrpspredictor_hit_to_id, POSITIONS_SIGNATURE))))
+
+    print('\nHmmer2:')
+    print('\t'.join(map(str, find_hmm_positions(hmmer_2_hit_to_id, POSITIONS_EXTENDED_SIGNATURE))))
+    print('\t'.join(map(str, find_hmm_positions(hmmer_2_hit_to_id, POSITIONS_SIGNATURE))))
 
