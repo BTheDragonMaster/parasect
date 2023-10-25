@@ -57,8 +57,10 @@ def parse_hmm2_results(hmm_results):
     return id_to_hit
 
 
-def hits_to_domains(id_to_hit, fasta_file, profile=False):
+def hits_to_domains(id_to_hit, fasta_file, profile=False, verbose=False):
     hits_by_seq_id = {}
+    if verbose:
+        print("\tSorting hits by sequence..")
 
     for hit_key, hit in id_to_hit.items():
         seq_id, hit_id, hit_start, hit_end = parse_domain_id(hit_key)
@@ -67,11 +69,19 @@ def hits_to_domains(id_to_hit, fasta_file, profile=False):
 
         hits_by_seq_id[seq_id].append((hit_id, hit_start, hit_end, hit_key))
 
-    a_domains = []
+    if verbose:
+        print("\tExtracting domain signatures..")
+
+    counter = 0
+
+    seq_id_to_domains = {}
 
     for seq_id, hits in hits_by_seq_id.items():
+        counter += 1
         for hit_id_1, hit_start_1, hit_end_1, hit_key_1 in hits:
             if hit_id_1 == 'AMP-binding':
+                if seq_id not in seq_id_to_domains:
+                    seq_id_to_domains[seq_id] = []
                 match_found = False
                 for hit_id_2, hit_start_2, hit_end_2, hit_key_2 in hits:
                     if hit_id_2 == 'AMP-binding_C':
@@ -81,24 +91,31 @@ def hits_to_domains(id_to_hit, fasta_file, profile=False):
                             a_domain = AdenylationDomain(seq_id, hit_start_1, hit_end_2)
                             if not profile:
                                 a_domain.set_domain_signatures_hmm(id_to_hit[hit_key_1], id_to_hit[hit_key_2])
-                            a_domains.append(a_domain)
+                            seq_id_to_domains[seq_id].append(a_domain)
                             match_found = True
                             break
 
                 if not match_found:
                     a_domain = AdenylationDomain(seq_id, hit_start_1, hit_end_1)
                     a_domain.set_domain_signatures_hmm(id_to_hit[hit_key_1])
-                    a_domains.append(a_domain)
+                    seq_id_to_domains[seq_id].append(a_domain)
 
-    a_domains.sort(key=lambda x: x.start)
+        if verbose and counter % 1000 == 0:
+            print(f"\t\tProcessed {counter} proteins.")
+
+    for seq_id, domains in seq_id_to_domains.items():
+        domains.sort(key=lambda x: x.start)
 
     fasta = read_fasta(fasta_file)
 
+    if verbose:
+        print("\tSetting domain numbers..")
+
     for seq_id, sequence in fasta.items():
         counter = 1
-        for a_domain in a_domains:
-            if seq_id == a_domain.protein_name:
-
+        if seq_id in seq_id_to_domains:
+            for a_domain in seq_id_to_domains[seq_id]:
+                assert seq_id == a_domain.protein_name
                 a_domain_sequence = sequence[a_domain.start:a_domain.end]
                 if len(a_domain_sequence) > 100:
                     a_domain.set_sequence(a_domain_sequence)
@@ -106,59 +123,39 @@ def hits_to_domains(id_to_hit, fasta_file, profile=False):
 
                     counter += 1
 
-    filtered_a_domains = []
+    if not profile:
+        if verbose:
+            print("\tFiltering domains..")
 
-    for a_domain in a_domains:
+        filtered_a_domains = []
 
-        if a_domain.sequence and a_domain.extended_signature and a_domain.signature and a_domain.domain_nr:
-            filtered_a_domains.append(a_domain)
+        for seq_id, a_domains in seq_id_to_domains.items():
+            for a_domain in a_domains:
+                if a_domain.sequence and a_domain.extended_signature and a_domain.signature and a_domain.domain_nr:
+                    filtered_a_domains.append(a_domain)
 
-    filtered_a_domains.sort(key=lambda x: (x.protein_name, x.start))
+        if verbose:
+            print("\tSorting domains by protein name..")
 
-    if profile:
-        for a_domain in filtered_a_domains:
-            a_domain.set_domain_signatures_profile()
+        filtered_a_domains.sort(key=lambda x: (x.protein_name, x.start))
+
+    else:
+        if verbose:
+            print("\tExtracting domain signatures with profile alignment..")
+
+        filtered_a_domains = []
+        for seq_id, a_domains in seq_id_to_domains.items():
+            for a_domain in a_domains:
+                a_domain.set_domain_signatures_profile()
+                if a_domain.sequence and a_domain.extended_signature and a_domain.signature and a_domain.domain_nr:
+                    filtered_a_domains.append(a_domain)
+
+        filtered_a_domains.sort(key=lambda x: (x.protein_name, x.start))
 
     return filtered_a_domains
 
 
-def have_overlap(domain_1, domain_2):
-    if domain_1.protein_name == domain_2.protein_name:
-        if domain_1.start > domain_2.end:
-            return False
-        if domain_2.start > domain_1.end:
-            return False
-        return True
-    return False
-
-
-def get_signatures(a_domains, job_name):
-    fasta_out = os.path.join(TEMP_DIR, f'{job_name}_domains.fasta')
-    hmm_out = os.path.join(TEMP_DIR, f'{job_name}_domains.hmm2_results')
-    with open(fasta_out, 'w') as fasta:
-        for a_domain in a_domains:
-            fasta.write(f">{a_domain.protein_name}_{a_domain.domain_nr}\n{a_domain.sequence}\n")
-
-    run_hmmpfam2(HMM2_FILE, fasta_out, hmm_out)
-    id2_to_hit = parse_hmm2_results(hmm_out)
-
-    signatures_set = 0
-
-    for hit_key, hit in id2_to_hit.items():
-        seq_id, hit_id, hit_start, hit_end = parse_domain_id(hit_key)
-        if hit_id == 'AMP-binding':
-            protein_name, domain_nr = seq_id.split('_')
-            domain_nr = int(domain_nr)
-            for a_domain in a_domains:
-                if a_domain.protein_name == protein_name and a_domain.domain_nr == domain_nr:
-                    signatures_set += 1
-                    a_domain.set_domain_signatures_hmm(hit, None, hmm_type=2)
-                    break
-
-    print(f"set domain signatures: {signatures_set}")
-
-
-def domains_from_fasta(fasta_in, job_name='paras_run', profile=False):
+def domains_from_fasta(fasta_in, job_name='paras_run', profile=False, verbose=False):
     """
     Extract adomains from fasta file and write them to out_dir
 
@@ -172,13 +169,21 @@ def domains_from_fasta(fasta_in, job_name='paras_run', profile=False):
     """
 
     hmm_out = os.path.join(TEMP_DIR, f'{job_name}.hmm_result')
+    if verbose:
+        print("Running HMM..")
     run_hmmpfam2(HMM2_FILE, fasta_in, hmm_out)
+    if verbose:
+        print("Parsing hits..")
     id_to_hit = parse_hmm2_results(hmm_out)
 
     if profile:
-        a_domains = hits_to_domains(id_to_hit, fasta_in, profile=True)
+        if verbose:
+            print("Processing hits (profile alignment-based active site extraction)..")
+        a_domains = hits_to_domains(id_to_hit, fasta_in, profile=True, verbose=verbose)
     else:
-        a_domains = hits_to_domains(id_to_hit, fasta_in)
+        if verbose:
+            print("Processing hits (hmm-based active site extraction)..")
+        a_domains = hits_to_domains(id_to_hit, fasta_in, verbose=verbose)
 
     return a_domains
 

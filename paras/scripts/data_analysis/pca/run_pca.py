@@ -6,6 +6,8 @@ import numpy as np
 
 from paras.scripts.data_analysis.pca.pca import Pca
 from paras.scripts.parsers.parsers import parse_pocket_features, parse_domain_list, parse_specificities
+from paras.scripts.parsers.fasta import read_fasta
+from paras.scripts.feature_extraction.sequence_feature_extraction.seq_to_features import get_sequence_features_bulk
 
 
 def parse_arguments():
@@ -14,6 +16,9 @@ def parse_arguments():
     parser.add_argument('-s', type=str, default=None, help="Path to specificities file")
     parser.add_argument('-d', type=str, default=None, help="Path to domain list")
     parser.add_argument('-o', type=str, required=True, help="Path to output directory")
+    parser.add_argument('-f', type=str, default=None, help="Path to fasta file")
+    parser.add_argument('-m', type=str, default='structure',
+                        help="Mode. If mode is 'structure', provide '-p'. If mode is 'sequence', provide '-f'")
 
     args = parser.parse_args()
     return args
@@ -26,7 +31,18 @@ def run():
         os.mkdir(args.o)
 
     print("Loading data..")
-    domain_to_pocket, categories = parse_pocket_features(args.p, return_categories=True)
+
+    if args.m == 'structure':
+        assert args.p
+        domain_to_features, categories = parse_pocket_features(args.p, return_categories=True)
+    elif args.m =='sequence':
+        assert args.f
+        domain_to_seq = read_fasta(args.f)
+        domain_to_features, categories = get_sequence_features_bulk(domain_to_seq)
+
+    else:
+        raise ValueError(f"Expected 'structure' or 'sequence' for mode argument (-m). Got {args.f}.")
+
     domain_list = parse_domain_list(args.d)
     domain_to_spec = parse_specificities(args.s)
 
@@ -35,7 +51,7 @@ def run():
     domain_labels = []
 
     for domain in domain_list:
-        vectors.append(np.array(domain_to_pocket[domain], dtype='uint8'))
+        vectors.append(np.array(domain_to_features[domain], dtype='uint8'))
         substrate_labels.append('|'.join(domain_to_spec[domain]))
         domain_labels.append(domain)
 

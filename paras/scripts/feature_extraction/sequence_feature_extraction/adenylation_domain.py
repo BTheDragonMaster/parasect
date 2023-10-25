@@ -6,6 +6,13 @@ from paras.scripts.feature_extraction.sequence_feature_extraction.read_positions
 from paras.scripts.feature_extraction.sequence_feature_extraction.profile_alignment.align import align_adomain, \
     ALIGNMENT_FILE
 
+VALID_CHARACTERS = {"A", "C", "D", "E",
+                    "F", "G", "H", "I",
+                    "K", "L", "M", "N",
+                    "P", "Q", "R", "S",
+                    "T", "V", "W", "Y",
+                    "-"}
+
 
 class AdenylationDomain:
     def __init__(self, protein_name, domain_start, domain_end):
@@ -28,7 +35,6 @@ class AdenylationDomain:
     def set_domain_signatures_hmm(self, hit_n_terminal, hit_c_terminal=None):
         """Extract (extended) signatures from adenylation domains using HMM"""
 
-
         signature_positions = HMM2_POSITIONS_SIGNATURE
         extended_signature_positions = HMM2_POSITIONS_EXTENDED_SIGNATURE
         position_k = HMM2_POSITION_K
@@ -38,7 +44,7 @@ class AdenylationDomain:
         offset = hit_n_terminal.hit_start
 
         signature = get_reference_positions_hmm(query, profile, [p - offset for p in signature_positions])
-        if signature:
+        if signature and all([char in VALID_CHARACTERS for char in signature]):
             self.signature = signature
 
         lysine = None
@@ -50,13 +56,13 @@ class AdenylationDomain:
             lysine = get_reference_positions_hmm(query_c, profile_c, [p - offset_c for p in position_k])
 
         if self.signature:
-            if lysine:
+            if lysine and lysine in VALID_CHARACTERS and lysine != '-':
                 self.signature += lysine
             else:
                 self.signature += "K"
 
         extended_signature = get_reference_positions_hmm(query, profile, [p - offset for p in extended_signature_positions])
-        if extended_signature:
+        if extended_signature and all([char in VALID_CHARACTERS for char in extended_signature]):
             self.extended_signature = extended_signature
 
     def set_domain_signatures_profile(self):

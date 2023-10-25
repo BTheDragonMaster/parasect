@@ -1,7 +1,7 @@
 from paras.scripts.parsers.parsers import parse_feature_importances
 from paras.scripts.data_processing.structure_processing.add_dummy_substrate import add_dummy_substrate, get_highest_serial_number
 from paras.scripts.machine_learning.feature_inference.plot_importances_pymol import normalize_importances, \
-    importance_to_alphabetic, alphabetic_to_colour
+    importance_to_alphabetic, alphabetic_to_colour, alphabetic_to_importance
 import argparse
 import os
 from pymol import cmd, stored
@@ -98,8 +98,8 @@ def visualise_in_pymol(pdb_in, voxels, pse_out):
             if not letter_pair.startswith('A') and not letter_pair.startswith('B'):
                 cmd.color(letter_pair, letter_pair)
                 cmd.iterate(letter_pair, "stored.pairs.append(name)")
-
-                # cmd.set("sphere_transparency", f"{1 - abs(importance)}", letter_pair)
+                importance = alphabetic_to_importance(letter_pair)
+                cmd.set("sphere_transparency", f"{1 - abs(importance)}", letter_pair)
             else:
                 cmd.remove(selection_name)
             cmd.show("spheres", selection_name)

@@ -1,8 +1,9 @@
 from flask import Flask, render_template
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from wtforms import StringField, SubmitField, TextAreaField, FileField
 from wtforms.validators import DataRequired
 
+from paras.scripts.run_paras import run_paras
 
 # Create a Flask Instance
 app = Flask(__name__)
@@ -23,6 +24,12 @@ striptags - removes html tags
 
 # Create a Form class
 
+class SequenceForm(FlaskForm):
+    sequence = TextAreaField("Insert raw protein sequence here",
+                             validators=[DataRequired()])
+    submit = SubmitField("Submit")
+
+
 class NamerForm(FlaskForm):
     name = StringField("What's your name?", validators=[DataRequired()])
     submit = SubmitField("Submit")
@@ -39,6 +46,31 @@ def index():
                            first_name=first_name,
                            stuff=stuff,
                            favourite_pizza=favourite_pizza)
+
+
+@app.route('/paras', methods=["GET", "POST"])
+def paras():
+    sequence = None
+    results = {}
+
+    form = SequenceForm()
+    if form.validate_on_submit():
+        sequence = form.sequence.data
+        fasta = f">protein\n{sequence}\n"
+        with open("temp.fasta", 'w') as temp:
+            temp.write(fasta)
+
+        results = run_paras("temp.fasta", "web_query", "temp")
+        form.sequence.data = ''
+    return render_template("paras.html",
+                           sequence=sequence,
+                           results=results,
+                           form=form)
+
+
+@app.route('/parasect', methods=["GET", "POST"])
+def parasect():
+    return render_template("parasect.html")
 
 
 # localhost:5000/user/Barbara

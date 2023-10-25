@@ -1,10 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if sequence %}
+    {% for seq_id, predictions in results.items() %}
+        <dt>{{ seq_id|e }}</dt>
+        {% for amino_acid, probability in results[seq_id] %}
+            <dd>{{ amino_acid }} {{ probability }}</dd>
+        {% endfor %}
+    {% endfor %}
+{% else %}
+    <h1>Input your raw protein sequence here</h1>
+    <br/>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        {{ form.sequence.label(class="form-label") }}
+        {{ form.sequence(class="form-control") }}
+        <br/>
+        {{ form.submit(class="btn btn-secondary") }}
+    </form>
+{% endif %}
+
+{% endblock %}
