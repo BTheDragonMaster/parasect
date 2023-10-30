@@ -101,8 +101,14 @@ def importance_to_alphabetic(importance):
 
 def alphabetic_to_colour(alphabetic):
     importance = alphabetic_to_importance(alphabetic)
+    colour = importance_to_colour(importance)
 
-    if importance < 0:
+    return colour
+
+
+def importance_to_colour(importance):
+
+    if importance > 0:
         colour = (1.0, 1 - abs(importance), 1 - abs(importance))
     else:
         colour = (1 - abs(importance), 1 - abs(importance), 1.0)

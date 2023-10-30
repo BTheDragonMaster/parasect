@@ -117,6 +117,19 @@ def parse_amino_acid_properties(properties_file, return_categories=False):
     return aa_to_vector
 
 
+def parse_sequence_feature_importances(importance_file, has_header=False):
+    feature_to_importance = {}
+    with open(importance_file, 'r') as importances:
+        if has_header:
+            importances.readline()
+        for line in importances:
+            line = line.strip()
+            feature, importance = line.split('\t')
+            feature_to_importance[feature] = float(importance)
+
+    return feature_to_importance
+
+
 def parse_feature_importances(importance_file, voxel_size=1.2):
     voxel_to_importances = OrderedDict()
 

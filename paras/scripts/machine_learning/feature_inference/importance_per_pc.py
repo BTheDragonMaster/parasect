@@ -95,7 +95,8 @@ def visualise_in_pymol(pdb_in, voxels, pse_out):
         for j, letter_pair in enumerate(letter_pairs):
             selection_name = f"{letter_pair}_{category}"
             cmd.select(selection_name, f"resn STP and name {letter_pair} and resi {i + 1}")
-            if not letter_pair.startswith('A') and not letter_pair.startswith('B'):
+            if not letter_pair.startswith('A') and not letter_pair.startswith('B') and not letter_pair.startswith('C')\
+                    and not letter_pair.startswith('D') and not letter_pair.startswith('E'):
                 cmd.color(letter_pair, letter_pair)
                 cmd.iterate(letter_pair, "stored.pairs.append(name)")
                 importance = alphabetic_to_importance(letter_pair)

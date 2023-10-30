@@ -51,7 +51,7 @@ def run():
     domain_labels = []
 
     for domain in domain_list:
-        vectors.append(np.array(domain_to_features[domain], dtype='uint8'))
+        vectors.append(np.array(domain_to_features[domain]))
         substrate_labels.append('|'.join(domain_to_spec[domain]))
         domain_labels.append(domain)
 

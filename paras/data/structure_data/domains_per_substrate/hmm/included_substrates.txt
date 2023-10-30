@@ -1,0 +1,34 @@
+proline
+tyrosine
+4-hydroxyphenylglycine
+D-alanine
+aspartic acid
+cysteine
+3,5-dihydroxyphenylglycine
+tryptophan
+glutamic acid
+asparagine
+threonine
+glycine
+alanine
+lysine
+isoleucine
+valine
+phenylalanine
+leucine
+serine
+N5-hydroxyornithine
+N5-formyl-N5-hydroxyornithine
+salicylic acid
+arginine
+pipecolic acid
+2,3-dihydroxybenzoic acid
+ornithine
+histidine
+R-beta-hydroxytyrosine
+2-aminoadipic acid
+glutamine
+2,4-diaminobutyric acid
+beta-alanine
+anthranilic acid
+2-aminoisobutyric acid

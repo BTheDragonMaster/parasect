@@ -63,7 +63,7 @@ class PcaData:
     def visualise(self, out_png, threshold_type='min', threshold=0, projection='2d', x=1, y=2, z=3, substrates=None,
                   domains_of_interest=None, domain_labels=None):
 
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(15, 8))
         x -= 1
         y -= 1
         z -= 1
@@ -129,16 +129,15 @@ class PcaData:
 
             filtered_labels = sorted(labels)
 
-            plt.gcf().subplots_adjust(right=0.7)
+            plt.gcf().subplots_adjust(left=0.05, right=0.45)
 
             if projection == '2d':
-
 
                 for i, substrate in enumerate(filtered_labels):
                     color = colors[i]
                     plt.scatter(substrate_to_xy[substrate]['x'], substrate_to_xy[substrate]['y'],
                                 label=substrate, color=color)
-                plt.legend(bbox_to_anchor=(1.05, 1), loc=9)
+                plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
                 plt.savefig(out_png)
 
             elif projection == '3d':
@@ -203,8 +202,6 @@ class PcaData:
                 if projection == '2d':
                     plt.scatter(xs, ys, color=color, label=label)
                 elif projection == '3d':
-                    fig = plt.figure()
-                    ax = fig.add_subplot(projection='3d')
                     ax.scatter(xs, ys, zs, color=color, label=label)
                 else:
                     raise ValueError("Projection must be 2d or 3d")

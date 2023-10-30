@@ -44,6 +44,7 @@ def parse_arguments():
     parser.add_argument('-model', type=str, default=None, help="Path to classifier. Only used in 'test' mode.")
 
     parser.add_argument('-sampling', type=str, default=None, help="balanced, balanced_subsample, over_sample, under_sample or None")
+    parser.add_argument('-one_hot', action='store_true', help="Use one-hot encoding instead of physicochemical properties for featurisation.")
 
     args = parser.parse_args()
 
@@ -66,7 +67,7 @@ def run():
     if args.f:
         label = "fasta"
         domain_to_seq = read_fasta(args.f)
-        domain_to_features, categories = get_sequence_features_bulk(domain_to_seq)
+        domain_to_features, categories = get_sequence_features_bulk(domain_to_seq, args.one_hot)
         domain_mappings[label] = domain_to_features
         domain_mapping_to_categories[label] = categories
     if args.pca:

@@ -53,7 +53,7 @@ def run_hmmpfam2_single(hmm_dir, fasta_sequence, max_eval=0.1):
 
     if fasta_sequence is not None:
         stdin = subprocess.PIPE
-        input_bytes= fasta_sequence.encode("utf-8")
+        input_bytes = fasta_sequence.encode("utf-8")
     else:
         stdin = None
         input_bytes = None
