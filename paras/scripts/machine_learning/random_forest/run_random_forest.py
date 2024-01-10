@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 from paras.scripts.machine_learning.random_forest.random_forest import RandomForest, Dataset
 from paras.scripts.parsers.parsers import parse_specificities, parse_morgan_fingerprint, parse_pca_file, \
-    parse_pocket_features, parse_domain_list, parse_substrate_list
+    parse_pocket_features, parse_domain_list, parse_substrate_list, parse_proteinbert_features
 from paras.scripts.parsers.fasta import read_fasta
 from paras.scripts.feature_extraction.sequence_feature_extraction.seq_to_features import get_sequence_features_bulk
 from paras.scripts.parsers.iterate_over_dir import find_crossval_pairs
@@ -37,6 +37,7 @@ def parse_arguments():
 
     parser.add_argument('-morgan', type=str, default=None,
                         help="Path to file containing morgan fingerprints of substrates.")
+    parser.add_argument('-bert', type=str, default=None, help="Path to file containing ProteinBert features.")
 
     parser.add_argument('-trees', type=int, default=1000, help="Nr of trees in RF")
     parser.add_argument('-threads', type=int, default=None, help="Nr of threads. -1 uses all available cores")
@@ -56,7 +57,7 @@ def run():
     if args.mode != 'train' and not os.path.exists(args.o):
         os.mkdir(args.o)
 
-    assert args.f or args.pocket or args.pca
+    assert args.f or args.pocket or args.pca or args.bert
 
     included_substrates = parse_substrate_list(args.substrates)
     domain_to_substrates = parse_specificities(args.data)
@@ -67,6 +68,8 @@ def run():
     if args.f:
         label = "fasta"
         domain_to_seq = read_fasta(args.f)
+        for domain, seq in domain_to_seq.items():
+            domain_to_seq[domain] = seq.replace('X', '-')
         domain_to_features, categories = get_sequence_features_bulk(domain_to_seq, args.one_hot)
         domain_mappings[label] = domain_to_features
         domain_mapping_to_categories[label] = categories
@@ -79,6 +82,11 @@ def run():
         label = "pocket"
         domain_to_pocket, categories = parse_pocket_features(args.pocket, return_categories=True)
         domain_mappings[label] = domain_to_pocket
+        domain_mapping_to_categories[label] = categories
+    if args.bert:
+        label = "bert"
+        domain_to_bert, categories = parse_proteinbert_features(args.bert, return_categories=True)
+        domain_mappings[label] = domain_to_bert
         domain_mapping_to_categories[label] = categories
 
     compound_mappings = None

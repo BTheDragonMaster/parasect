@@ -33,6 +33,41 @@ def read_fasta(fasta_dir):
     return fasta_dict
 
 
+def yield_fasta(fasta_dir):
+    """
+    Yield tuple of sequence id and sequence
+
+    Input:
+    fasta_dir: str, directory of .fasta file
+
+    Output:
+    fasta_dict: dict of {seq_id: sequence, ->}, with seq_id and sequence str
+    """
+    with open(fasta_dir, 'r') as fasta_file:
+        fasta_dict = {}
+        sequence = []
+        ID = None
+        for line in fasta_file:
+            line = line.strip()
+
+            if line.startswith(">"):
+                if sequence:
+                    yield ID, ''.join(sequence)
+
+                    ID = line[1:]
+                    sequence = []
+                else:
+                    ID = line[1:]
+
+            else:
+                sequence.append(line)
+
+        if ID is not None:
+            yield ID, ''.join(sequence)
+        fasta_file.close()
+    return fasta_dict
+
+
 def remove_spaces(fasta_in, fasta_out):
     id_to_seq = read_fasta(fasta_in)
     new_id_to_seq = {}

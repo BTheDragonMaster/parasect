@@ -4,7 +4,7 @@ import os
 
 from paras.scripts.feature_extraction.sequence_feature_extraction.read_positions import POSITIONS_EXTENDED_SIGNATURE, \
     POSITIONS_SIGNATURE
-from paras.scripts.feature_extraction.sequence_feature_extraction.extract_domains import parse_hmm_results, \
+from paras.scripts.feature_extraction.sequence_feature_extraction.extract_domains import parse_hmm3_results, \
     parse_domain_id, parse_hmm2_results
 from paras.scripts.feature_extraction.sequence_feature_extraction.hmm.run_hmmscan import run_hmmscan, run_hmmpfam2
 import paras.data.sequence_data.hmm
@@ -58,8 +58,8 @@ if __name__ == "__main__":
     run_hmmscan(HMM_FILE_NRPSPREDICTOR, REF_SEQ_FILE, 'nrpspredictor.hmm_result')
     run_hmmpfam2(HMM_FILE_HMMER2, REF_SEQ_FILE, 'hmmer2.hmm_result')
 
-    sequence_hit_to_id = parse_hmm_results('sequence.hmm_result')
-    nrpspredictor_hit_to_id = parse_hmm_results('nrpspredictor.hmm_result')
+    sequence_hit_to_id = parse_hmm3_results('sequence.hmm_result')
+    nrpspredictor_hit_to_id = parse_hmm3_results('nrpspredictor.hmm_result')
     hmmer_2_hit_to_id = parse_hmm2_results('hmmer2.hmm_result')
     # structure_hit_to_id = parse_hmm_results('structure.hmm_result')
     # hybrid_hit_to_id = parse_hmm_results('hybrid.hmm_result')

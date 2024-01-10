@@ -1,11 +1,11 @@
-import os
-
+from typing import List, Optional
 from paras.scripts.parsers.fasta import read_fasta
 from paras.scripts.parsers.datapoint import DataPoint
 from paras.scripts.parsers.tabular import Tabular
 from paras.scripts.parsers.voxel import Voxel, VoxelImportanceVector
 from paras.scripts.math.shapes import Vector3D, Cube
 from collections import OrderedDict
+from dataclasses import dataclass, field
 
 
 def parse_closest_identities(identities_file):
@@ -19,6 +19,7 @@ def parse_closest_identities(identities_file):
                 domain_to_id[domain] = identity
 
     return domain_to_id
+
 
 def yield_identities(identities_file):
     with open(identities_file, 'r') as identities:
@@ -42,6 +43,97 @@ def parse_mmseq_clusters(cluster_file):
                 cluster_to_domain[cluster].append(domain)
 
     return cluster_to_domain
+
+
+@dataclass
+class SubstrateResult:
+    rank: int
+    substrate: str
+    confidence: float
+
+
+@dataclass
+class ParasResult:
+    protein_id: str
+    domain_nr: int
+    coordinates: tuple[int, int]
+    signature: Optional[str] = None
+    substrates: List[SubstrateResult] = field(default_factory=list)
+
+
+def parse_paras_domain_name(domain_name: str, separator: str = '|') -> tuple[str, int, int, int]:
+    """
+    Return the domain name, number, and coordinates from a paras results domain identifier
+
+    Parameters
+    ----------
+    domain_name: str, paras results domain identifier
+    separator: str, separator used to make paras results
+
+    Returns
+    -------
+    protein_id: str, identifier of the protein
+    domain_nr: int, domain index
+    start: int, start coordinate of domain within protein
+    end: int, end coordinate of domain within protein
+
+    """
+    domain_info = domain_name.split(separator)
+    protein_id: str = separator.join(domain_info[:-2])
+    domain_nr: int = int(domain_info[-2].split('_')[1])
+    coordinates: list[str] = domain_info[-1].split('-')
+    start: int = int(coordinates[0])
+    end: int = int(coordinates[1])
+
+    return protein_id, domain_nr, start, end
+
+
+def parse_results(results_file, signature_file: Optional[str] = None):
+    results = Tabular(results_file, [0])
+    domain_to_result = {}
+    id_to_signature = {}
+    if signature_file:
+        id_to_signature = read_fasta(signature_file)
+    for datapoint in results.data:
+        domain_name = results.get_value(datapoint, "sequence_id")
+
+        protein_id, domain_nr, start, end = parse_paras_domain_name(domain_name)
+        coordinates = (start, end)
+
+        if signature_file:
+            signature = id_to_signature[domain_name]
+            domain = ParasResult(protein_id, domain_nr, coordinates, signature)
+        else:
+            domain = ParasResult(protein_id, domain_nr, coordinates)
+        for i, category in enumerate(results.categories):
+            if 'confidence_score' in category:
+                rank = int(category.split('_')[-1])
+                substrate = results.get_value(datapoint, results.categories[i - 1])
+                confidence = float(results.get_value(datapoint, category))
+                substrate_result = SubstrateResult(rank, substrate, confidence)
+                domain.substrates.append(substrate_result)
+        domain.substrates.sort(key = lambda x: x.rank)
+        domain_to_result[domain_name] = domain
+
+    return domain_to_result
+
+
+def yield_results(results_file):
+    results = Tabular(results_file, [0])
+    for datapoint in results.data:
+        domain_name = results.get_value(datapoint, "sequence_id")
+        protein_id, domain_nr, start, end = parse_paras_domain_name(domain_name)
+        coordinates = (start, end)
+
+        domain = ParasResult(protein_id, domain_nr, coordinates)
+        for i, category in enumerate(results.categories):
+            if 'confidence_score' in category:
+                rank = int(category.split('_')[1])
+                substrate = results.get_value(datapoint, results.categories[i - 1])
+                confidence = float(results.get_value(datapoint, category))
+                substrate_result = SubstrateResult(rank, substrate, confidence)
+                domain.substrates.append(substrate_result)
+        yield domain
 
 
 def parse_test_results(test_results_file, get_confidence=False):
@@ -86,6 +178,7 @@ def parse_substrate_list(in_file):
                 substrates.append(line)
 
     return substrates
+
 
 def parse_stach_codes(in_file):
     seq_data = Tabular(in_file, [0])
@@ -287,6 +380,27 @@ def parse_moment_vectors(moment_file):
         row = moment_data.get_row(name)
         name_to_vector[row[0]] = list(map(float, row[1:]))
     return name_to_vector
+
+
+def parse_proteinbert_features(proteinbert_file, return_categories=False):
+    id_to_proteinbert = OrderedDict()
+    feature_nr = None
+    with open(proteinbert_file, 'r') as proteinbert:
+        for line in proteinbert:
+            line_data = line.strip().split('\t')
+            seq_id = line_data[0]
+            features = list(map(float, line_data[1:]))
+            feature_nr = len(features)
+            id_to_proteinbert[seq_id] = features
+
+    if not return_categories:
+        return id_to_proteinbert
+    else:
+        categories = []
+        for i in range(feature_nr):
+            categories.append(f"ProteinBERT_{i + 1}")
+        return id_to_proteinbert, categories
+
 
 
 def parse_morgan_fingerprint(bitvector_file, return_categories=False):

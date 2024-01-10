@@ -3,6 +3,7 @@
 import os
 
 from Bio import SearchIO
+from Bio.SearchIO._model import HSP
 
 from paras.scripts.parsers.fasta import read_fasta
 from paras.scripts.data_processing.temp import TEMP_DIR
@@ -17,15 +18,21 @@ import paras.data.sequence_data.sequences
 REF_SEQ_FILE = os.path.join(os.path.dirname(paras.data.sequence_data.sequences.__file__), 'reference_sequence.fasta')
 
 
-def parse_hmm3_results(hmm_results):
+def parse_hmm3_results(hmm_results: str) -> dict[str, HSP]:
     """
-    Write sequences that match to AMP-binding domains to .fasta file
+    Return dictionary of domain identifier to Biopython HSP instance
 
-    Input:
-    hmm_results: str, file location containing results of hmmscan
-    fasta_out: str, file location for writing AMP-binding domains
+    Parameters
+    ----------
+    hmm_results: str, path to hmmscan output file (hmmer-3)
+
+    Returns
+    -------
+    id_to_hit: dict of {domain_id: HSP, ->}, with domain_id str and HSP a Biopython HSP instance containing a HMM hit
+        between an Hmm3 adenylation domain HMM and a query sequence
+
     """
-    id_to_hit = {}
+    id_to_hit: dict[str, HSP] = {}
 
     for result in SearchIO.parse(hmm_results, 'hmmer3-text'):
         for hsp in result.hsps:
@@ -39,13 +46,19 @@ def parse_hmm3_results(hmm_results):
 
 def parse_hmm2_results(hmm_results):
     """
-    Write sequences that match to AMP-binding domains to .fasta file
+    Return dictionary of domain identifier to Biopython HSP instance
 
-    Input:
-    hmm_results: str, file location containing results of hmmscan
-    fasta_out: str, file location for writing AMP-binding domains
+    Parameters
+    ----------
+    hmm_results: str, path to hmmpfam2 output file (hmmer-2)
+
+    Returns
+    -------
+    id_to_hit: dict of {domain_id: HSP, ->}, with domain_id str and HSP a Biopython HSP instance containing a HMM hit
+        between an Hmm2 adenylation domain HMM and a query sequence
+
     """
-    id_to_hit = {}
+    id_to_hit: dict[str, HSP] = {}
 
     for result in SearchIO.parse(hmm_results, 'hmmer2-text'):
         for hsp in result.hsps:

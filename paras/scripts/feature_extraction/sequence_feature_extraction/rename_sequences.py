@@ -1,25 +1,40 @@
 import os
+from typing import TYPE_CHECKING
 
 from paras.scripts.parsers.fasta import read_fasta
 
-MAPPING_SUFFIX = 'mapping.txt'
-FASTA_SUFFIX = 'renamed_fasta.txt'
+if TYPE_CHECKING:
+    from paras.scripts.feature_extraction.sequence_feature_extraction.adenylation_domain import AdenylationDomain
 
 
-def rename_sequences(fasta_file, out_dir):
+MAPPING_SUFFIX: str = 'mapping.txt'
+FASTA_SUFFIX: str = 'renamed_fasta.txt'
+
+
+def rename_sequences(fasta_file: str, out_dir: str) -> tuple[str, str]:
     """
-    Rename sequences to integers before running hmmscan
 
-    Save a mapping file which maps these integers to the original sequence IDs
+    Rename sequences before running hmmscan, and return file paths of mapping and new fasta file
+
+    Parameters
+    ----------
+    fasta_file: str, path to input fasta file
+    out_dir: str, path to output directory
+
+    Returns
+    -------
+    mapping_file: str, path to mapping file which maps renamed sequence IDs to the original sequence IDs
+    new_fasta_file: str, path to output fasta file
+
     """
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
 
-    mapping_file = os.path.join(out_dir, MAPPING_SUFFIX)
-    new_fasta_file = os.path.join(out_dir, FASTA_SUFFIX)
+    mapping_file: str = os.path.join(out_dir, MAPPING_SUFFIX)
+    new_fasta_file: str = os.path.join(out_dir, FASTA_SUFFIX)
 
-    id_to_seq = read_fasta(fasta_file)
-    counter = 0
+    id_to_seq: dict[str, str] = read_fasta(fasta_file)
+    counter: int = 0
     with open(new_fasta_file, 'w') as new_fasta:
         with open(mapping_file, 'w') as mapping:
             for seq_id, seq in id_to_seq.items():
@@ -31,6 +46,18 @@ def rename_sequences(fasta_file, out_dir):
 
 
 def parse_mapping(mapping_file):
+    """
+    Return a dictionary of renamed sequence IDs to original sequence IDs
+
+    Parameters
+    ----------
+    mapping_file: str, path to mapping file which maps renamed sequence IDs to the original sequence IDs
+
+    Returns
+    -------
+    new_to_original: dict of {new_id: old_id, ->}, with new_id and old_id strings
+
+    """
     new_to_original = {}
     with open(mapping_file, 'r') as mapping:
         for line in mapping:
@@ -43,7 +70,17 @@ def parse_mapping(mapping_file):
     return new_to_original
 
 
-def reverse_renaming(adenylation_domains, mapping_file):
-    new_to_original = parse_mapping(mapping_file)
+def reverse_renaming(adenylation_domains: list["AdenylationDomain"], mapping_file: str) -> None:
+    """
+    Reverses the renaming of sequences within adenylation domain instances
+
+    Parameters
+    ----------
+
+    adenylation_domains: list of [domain, ->], with each domain an AdenylationDomain instance
+    mapping_file: str, path to mapping file which maps renamed sequence IDs to the original sequence IDs
+
+    """
+    new_to_original: dict[str, str] = parse_mapping(mapping_file)
     for domain in adenylation_domains:
         domain.protein_name = new_to_original[domain.protein_name]

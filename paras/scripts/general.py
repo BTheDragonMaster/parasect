@@ -7,11 +7,13 @@ from joblib import load
 import paras.models.random_forest
 import paras.data.compound_data
 
+from paras.scripts.parsers.fasta import yield_fasta
+from paras.scripts.parsers.gbk_to_fasta import proteins_from_genbank
 from paras.scripts.feature_extraction.sequence_feature_extraction.extract_domains import domains_from_fasta
 from paras.scripts.feature_extraction.sequence_feature_extraction.sequence_labels import SEPARATOR_1, \
     SEPARATOR_2, SEPARATOR_3
 from paras.scripts.feature_extraction.sequence_feature_extraction.seq_to_features import domains_to_features, \
-    get_sequence_features
+    get_sequence_features, to_feature_vectors
 from paras.scripts.feature_extraction.sequence_feature_extraction.rename_sequences import rename_sequences, \
     reverse_renaming
 from paras.scripts.data_processing.temp import TEMP_DIR, clear_temp
@@ -23,6 +25,8 @@ from paras.scripts.feature_extraction.sequence_feature_extraction.adenylation_do
 
 PARAS = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'class_sequence_hmm.paras')
 PARASECT = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'class_sequence_hmm.parasect')
+
+PARAS_ALL = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'class_sequence_hmm_all.paras')
 
 PARAS_ONEHOT = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'class_sequence_hmm_onehot.paras')
 PARASECT_ONEHOT = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'class_sequence_hmm_onehot.parasect')
@@ -109,10 +113,16 @@ def paras_from_extended_signatures(extended_signatures, nr_results=3, verbose=Fa
     return predictions
 
 
-def get_domains(fasta_file, extraction_method, job_name, separator_1, separator_2, separator_3, verbose):
+def get_domains(input_file, extraction_method, job_name, separator_1, separator_2, separator_3, verbose, file_type):
     assert extraction_method in ['hmm', 'profile']
+    assert file_type in ['fasta', 'gbk']
 
-    mapping_file, renamed_fasta_file = rename_sequences(fasta_file, TEMP_DIR)
+    if file_type == 'gbk':
+        original_fasta = os.path.join(TEMP_DIR, 'proteins_from_genbank.fasta')
+        proteins_from_genbank(input_file, original_fasta)
+        mapping_file, renamed_fasta_file = rename_sequences(original_fasta, TEMP_DIR)
+    else:
+        mapping_file, renamed_fasta_file = rename_sequences(input_file, TEMP_DIR)
 
     if extraction_method == 'profile':
         a_domains = domains_from_fasta(renamed_fasta_file, job_name=job_name, profile=True, verbose=verbose)
@@ -149,12 +159,16 @@ def write_files(a_domains, out_dir, job_name, save_domains, save_signatures, sav
 
 def run_paras(fasta_file, out_dir, job_name, extraction_method='hmm', save_signatures=False,
               save_extended_signatures=False, save_domains=False, nr_results=3, separator_1=SEPARATOR_1,
-              separator_2=SEPARATOR_2, separator_3=SEPARATOR_3, verbose=False, one_hot=False):
+              separator_2=SEPARATOR_2, separator_3=SEPARATOR_3, verbose=False, file_type='fasta', one_hot=False,
+              all_substrates=False):
+
+    assert file_type in ['fasta', 'gbk']
 
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
 
-    a_domains = get_domains(fasta_file, extraction_method, job_name, separator_1, separator_2, separator_3, verbose)
+    a_domains = get_domains(fasta_file, extraction_method, job_name, separator_1, separator_2, separator_3, verbose,
+                            file_type)
     if verbose:
         print("Extracting features..")
     ids, feature_vectors = domains_to_features(a_domains, one_hot=one_hot)
@@ -164,7 +178,10 @@ def run_paras(fasta_file, out_dir, job_name, extraction_method='hmm', save_signa
         if verbose:
             print("Loading PARAS classifier..")
         if not one_hot:
-            classifier = load(PARAS)
+            if not all_substrates:
+                classifier = load(PARAS)
+            else:
+                classifier = load(PARAS_ALL)
         else:
             classifier = load(PARAS_ONEHOT)
         if verbose:
@@ -195,12 +212,15 @@ def run_paras(fasta_file, out_dir, job_name, extraction_method='hmm', save_signa
 def run_parasect(fasta_file, out_dir, job_name, exclude_default_substrates=False, smiles: Optional[List] = None,
                  substrate_names: Optional[List] = None, extraction_method='hmm', save_signatures=False,
                  save_extended_signatures=False, save_domains=False, nr_results=3, separator_1=SEPARATOR_1,
-                 separator_2=SEPARATOR_2, separator_3=SEPARATOR_3, verbose=False, one_hot=False):
+                 separator_2=SEPARATOR_2, separator_3=SEPARATOR_3, verbose=False, file_type='fasta', one_hot=False):
+
+    assert file_type in ['fasta', 'gbk']
 
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
 
-    a_domains = get_domains(fasta_file, extraction_method, job_name, separator_1, separator_2, separator_3, verbose)
+    a_domains = get_domains(fasta_file, extraction_method, job_name, separator_1, separator_2, separator_3, verbose,
+                            file_type)
 
     if verbose:
         print("Extracting domain features..")
@@ -298,5 +318,65 @@ def run_parasect(fasta_file, out_dir, job_name, exclude_default_substrates=False
 
     write_files(a_domains, out_dir, job_name, save_domains, save_signatures, save_extended_signatures)
     clear_temp()
+
+    return results
+
+
+def run_custom_model(fasta_file: str, model_path: str, nr_results: int = 3, seq_len: int = 33, verbose: bool = False):
+    """
+    Returns a dictionary of paras results
+
+    Parameters
+    ----------
+    fasta_file: str, path to fasta file. All sequences must have equal length
+    model_path: str, path to scikit learn model to run
+    nr_results: int, number of top predictions to return
+    seq_len: int, length of the sequences in the fasta file
+    verbose: bool, print progress if True. Default: False
+
+    Returns
+    -------
+    results: dict of {seq_id: [(prediction_probability, prediction), ->], ->}, with seq_id str, prediction_probability
+        float, and prediction str
+    """
+
+    if verbose:
+        print("Loading data..")
+    id_to_features = {}
+
+    for domain, seq in yield_fasta(fasta_file):
+        new_seq = seq.replace('X', '-')
+        if all([char in VALID_CHARACTERS for char in new_seq]):
+            if len(new_seq) == seq_len:
+                id_to_features[domain] = get_sequence_features(new_seq)
+
+            else:
+                print(f"Cannot make prediction for domain {domain}. Sequence {seq} is not of length {seq_len}.")
+        else:
+            print(f"Cannot make prediction for domain {domain}. Sequence {seq} contains invalid characters.")
+
+    ids, feature_vectors = to_feature_vectors(id_to_features)
+
+    results = OrderedDict()
+    if feature_vectors:
+        if verbose:
+            print("Loading classifier..")
+        classifier = load(model_path)
+        if verbose:
+            print("Predicting substrates..")
+
+        probabilities = classifier.predict_proba(feature_vectors)
+        amino_acid_classes = classifier.classes_
+
+        for i, seq_id in enumerate(ids):
+            probability_list = probabilities[i]
+            probs_and_aa = get_top_n_aa_paras(amino_acid_classes, probability_list, nr_results)
+            results[seq_id] = probs_and_aa
+
+    else:
+        if verbose:
+            print("No A domains found.")
+        clear_temp()
+        return results
 
     return results

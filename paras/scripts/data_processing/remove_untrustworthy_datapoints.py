@@ -51,9 +51,9 @@ def remove_untrustworthy_datapoints(parasect_data, untrustworthy_datapoints, out
                 else:
                     removed_domains.append(domain_id)
 
-    print(set(domain_ids).difference(set(removed_domains)))
+    print(set(removed_domains))
 
 
 if __name__ == "__main__":
-    # remove_untrustworthy_datapoints(argv[1], argv[2], argv[3])
-    remove_untrustworthy_from_alignment(argv[1], argv[2], argv[3])
+    remove_untrustworthy_datapoints(argv[1], argv[2], argv[3])
+    # remove_untrustworthy_from_alignment(argv[1], argv[2], argv[3])
