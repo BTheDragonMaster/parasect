@@ -11,13 +11,15 @@ from paras.scripts.feature_extraction.sequence_feature_extraction.sequence_label
 def parse_arguments():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-i', type=str, required=True, help="Path to input fasta file.")
+    parser.add_argument('-i', type=str, required=True, help="Path to input fasta or gbk file.")
+    parser.add_argument('-f', type=str, default='fasta', help="Input file type. Must be 'fasta' or 'gbk'.")
     parser.add_argument('-o', type=str, required=True, help="Path to output directory.")
     parser.add_argument('-n', type=int, default=3, help="Number of top predictions to report.")
     parser.add_argument('-j', type=str, default="run", help="Job name")
     parser.add_argument('-p', action='store_true',
                         help="Use profile alignment instead of HMM for active site extraction")
     parser.add_argument('-v', action='store_true', help="Verbose: print progress if given.")
+    parser.add_argument('-one_hot', action='store_true', help="Use one-hot encoding to make predictions")
     parser.add_argument('-exclude_standard_substrates', action='store_true',
                         help="Don't run predictions for the default substrates included in PARASECT")
     parser.add_argument('-substrate_names', type=str, nargs='*',
@@ -50,7 +52,7 @@ def run():
     results = run_parasect(args.i, args.o, args.j, args.exclude_standard_substrates,
                            args.smiles, args.substrate_names, extraction_method, args.save_signatures,
                            args.save_extended, args.save_domains, args.n, args.s1,
-                           args.s2, args.s3, args.v)
+                           args.s2, args.s3, args.v, args.f, args.one_hot)
 
     out_file = os.path.join(args.o, f'{args.j}_parasect_results.txt')
     write_results(results, out_file)

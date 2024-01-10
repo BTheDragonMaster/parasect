@@ -3,7 +3,7 @@
 import argparse
 import os
 
-from paras.scripts.general import run_paras, write_results
+from paras.scripts.general import run_paras, run_custom_model, write_results
 from paras.scripts.feature_extraction.sequence_feature_extraction.sequence_labels import SEPARATOR_1, \
     SEPARATOR_2, SEPARATOR_3
 
@@ -11,12 +11,14 @@ from paras.scripts.feature_extraction.sequence_feature_extraction.sequence_label
 def parse_arguments():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-i', type=str, required=True, help="Path to input fasta file.")
+    parser.add_argument('-i', type=str, required=True, help="Path to input fasta or gbk file.")
+    parser.add_argument('-f', type=str, default='fasta', help="Input file type. Must be 'fasta' or 'gbk'.")
     parser.add_argument('-o', type=str, required=True, help="Path to output directory.")
     parser.add_argument('-n', type=int, default=3, help="Number of top predictions to report.")
     parser.add_argument('-j', type=str, default="run", help="Job name")
     parser.add_argument('-p', action='store_true',
                         help="Use profile alignment instead of HMM for active site extraction")
+    parser.add_argument('-one_hot', action='store_true', help="Use one-hot encoding to make predictions")
     parser.add_argument('-v', action='store_true', help="Verbose: print progress if given.")
     parser.add_argument('-save_extended', action='store_true',
                         help="Save extended 34 amino acid signatures to file.")
@@ -27,7 +29,9 @@ def parse_arguments():
     parser.add_argument('-s1', type=str, default=SEPARATOR_1, help="Symbol used as separator")
     parser.add_argument('-s2', type=str, default=SEPARATOR_2, help="Symbol used as separator")
     parser.add_argument('-s3', type=str, default=SEPARATOR_3, help="Symbol used as separator")
-
+    parser.add_argument('-c', type=str, default=None, help="Path to custom model to run")
+    parser.add_argument('-l', type=int, default=33, help="Length of input sequences. Only used when custom model is run.")
+    parser.add_argument('-all_substrates', action='store_true', help="Use classifier that was trained on all substrates")
     args = parser.parse_args()
 
     return args
@@ -40,8 +44,19 @@ def run():
     else:
         extraction_method = 'hmm'
 
-    results = run_paras(args.i, args.o, args.j, extraction_method, args.save_signatures,
-                        args.save_extended, args.save_domains, args.n, args.s1, args.s2, args.s3, args.v)
+    if not args.c:
+
+        results = run_paras(args.i, args.o, args.j, extraction_method, args.save_signatures,
+                            args.save_extended, args.save_domains, args.n, args.s1, args.s2, args.s3, args.v,
+                            args.f, args.one_hot, args.all_substrates)
+
+    else:
+        if not os.path.exists(args.o):
+            os.mkdir(args.o)
+
+        assert args.f == 'fasta'
+
+        results = run_custom_model(args.i, args.c,  args.n, args.l, args.v)
 
     out_file = os.path.join(args.o, f'{args.j}_paras_results.txt')
     write_results(results, out_file)
