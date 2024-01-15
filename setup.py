@@ -17,10 +17,10 @@ setup(
                        "*.fasta",
                        "*.txt",
                        "*.tsv",
-                       "*class_sequence_hmm.paras",
-                       "*class_sequence_hmm_all.paras",
-                       "*class_sequence_hmm.parasect",
-                       "*class_sequence_hmm_onehot.paras",
-                       "*class_sequence_hmm_onehot.parasect"
+                       "*model.paras",
+                       "*model_all_substrates.paras",
+                       "*model.parasect",
+                       "*model_onehot.paras",
+                       "*model_onehot.parasect"
                        ]},
     scripts=['bin/parasect', 'bin/paras'])

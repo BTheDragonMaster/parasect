@@ -23,13 +23,13 @@ from paras.scripts.feature_extraction.compound_feature_extraction.fingerprinting
 from paras.scripts.feature_extraction.sequence_feature_extraction.adenylation_domain import VALID_CHARACTERS
 
 
-PARAS = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'class_sequence_hmm.paras')
-PARASECT = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'class_sequence_hmm.parasect')
+PARAS = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'model.paras')
+PARASECT = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'model.parasect')
 
-PARAS_ALL = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'class_sequence_hmm_all.paras')
+PARAS_ALL = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'model_all_substrates.paras')
 
-PARAS_ONEHOT = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'class_sequence_hmm_onehot.paras')
-PARASECT_ONEHOT = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'class_sequence_hmm_onehot.parasect')
+PARAS_ONEHOT = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'model_onehot.paras')
+PARASECT_ONEHOT = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'model_onehot.parasect')
 
 INCLUDED_SUBSTRATES = os.path.join(os.path.dirname(paras.data.compound_data.__file__), 'included_substrates.txt')
 FINGERPRINTS = os.path.join(os.path.dirname(paras.data.compound_data.__file__), 'fingerprints.txt')
