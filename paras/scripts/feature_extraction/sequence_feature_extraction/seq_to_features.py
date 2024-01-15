@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from paras.scripts.feature_extraction.sequence_feature_extraction.adenylation_domain import AdenylationDomain
 
 PROPERTIES_FILE: str = os.path.join(os.path.dirname(paras.data.sequence_data.amino_acid_properties.__file__),
-                                    '15_aa_properties_normalised.txt')
+                                    'physicochemical_properties.txt')
 PROPERTIES: dict[str, list[float]] = parse_amino_acid_properties(PROPERTIES_FILE)
 
 ONE_HOT_CATEGORIES = ['A', 'C', 'D', 'E', 'F',
