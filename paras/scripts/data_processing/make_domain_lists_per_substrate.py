@@ -6,7 +6,6 @@ from paras.scripts.data_analysis.count_substrates import count_substrates_from_f
 from paras.scripts.data_processing.relabel_data import relabel_from_inclusion_limit
 
 
-
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Script to make separate datasets for each substrate.")
     parser.add_argument('-s', type=str, required=True, help='Path to file containing specificity data.')

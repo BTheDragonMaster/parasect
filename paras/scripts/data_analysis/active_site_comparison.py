@@ -11,7 +11,7 @@ def parse_arguments():
     parser = ArgumentParser(description="Compare active sites")
     parser.add_argument("-f", required=True, type=str, help="Input fasta file containing active site signatures")
     parser.add_argument("-i", required=True, type=str,
-                        help="String of active site signature to compare. Had to be of same length as signatures in fasta")
+                        help="String of active site signature to compare. Has to be of same length as signatures in fasta")
     parser.add_argument("-m", default='min', type=str,
                         help="Accepts 'max' or 'min': 'max' for most and 'min' for least similar sequence.")
     parser.add_argument("-o", required=True, type=str,

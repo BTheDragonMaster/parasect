@@ -8,8 +8,6 @@ def count_correct_in_top_x(interaction_file, top_x):
     interaction_data = Tabular(interaction_file, [0, 1])
     domain_to_interactions = {}
 
-
-
     for datapoint in interaction_data.data:
         domain = interaction_data.get_value(datapoint, "domain")
         probability = interaction_data.get_value(datapoint, "interaction_probability")

@@ -2,6 +2,7 @@ from paras.scripts.parsers.fasta import read_fasta
 from paras.scripts.parsers.parsers import parse_domain_list
 from sys import argv
 
+
 def get_hmm_domain_list(full_domain_list, hmm_fasta, out_file):
     domains = parse_domain_list(full_domain_list)
     hmm_domains = set(read_fasta(hmm_fasta).keys())

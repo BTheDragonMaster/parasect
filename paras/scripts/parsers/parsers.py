@@ -8,6 +8,17 @@ from collections import OrderedDict
 from dataclasses import dataclass, field
 
 
+def parse_taxonomy(taxonomy_file):
+    protein_to_taxonomy: dict[str, list[str]] = {}
+    with open(taxonomy_file, 'r') as tax_info:
+        for line in tax_info:
+            tax_data = line.strip().split('\t')
+            protein = tax_data[0]
+            taxonomy = tax_data[1:]
+            protein_to_taxonomy[protein] = taxonomy
+    return protein_to_taxonomy
+
+
 def parse_closest_identities(identities_file):
     domain_to_id = {}
     with open(identities_file, 'r') as identities:
