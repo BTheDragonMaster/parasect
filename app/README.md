@@ -39,3 +39,21 @@ npm start
 ```
 
 Visit `https://localhost:3000/` in your browser to view the app.
+
+## Run with Docker
+
+Run the following script to build and runt he app in a Docker container:
+
+```bash
+run_docker.sh <server_port> <client_port> -d
+```
+
+The app will be available at `https://localhost:<client_port>/`.
+
+### Rebuild Docker image
+
+Run the following script to rebuild the Docker image:
+
+```bash
+SERVER_PORT=<server_port> CLIENT_PORT=<client_port> docker-compose build
+```
