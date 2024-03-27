@@ -7,8 +7,8 @@
 Create a local environment with conda and install server side dependencies with pip from `src/server/requirements.txt`:
 
 ```bash
-conda create -n parasect python=3.9
-conda activate parasect
+conda create -n paras python=3.9
+conda activate paras
 pip install -r src/server/requirements.txt
 ```
 
