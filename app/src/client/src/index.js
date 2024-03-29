@@ -3,7 +3,8 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 
-import "./style/main.css";
+import "react-widgets/scss/styles.scss";
+import "./style/main.scss";
 
 import Toast from "./components/Toast";
 import Navbar from "./components/Navbar";
