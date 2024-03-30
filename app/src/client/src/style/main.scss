@@ -21,21 +21,3 @@ html, body {
     background-color: white;
     color: black;
 }
-
-.widget {
-    opacity: 1;                     
-    transition: opacity 0.5s ease-in-out;
-    background-color: transparent;
-}
-
-.fade-in {
-    opacity: 1; /* Set opacity to 1 (completely visible) for fading in. */
-}
-
-.fade-out {
-    opacity: 0; /* Set opacity to 0 (completely invisible) for fading out. */
-}
-
-.content {
-    padding: 30px;
-}

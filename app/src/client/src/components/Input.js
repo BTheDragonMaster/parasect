@@ -1,7 +1,7 @@
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 
-const FastaInputContainer = () => {
-    const [src, setSrc] = useState("");
+const FastaInputContainer = ({ src, setSrc }) => {
 
     const handleFileChange = (event) => {
         const file = event.target.files[0];
@@ -23,7 +23,7 @@ const FastaInputContainer = () => {
                     <div className="control">
                         <textarea
                             className="textarea"
-                            placeholder="Enter Fasta sequence here or upload a file..."
+                            placeholder="Enter Fasta sequence here or upload Fasta file..."
                             value={src}
                             onChange={(event) => setSrc(event.target.value)}
                         >
@@ -48,8 +48,7 @@ const FastaInputContainer = () => {
     );
 };
 
-const GenbankInputContainer = () => {
-    const [src, setSrc] = useState("");
+const GenbankInputContainer = ({ src, setSrc }) => {
 
     const handleFileChange = (event) => {
         const file = event.target.files[0];
@@ -83,8 +82,18 @@ const GenbankInputContainer = () => {
     );
 };
 
-const Input = () => {
-    const [selectedInputType, setSelectedInputType] = useState("Fasta");
+const Input = (
+    { 
+        initVisible,
+        src, 
+        setSrc, 
+        selectedInputType, 
+        setSelectedInputType,
+        handleRefresh,
+        handleSubmit
+    }
+) => {
+    const [visible, setVisible] = useState(initVisible);
 
     const handleInputTypeChange = (event) => {
         setSelectedInputType(event.target.value);
@@ -98,53 +107,104 @@ const Input = () => {
                 <div className="panel-heading">
                     <div className="title is-5">
                         Input
+                        <button
+                            className="button is-small is-light"
+                            style={{float: "right", marginLeft: "10px", marginTop: "-5px"}}
+                            onClick={() => setVisible(!visible)}
+                        >
+                            {visible ? "Hide" : "Show"}
+                        </button>
                     </div>
                 </div>
 
-                {/* Add a radio button to select the input type: Fasta or Genbank. */}
-                <div className="panel-block" style={{paddingLeft: "20px"}}>
-                    <div className="column is-full">
-                        <div className="field has-addons">
-                            <div className="control">
-                                <label class="radio">
-                                    <input
-                                        type="radio"
-                                        name="inputType"
-                                        value="Fasta"
-                                        checked={selectedInputType === "Fasta"}
-                                        onChange={handleInputTypeChange}
-                                    />
-                                    <span style={{marginLeft: "5px"}}>
-                                        Fasta
-                                    </span>
-                                </label>
+                <div>
+                    {visible ? (
+                        <div>
+                            {/* Add a radio button to select the input type: Fasta or Genbank. */}
+                            <div className="panel-block" style={{paddingLeft: "20px"}}>
+                                <div className="column is-full">
+                                    <div className="field has-addons">
+                                        <div className="control">
+                                            <label className="radio">
+                                                <input
+                                                    type="radio"
+                                                    name="inputType"
+                                                    value="Fasta"
+                                                    checked={selectedInputType === "Fasta"}
+                                                    onChange={handleInputTypeChange}
+                                                />
+                                                <span style={{marginLeft: "5px"}}>
+                                                    Fasta
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div className="field has-addons">
+                                        <div className="control">
+                                            <label className="radio">
+                                                <input
+                                                    type="radio"
+                                                    name="inputType"
+                                                    value="Genbank"
+                                                    checked={selectedInputType === "Genbank"}
+                                                    onChange={handleInputTypeChange}
+                                                />
+                                                <span style={{marginLeft: "5px"}}>
+                                                    Genbank
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div className="field has-addons">
-                            <div className="control">
-                                <label class="radio">
-                                    <input
-                                        type="radio"
-                                        name="inputType"
-                                        value="Genbank"
-                                        checked={selectedInputType === "Genbank"}
-                                        onChange={handleInputTypeChange}
-                                    />
-                                    <span style={{marginLeft: "5px"}}>
-                                        Genbank
-                                    </span>
-                                </label>
+
+                            {/* Input block. */}
+                            {selectedInputType === "Fasta" ? (
+                                <FastaInputContainer src={src} setSrc={setSrc} />
+                            ) : (
+                                <GenbankInputContainer src={src} setSrc={setSrc} />
+                            )}
+
+                            {/* Submit button that sends input to API. */}
+                            <div className="panel-block">
+                                <div className="column is-full">
+                                    <div className="field is-grouped is-grouped-right">
+                                        <div className="control">
+                                            <button
+                                                className="button is-secondary"
+                                                style={{marginRight: "10px"}}
+                                                onClick={() => {
+                                                    handleRefresh();
+                                                }}
+                                            >
+                                                Refresh
+                                            </button>
+                                            <button 
+                                                className="button is-primary"
+                                                onClick={() => {
+                                                    if (src === "") {
+                                                        toast.error("No input provided.");
+                                                        return;
+                                                    }
+                                                    handleSubmit();
+                                                }}
+                                            >
+                                                Submit
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+
+                        </div>     
+                    ) : (
+                        <div 
+                            className="panel-block" 
+                            style={{padding: "0px", height: "5px"}}
+                        />
+                    )}
                 </div>
 
-                {/* Input block. */}
-                {selectedInputType === "Fasta" ? (
-                    <FastaInputContainer />
-                ) : (
-                    <GenbankInputContainer />
-                )}
             </div>
         </div>
     );

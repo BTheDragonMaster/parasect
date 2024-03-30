@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { toast } from "react-toastify";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import "react-widgets/scss/styles.scss";
 import "./style/main.scss";
@@ -13,29 +12,12 @@ import Paras from "./components/Paras";
 import Parasect from "./components/Parasect";
 
 function AppRoutes () {
-    const location = useLocation();
-
-    const [displayLocation, setDisplayLocation] = useState(location);
-    const [transitionStage, setTransitionStage] = useState("fade-in");
-
-    useEffect(() => {
-        if (location !== displayLocation) setTransitionStage("fade-out");
-    }, [location, displayLocation]);
-
     return (
-        <div
-            className={`widget ${transitionStage}`}
-            onTransitionEnd={() => {
-                if (transitionStage === "fade-out") {
-                    setTransitionStage("fade-in");
-                    setDisplayLocation(location);
-                };
-            }}
-        >
-            <Routes location={displayLocation}>
-                <Route path="/" element={<div className="content"><Home /></div>} />
-                <Route path="/paras" element={<div className="content"><Paras /></div>} />
-                <Route path="/parasect" element={<div className="content"><Parasect /></div>} />
+        <div>
+            <Routes>
+                <Route path="/" element={<div style={{padding: "30px"}}><Home /></div>} />
+                <Route path="/paras" element={<div style={{padding: "20px"}}><Paras /></div>} />
+                <Route path="/parasect" element={<div style={{padding: "20px"}}><Parasect /></div>} />
             </Routes>
         </div>
     );

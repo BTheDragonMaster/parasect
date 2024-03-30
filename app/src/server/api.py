@@ -1,6 +1,11 @@
 from flask import Flask, Response 
 
+from routes.paras import blueprint_submit_paras
+from routes.parasect import blueprint_submit_parasect
+
 app = Flask(__name__)
+app.register_blueprint(blueprint_submit_paras)
+app.register_blueprint(blueprint_submit_parasect)
 
 @app.errorhandler(404)
 def not_found(error) -> Response:
