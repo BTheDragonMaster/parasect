@@ -13,10 +13,27 @@ def submit_paras() -> Response:
     """
     data = request.get_json()
 
-    print(data)
+    try:
+        data = data["data"]
+        selected_input = data["src"] # Fasta or Genbank file contents.
+        selected_input_type = data["selectedInputType"] # Fasta or Genbank.
 
-    # Wait to simulate processing.
-    time.sleep(2)
+        # Options.
+        save_active_site_signatures = data["saveActiveSiteSignatures"]
+        save_extended_signatures = data["saveExtendedSignatures"]
+        save_adenylation_domain_sequences = data["saveAdenylationDomainSequences"]
+        selected_model = data["selectedSubstrateChoice"] # allSubstrates or commonSubstrates.
+        num_predictions_to_report = data["numPredictionsToReport"]
 
-    msg = "Settings submitted successfully."
+        # Advanced options.
+        use_structure_guided_alignment = data["useStructureGuidedProfileAlignment"]
+        first_separator = data["firstSeparator"]
+        second_separator = data["secondSeparator"]
+        third_separator = data["thirdSeparator"]
+
+    except:
+        msg = "Failed to read settings."
+        return ResponseData(Status.Error, message=msg).to_dict()
+
+    msg = "Submission was successful."
     return ResponseData(Status.Success, message=msg).to_dict()
