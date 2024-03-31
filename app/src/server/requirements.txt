@@ -5,5 +5,4 @@ scipy
 biopython
 pikachu-chem
 scikit-learn==1.2.0
-hmmer
 git+https://github.com/BTheDragonMaster/parasect@webapp
