@@ -167,7 +167,7 @@ def hits_to_domains(id_to_hit, fasta_file, profile=False, verbose=False):
     return filtered_a_domains
 
 
-def domains_from_fasta(fasta_in, temp_dir, hmmer_path, job_name='paras_run', profile=False, verbose=False):
+def domains_from_fasta(fasta_in, temp_dir, job_name='paras_run', profile=False, verbose=False):
     """
     Extract adomains from fasta file and write them to out_dir
 
@@ -184,7 +184,7 @@ def domains_from_fasta(fasta_in, temp_dir, hmmer_path, job_name='paras_run', pro
 
     if verbose:
         print("Running HMM..")
-    run_hmmpfam2(HMM2_FILE, fasta_in, hmm_out, hmmer_path)
+    run_hmmpfam2(HMM2_FILE, fasta_in, hmm_out)
     if verbose:
         print("Parsing hits..")
     id_to_hit = parse_hmm2_results(hmm_out)

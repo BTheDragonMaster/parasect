@@ -54,16 +54,6 @@ def submit_paras() -> Response:
         msg = f"Invalid model: {selected_model}."
         return ResponseData(Status.Failure, message=msg).to_dict()
     
-    # Locate hmmer.
-    try:
-        absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        hmmer_path = os.path.join(absolute_path, "hmmer/hmmpfam2")
-        assert os.path.exists(hmmer_path)
-
-    except Exception as e:
-        msg = f"Failed to locate hmmer: {str(e)}"
-        return ResponseData(Status.Failure, message=msg).to_dict()
-    
     # Locate temp directory.
     try:
         absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -96,8 +86,7 @@ def submit_paras() -> Response:
             separator_3=third_separator, 
             verbose=False,
             file_type=selected_input_type.lower(), 
-            temp_dir=temp_dir,
-            hmmer_path=hmmer_path
+            temp_dir=temp_dir
         )
         ids, feature_vectors = domains_to_features(a_domains, one_hot=False)
         if not feature_vectors: 

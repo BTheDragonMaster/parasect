@@ -102,7 +102,7 @@ def paras_from_extended_signatures(extended_signatures, model_path, nr_results=3
     return predictions
 
 
-def get_domains(input_file, extraction_method, job_name, separator_1, separator_2, separator_3, verbose, file_type, temp_dir, hmmer_path):
+def get_domains(input_file, extraction_method, job_name, separator_1, separator_2, separator_3, verbose, file_type, temp_dir):
     assert extraction_method in ['hmm', 'profile']
     assert file_type in ['fasta', 'gbk']
 
@@ -114,9 +114,9 @@ def get_domains(input_file, extraction_method, job_name, separator_1, separator_
         mapping_file, renamed_fasta_file = rename_sequences(input_file, temp_dir)
 
     if extraction_method == 'profile':
-        a_domains = domains_from_fasta(renamed_fasta_file, temp_dir=temp_dir, hmmer_path=hmmer_path, job_name=job_name, profile=True, verbose=verbose)
+        a_domains = domains_from_fasta(renamed_fasta_file, temp_dir=temp_dir, job_name=job_name, profile=True, verbose=verbose)
     elif extraction_method == 'hmm':
-        a_domains = domains_from_fasta(renamed_fasta_file, temp_dir=temp_dir, hmmer_path=hmmer_path, job_name=job_name, verbose=verbose)
+        a_domains = domains_from_fasta(renamed_fasta_file, temp_dir=temp_dir, job_name=job_name, verbose=verbose)
     else:
         raise ValueError(f"Only supported extraction methods are 'hmm' or 'profile'. Got {extraction_method}.")
 
