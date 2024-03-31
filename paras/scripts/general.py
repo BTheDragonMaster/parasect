@@ -16,7 +16,7 @@ from paras.scripts.feature_extraction.sequence_feature_extraction.seq_to_feature
     get_sequence_features, to_feature_vectors
 from paras.scripts.feature_extraction.sequence_feature_extraction.rename_sequences import rename_sequences, \
     reverse_renaming
-from paras.scripts.data_processing.temp import TEMP_DIR, clear_temp
+from paras.scripts.data_processing.temp import clear_temp
 from paras.scripts.parsers.parsers import parse_substrate_list
 from paras.scripts.feature_extraction.compound_feature_extraction.fingerprinting import bitvector_from_smiles, \
     bitvectors_from_substrate_names
@@ -113,12 +113,12 @@ def paras_from_extended_signatures(extended_signatures, nr_results=3, verbose=Fa
     return predictions
 
 
-def get_domains(input_file, extraction_method, job_name, separator_1, separator_2, separator_3, verbose, file_type):
+def get_domains(input_file, extraction_method, job_name, separator_1, separator_2, separator_3, verbose, file_type, temp_dir):
     assert extraction_method in ['hmm', 'profile']
     assert file_type in ['fasta', 'gbk']
 
     if file_type == 'gbk':
-        original_fasta = os.path.join(TEMP_DIR, 'proteins_from_genbank.fasta')
+        original_fasta = os.path.join(temp_dir, 'proteins_from_genbank.fasta')
         proteins_from_genbank(input_file, original_fasta)
         mapping_file, renamed_fasta_file = rename_sequences(original_fasta, TEMP_DIR)
     else:

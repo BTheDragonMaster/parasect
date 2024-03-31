@@ -3,8 +3,6 @@ import subprocess
 
 import paras.data.sequence_data
 from paras.scripts.parsers.fasta import read_fasta
-from paras.scripts.data_processing.temp import TEMP_DIR
-
 
 REF_SEQUENCE = "BAA00406.1.A1"
 ALIGNMENT_FILE = os.path.join(os.path.dirname(paras.data.sequence_data.__file__), 'structure_alignment.fasta')
@@ -17,11 +15,11 @@ def run_muscle(in_file, alignment_file, out_file):
     subprocess.check_call(command)
 
 
-def align_adomain(domain_name, domain_sequence, alignment_file):
+def align_adomain(domain_name, domain_sequence, alignment_file, temp_dir):
     # Run muscle and collect sequence positions from file
 
-    temp_in = os.path.join(TEMP_DIR, 'temp_in_alignment.fasta')
-    temp_out = os.path.join(TEMP_DIR, 'temp_out_alignment.fasta')
+    temp_in = os.path.join(temp_dir, 'temp_in_alignment.fasta')
+    temp_out = os.path.join(temp_dir, 'temp_out_alignment.fasta')
 
     with open(temp_in, 'w') as temp:
         temp.write(f'>{domain_name}\n{domain_sequence}')

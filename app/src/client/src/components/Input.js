@@ -97,6 +97,7 @@ const Input = (
     const [visible, setVisible] = useState(initVisible);
 
     const handleInputTypeChange = (event) => {
+        setSrc("");
         setSelectedInputType(event.target.value);
     };
 
@@ -176,10 +177,14 @@ const Input = (
                                                     className="button is-secondary"
                                                     style={{marginRight: "10px"}}
                                                     onClick={() => {
-                                                        handleLoadExample(setSrc);
+                                                        if (selectedInputType === "Fasta") {
+                                                            handleLoadExample(setSrc);
+                                                        } else {
+                                                            toast.error("Genbank examples are not available.");
+                                                        };
                                                     }}
                                                 >
-                                                    Load Example
+                                                    Load example
                                                 </button>
                                             )}
                                             <button

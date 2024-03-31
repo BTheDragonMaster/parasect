@@ -32,6 +32,9 @@ def parse_arguments():
     parser.add_argument('-c', type=str, default=None, help="Path to custom model to run")
     parser.add_argument('-l', type=int, default=33, help="Length of input sequences. Only used when custom model is run.")
     parser.add_argument('-all_substrates', action='store_true', help="Use classifier that was trained on all substrates")
+
+    parser.add_argument("-tmp_path", type=str, default=None, required=True, help="Path to temporary directory")
+
     args = parser.parse_args()
 
     return args
@@ -48,7 +51,7 @@ def run():
 
         results = run_paras(args.i, args.o, args.j, extraction_method, args.save_signatures,
                             args.save_extended, args.save_domains, args.n, args.s1, args.s2, args.s3, args.v,
-                            args.f, args.one_hot, args.all_substrates)
+                            args.f, args.one_hot, args.all_substrates, args.tmp_path)
 
     else:
         if not os.path.exists(args.o):

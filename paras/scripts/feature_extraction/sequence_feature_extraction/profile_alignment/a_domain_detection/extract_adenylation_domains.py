@@ -6,7 +6,7 @@ from Bio import SearchIO
 
 from paras.scripts.parsers.fasta import read_fasta, remove_spaces
 
-from paras.scripts.data_processing.temp import clear_temp, TEMP_DIR
+from paras.scripts.data_processing.temp import clear_temp
 from paras.scripts.feature_extraction.sequence_feature_extraction.sequence_labels import parse_domain_id, \
     make_domain_id
 from paras.scripts.feature_extraction.sequence_feature_extraction.hmm.run_hmmscan import run_hmmscan, HMM2_FILE
@@ -109,7 +109,7 @@ def merge_adomains(original_fasta_dir, fasta_dir, new_fasta_dir):
                         new_fasta.write(f'>{header}\n{amp_sequence}\n')
 
 
-def find_adomains(fasta_in, out_dir):
+def find_adomains(fasta_in, out_dir, temp_dir):
     """
     Extract adomains from fasta file and write them to out_dir
 
@@ -128,9 +128,9 @@ def find_adomains(fasta_in, out_dir):
     file_label = '.'.join(fasta_in.split('.')[:-1])
     file_label = file_label.split(r'/')[-1]
 
-    hmm_out = os.path.join(TEMP_DIR, f'{file_label}_.hmm_result')
-    fasta_renamed = os.path.join(TEMP_DIR, f'{file_label}_proteins_renamed.fasta')
-    fasta_subdomains_out = os.path.join(TEMP_DIR, f'{file_label}_subdomains.fasta')
+    hmm_out = os.path.join(temp_dir, f'{file_label}_.hmm_result')
+    fasta_renamed = os.path.join(temp_dir, f'{file_label}_proteins_renamed.fasta')
+    fasta_subdomains_out = os.path.join(temp_dir, f'{file_label}_subdomains.fasta')
     fasta_out = os.path.join(out_dir, f'{file_label}_adomains.fasta')
 
     remove_spaces(fasta_in, fasta_renamed)

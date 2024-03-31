@@ -6,7 +6,6 @@ from Bio import SearchIO
 from Bio.SearchIO._model import HSP
 
 from paras.scripts.parsers.fasta import read_fasta
-from paras.scripts.data_processing.temp import TEMP_DIR
 from paras.scripts.feature_extraction.sequence_feature_extraction.hmm.run_hmmscan import HMM2_FILE, \
     run_hmmpfam2
 from paras.scripts.feature_extraction.sequence_feature_extraction.sequence_labels import parse_domain_id, \
@@ -168,7 +167,7 @@ def hits_to_domains(id_to_hit, fasta_file, profile=False, verbose=False):
     return filtered_a_domains
 
 
-def domains_from_fasta(fasta_in, job_name='paras_run', profile=False, verbose=False):
+def domains_from_fasta(fasta_in, temp_dir, job_name='paras_run', profile=False, verbose=False):
     """
     Extract adomains from fasta file and write them to out_dir
 
@@ -181,7 +180,7 @@ def domains_from_fasta(fasta_in, job_name='paras_run', profile=False, verbose=Fa
 
     """
 
-    hmm_out = os.path.join(TEMP_DIR, f'{job_name}.hmm_result')
+    hmm_out = os.path.join(temp_dir, f'{job_name}.hmm_result')
     if verbose:
         print("Running HMM..")
     run_hmmpfam2(HMM2_FILE, fasta_in, hmm_out)
