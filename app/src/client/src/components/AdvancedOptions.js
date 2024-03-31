@@ -33,9 +33,7 @@ const AdvancedOptions = (
 
         reader.readAsText(file);
     };
-
-    console.log((smilesSrc && setSmilesSrc))
-
+    
     return (
         <div 
             className="control" 
