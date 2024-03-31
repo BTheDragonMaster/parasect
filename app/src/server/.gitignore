@@ -163,8 +163,5 @@ cython_debug/
 *.paras
 *.parasect
 
-# Ignore all files in hmmer directory
-hmmer/**
-
-# Ignore all files in tmp directory
-tmp/**
+# Ignore hmmpfam2 in hmmer folder
+hmmer/hmmpfam2
