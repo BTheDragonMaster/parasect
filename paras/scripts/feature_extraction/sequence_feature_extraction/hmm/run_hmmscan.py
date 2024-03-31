@@ -36,7 +36,8 @@ def run_hmmpfam2(hmm_dir, fasta_file, hmm_out):
     """
 
     with open(hmm_out, 'w') as out:
-        command = ['hmmpfam2', hmm_dir, fasta_file]
+        command = ['hmmpfam', hmm_dir, fasta_file]
+        # command = ['hmmpfam2', hmm_dir, fasta_file]
         # command = [hmmer_path, hmm_dir, fasta_file]
         subprocess.call(command, stdout=out)
 
