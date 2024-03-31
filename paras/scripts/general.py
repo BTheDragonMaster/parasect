@@ -4,7 +4,6 @@ from collections import OrderedDict
 
 from joblib import load
 
-import paras.models.random_forest
 import paras.data.compound_data
 
 from paras.scripts.parsers.fasta import yield_fasta
@@ -22,18 +21,8 @@ from paras.scripts.feature_extraction.compound_feature_extraction.fingerprinting
     bitvectors_from_substrate_names
 from paras.scripts.feature_extraction.sequence_feature_extraction.adenylation_domain import VALID_CHARACTERS
 
-
-PARAS = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'model.paras')
-PARASECT = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'model.parasect')
-
-PARAS_ALL = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'model_all_substrates.paras')
-
-PARAS_ONEHOT = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'model_onehot.paras')
-PARASECT_ONEHOT = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'model_onehot.parasect')
-
 INCLUDED_SUBSTRATES = os.path.join(os.path.dirname(paras.data.compound_data.__file__), 'included_substrates.txt')
 FINGERPRINTS = os.path.join(os.path.dirname(paras.data.compound_data.__file__), 'fingerprints.txt')
-
 
 def write_results(results, out_file):
     with open(out_file, 'w') as out:
@@ -75,14 +64,14 @@ def parasect_from_extended_signature(extended_signature, verbose=False):
         pass
 
 
-def paras_from_extended_signatures(extended_signatures, nr_results=3, verbose=False):
+def paras_from_extended_signatures(extended_signatures, model_path, nr_results=3, verbose=False):
     feature_vectors = []
     valid_indices = []
 
     if verbose:
         print("Loading PARAS classifier..")
 
-    classifier = load(PARAS)
+    classifier = load(model_path) # PARAS model
 
     for i, extended_signature in enumerate(extended_signatures):
         if all([char in VALID_CHARACTERS for char in extended_signature]):
@@ -113,21 +102,21 @@ def paras_from_extended_signatures(extended_signatures, nr_results=3, verbose=Fa
     return predictions
 
 
-def get_domains(input_file, extraction_method, job_name, separator_1, separator_2, separator_3, verbose, file_type, temp_dir):
+def get_domains(input_file, extraction_method, job_name, separator_1, separator_2, separator_3, verbose, file_type, temp_dir, hmmer_path):
     assert extraction_method in ['hmm', 'profile']
     assert file_type in ['fasta', 'gbk']
 
     if file_type == 'gbk':
         original_fasta = os.path.join(temp_dir, 'proteins_from_genbank.fasta')
         proteins_from_genbank(input_file, original_fasta)
-        mapping_file, renamed_fasta_file = rename_sequences(original_fasta, TEMP_DIR)
+        mapping_file, renamed_fasta_file = rename_sequences(original_fasta, temp_dir)
     else:
-        mapping_file, renamed_fasta_file = rename_sequences(input_file, TEMP_DIR)
+        mapping_file, renamed_fasta_file = rename_sequences(input_file, temp_dir)
 
     if extraction_method == 'profile':
-        a_domains = domains_from_fasta(renamed_fasta_file, job_name=job_name, profile=True, verbose=verbose)
+        a_domains = domains_from_fasta(renamed_fasta_file, temp_dir=temp_dir, hmmer_path=hmmer_path, job_name=job_name, profile=True, verbose=verbose)
     elif extraction_method == 'hmm':
-        a_domains = domains_from_fasta(renamed_fasta_file, job_name=job_name, verbose=verbose)
+        a_domains = domains_from_fasta(renamed_fasta_file, temp_dir=temp_dir, hmmer_path=hmmer_path, job_name=job_name, verbose=verbose)
     else:
         raise ValueError(f"Only supported extraction methods are 'hmm' or 'profile'. Got {extraction_method}.")
 
@@ -157,18 +146,32 @@ def write_files(a_domains, out_dir, job_name, save_domains, save_signatures, sav
                 domain.write_sequence(fasta, sequence_type='extended_signature')
 
 
-def run_paras(fasta_file, out_dir, job_name, extraction_method='hmm', save_signatures=False,
-              save_extended_signatures=False, save_domains=False, nr_results=3, separator_1=SEPARATOR_1,
-              separator_2=SEPARATOR_2, separator_3=SEPARATOR_3, verbose=False, file_type='fasta', one_hot=False,
-              all_substrates=False):
-
+def run_paras(
+    fasta_file, 
+    job_name, 
+    model_path_paras,
+    model_path_paras_all,
+    model_path_paras_onehot,
+    temp_dir,
+    hmmer_path,
+    extraction_method='hmm', 
+    save_signatures=False,
+    save_extended_signatures=False, 
+    save_domains=False, 
+    nr_results=3, 
+    separator_1=SEPARATOR_1,
+    separator_2=SEPARATOR_2, 
+    separator_3=SEPARATOR_3, 
+    verbose=False, 
+    file_type='fasta', 
+    one_hot=False,
+    all_substrates=False,
+):
     assert file_type in ['fasta', 'gbk']
 
-    if not os.path.exists(out_dir):
-        os.mkdir(out_dir)
-
     a_domains = get_domains(fasta_file, extraction_method, job_name, separator_1, separator_2, separator_3, verbose,
-                            file_type)
+                            file_type, temp_dir, hmmer_path)
+
     if verbose:
         print("Extracting features..")
     ids, feature_vectors = domains_to_features(a_domains, one_hot=one_hot)
@@ -179,11 +182,14 @@ def run_paras(fasta_file, out_dir, job_name, extraction_method='hmm', save_signa
             print("Loading PARAS classifier..")
         if not one_hot:
             if not all_substrates:
-                classifier = load(PARAS)
+                assert model_path_paras is not None
+                classifier = load(model_path_paras)
             else:
-                classifier = load(PARAS_ALL)
+                assert model_path_paras_all is not None
+                classifier = load(model_path_paras_all)
         else:
-            classifier = load(PARAS_ONEHOT)
+            assert model_path_paras_onehot is not None
+            classifier = load(model_path_paras_onehot)
         if verbose:
             print("Predicting substrates..")
         probabilities = classifier.predict_proba(feature_vectors)
@@ -197,22 +203,51 @@ def run_paras(fasta_file, out_dir, job_name, extraction_method='hmm', save_signa
     else:
         if verbose:
             print("No A domains found.")
-        clear_temp()
+        clear_temp(temp_dir)
         return results
 
     if verbose:
-        print("Writing results..")
+        print("Writing results..")  
 
-    write_files(a_domains, out_dir, job_name, save_domains, save_signatures, save_extended_signatures)
-    clear_temp()
+    clear_temp(temp_dir)
 
-    return results
+    domain_results = {}
+    for domain in a_domains:
+        domain_results[domain.domain_id] = {}
+        if save_domains:
+            domain_results[domain.domain_id]['sequence'] = domain.sequence
+        if save_signatures:
+            domain_results[domain.domain_id]['signature'] = domain.signature
+        if save_extended_signatures:
+            domain_results[domain.domain_id]['extended_signature'] = domain.extended_signature
 
+    for domain_id in results:
+        preds = results[domain_id]
+        domain_results[domain_id]['predictions'] = preds
+        
+    return domain_results
 
-def run_parasect(fasta_file, out_dir, job_name, exclude_default_substrates=False, smiles: Optional[List] = None,
-                 substrate_names: Optional[List] = None, extraction_method='hmm', save_signatures=False,
-                 save_extended_signatures=False, save_domains=False, nr_results=3, separator_1=SEPARATOR_1,
-                 separator_2=SEPARATOR_2, separator_3=SEPARATOR_3, verbose=False, file_type='fasta', one_hot=False):
+def run_parasect(
+    fasta_file, 
+    out_dir, 
+    job_name, 
+    model_path_parasect,
+    model_path_parasect_onehot,
+    exclude_default_substrates=False, 
+    smiles: Optional[List] = None,
+    substrate_names: Optional[List] = None, 
+    extraction_method='hmm', 
+    save_signatures=False,
+    save_extended_signatures=False, 
+    save_domains=False, 
+    nr_results=3, 
+    separator_1=SEPARATOR_1,
+    separator_2=SEPARATOR_2, 
+    separator_3=SEPARATOR_3, 
+    verbose=False, 
+    file_type='fasta', 
+    one_hot=False
+):
 
     assert file_type in ['fasta', 'gbk']
 
@@ -251,9 +286,9 @@ def run_parasect(fasta_file, out_dir, job_name, exclude_default_substrates=False
             print("Loading PARASECT classifier..")
 
         if not one_hot:
-            classifier = load(PARASECT)
+            classifier = load(model_path_parasect)
         else:
-            classifier = load(PARASECT_ONEHOT)
+            classifier = load(model_path_parasect_onehot)
 
         if verbose:
             print("Predicting substrates..")

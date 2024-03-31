@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import json 
 
 from paras.scripts.general import run_paras, run_custom_model, write_results
 from paras.scripts.feature_extraction.sequence_feature_extraction.sequence_labels import SEPARATOR_1, \
@@ -32,8 +33,12 @@ def parse_arguments():
     parser.add_argument('-c', type=str, default=None, help="Path to custom model to run")
     parser.add_argument('-l', type=int, default=33, help="Length of input sequences. Only used when custom model is run.")
     parser.add_argument('-all_substrates', action='store_true', help="Use classifier that was trained on all substrates")
-
-    parser.add_argument("-tmp_path", type=str, default=None, required=True, help="Path to temporary directory")
+    
+    parser.add_argument('-t', '--tmp', type=str, default=None, required=True, help="Path to temporary directory")
+    parser.add_argument('--hmmer_path', type=str, default=None, help="Path to HMMER3 binaries")
+    parser.add_argument('--model_path_paras', type=str, default=None, help="Path to model for paras prediction")
+    parser.add_argument('--model_path_paras_all', type=str, default=None, help="Path to model for paras prediction")
+    parser.add_argument('--model_path_paras_onehot', type=str, default=None, help="Path to model for paras prediction")
 
     args = parser.parse_args()
 
@@ -49,9 +54,27 @@ def run():
 
     if not args.c:
 
-        results = run_paras(args.i, args.o, args.j, extraction_method, args.save_signatures,
-                            args.save_extended, args.save_domains, args.n, args.s1, args.s2, args.s3, args.v,
-                            args.f, args.one_hot, args.all_substrates, args.tmp_path)
+        results = run_paras(
+            args.i, 
+            args.j, 
+            args.model_path_paras,
+            args.model_path_paras_all,
+            args.model_path_paras_onehot,
+            args.tmp,
+            args.hmmer_path,
+            extraction_method, 
+            args.save_signatures,
+            args.save_extended, 
+            args.save_domains, 
+            args.n, 
+            args.s1, 
+            args.s2, 
+            args.s3, 
+            args.v,
+            args.f, 
+            args.one_hot, 
+            args.all_substrates
+        )
 
     else:
         if not os.path.exists(args.o):
@@ -59,10 +82,10 @@ def run():
 
         assert args.f == 'fasta'
 
-        results = run_custom_model(args.i, args.c,  args.n, args.l, args.v)
-
-    out_file = os.path.join(args.o, f'{args.j}_paras_results.txt')
-    write_results(results, out_file)
+        results = run_custom_model(args.i, args.c, args.n, args.l, args.v)
+        
+    with open(os.path.join(args.o, f'{args.j}_paras_results.json'), 'w') as f:
+        json.dump(results, f, indent=4)
 
 
 if __name__ == "__main__":

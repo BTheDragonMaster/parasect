@@ -24,7 +24,7 @@ def run_hmmscan(hmm_dir, fasta_file, hmm_out):
         subprocess.call(command, stdout=out)
 
 
-def run_hmmpfam2(hmm_dir, fasta_file, hmm_out):
+def run_hmmpfam2(hmm_dir, fasta_file, hmm_out, hmmer_path):
     """
     Run hmmscan from command line
 
@@ -36,7 +36,8 @@ def run_hmmpfam2(hmm_dir, fasta_file, hmm_out):
     """
 
     with open(hmm_out, 'w') as out:
-        command = ['hmmpfam2', hmm_dir, fasta_file]
+        # command = ['hmmpfam2', hmm_dir, fasta_file]
+        command = [hmmer_path, hmm_dir, fasta_file]
         subprocess.call(command, stdout=out)
 
 
