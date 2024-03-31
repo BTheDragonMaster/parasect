@@ -89,6 +89,7 @@ const Input = (
         setSrc, 
         selectedInputType, 
         setSelectedInputType,
+        handleLoadExample,
         handleRefresh,
         handleSubmit
     }
@@ -170,6 +171,17 @@ const Input = (
                                 <div className="column is-full">
                                     <div className="field is-grouped is-grouped-right">
                                         <div className="control">
+                                            {handleLoadExample && (
+                                                <button
+                                                    className="button is-secondary"
+                                                    style={{marginRight: "10px"}}
+                                                    onClick={() => {
+                                                        handleLoadExample(setSrc);
+                                                    }}
+                                                >
+                                                    Load Example
+                                                </button>
+                                            )}
                                             <button
                                                 className="button is-secondary"
                                                 style={{marginRight: "10px"}}

@@ -35,6 +35,11 @@ const Paras = () => {
     const [secondSeparator, setSecondSeparator] = useState("_");
     const [thirdSeparator, setThirdSeparator] = useState("-");
 
+    function handleLoadExample(setSrc) {
+        const example = ">dptA|domain_1\nFAEQARRTPDAPAVQHDGTVLTYRDLHRSVERAAGRLAGLGLRTEDVVALALPKSAESVAILLGIQRAGAAYVPLDPTHPAERLARVLDDTRPRYLVTTGHIDGLSHPTPQLAAADLLREGGPEPAPGRPAPGNAAYIIQTSGSTGRPKGVVVTHEGLATLAADQIRRYRTGPDARVLQFISPGFDVFVSELSMTLLSGGCLVIPPDGLTGRHLADFLAAEAVTTTSLTPGALATMPATDLPHLRTLIVGGEVCPPEIFDQWGRGRDIVNAYGPTETTVEATAWHRDGATHGPVPLGRPTLNRRGYVLDPALEPVPDGTTGELYLAGEGLARGYVAAPGPTAERFVADPFGPPGSRMYRTGDLVRRRSGGMLEFVGRADGQVKLR";
+        setSrc(example);
+    };
+
     function handleRefresh() {
         window.location.reload();
     };
@@ -109,6 +114,7 @@ const Paras = () => {
                     setSrc={setSrc}
                     selectedInputType={selectedInputType}
                     setSelectedInputType={setSelectedInputType}
+                    handleLoadExample={handleLoadExample}
                     handleRefresh={handleRefresh}
                     handleSubmit={handleSubmit}
                 />
