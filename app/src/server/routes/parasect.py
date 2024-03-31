@@ -11,14 +11,6 @@ from paras.scripts.parsers.parsers import parse_substrate_list
 
 from .common import Status, ResponseData
 
-# Load models.
-try:
-    absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    PARASECT = joblib.load(os.path.join(absolute_path, "models/model.parasect"))
-    PARASECT.set_params(n_jobs=1)
-except Exception as e:
-    print(e)
-
 blueprint_submit_parasect = Blueprint("submit_parasect", __name__)
 @blueprint_submit_parasect.route("/api/submit_parasect", methods=["POST"])
 def submit_parasect() -> Response:
@@ -170,7 +162,10 @@ def submit_parasect() -> Response:
         results = OrderedDict()
         if fingerprints and sequence_feature_vectors:
 
-            classifier = PARASECT
+            absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            classifier = joblib.load(os.path.join(absolute_path, "models/model.parasect"))
+            classifier.set_params(n_jobs=1)
+
             batch_size = 1000
             counter = 0
             start = 0
@@ -216,13 +211,16 @@ def submit_parasect() -> Response:
                 results[seq_id] = get_top_n_aa_parasect(seq_id, id_to_probabilities, num_predictions_to_report)
 
         else:
+            classifier = None
             clear_temp()
             msg = "No feature vectors or fingerprints."
             return ResponseData(Status.Failure, message=msg).to_dict()
         
+        classifier = None
         clear_temp(temp_dir)
     
     except Exception as e:
+        classifier = None
         clear_temp(temp_dir)
         msg = f"Failed to run model: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()

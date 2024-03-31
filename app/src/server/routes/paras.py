@@ -9,21 +9,6 @@ from paras.scripts.general import get_domains, get_top_n_aa_paras
 
 from .common import Status, ResponseData
 
-# Load models.
-try:
-    absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    PARAS = joblib.load(os.path.join(absolute_path, "models/model.paras"))
-    PARAS.set_params(n_jobs=1)
-except Exception as e:
-    print(e)
-
-try:
-    absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    PARAS_ALL = joblib.load(os.path.join(absolute_path, "models/all_substrates_model.paras"))
-    PARAS_ALL.set_params(n_jobs=1)
-except Exception as e:
-    print(e)
-
 blueprint_submit_paras = Blueprint("submit_paras", __name__)
 @blueprint_submit_paras.route("/api/submit_paras", methods=["POST"])
 def submit_paras() -> Response:
@@ -127,12 +112,16 @@ def submit_paras() -> Response:
     try:
         results = OrderedDict()
         if selected_model == "commonSubstrates":
-            assert PARAS is not None
-            classifier = PARAS
+            absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            classifier = joblib.load(os.path.join(absolute_path, "models/model.paras"))
+            classifier.set_params(n_jobs=1)
+            assert classifier is not None
 
         elif selected_model == "allSubstrates":
-            assert PARAS_ALL is not None
-            classifier = PARAS_ALL
+            absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            classifier = joblib.load(os.path.join(absolute_path, "models/all_substrates_model.paras"))
+            classifier.set_params(n_jobs=1)
+            assert classifier is not None
             
         else:
             raise Exception("Invalid model.")
@@ -145,9 +134,11 @@ def submit_paras() -> Response:
             probs_and_aa = get_top_n_aa_paras(amino_acid_classes, probability_list, num_predictions_to_report)
             results[seq_id] = probs_and_aa
 
+        classifier = None
         clear_temp(temp_dir)
 
     except Exception as e:
+        classifier = None
         clear_temp(temp_dir)
         msg = f"Failed to run model: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
