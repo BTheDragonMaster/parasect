@@ -162,3 +162,9 @@ cython_debug/
 # Model files with extensions .paras and .parasect
 *.paras
 *.parasect
+
+# Ignore all files in hmmer directory
+hmmer/**
+
+# Ignore all files in tmp directory
+tmp/**
