@@ -219,6 +219,8 @@ def submit_parasect() -> Response:
             clear_temp()
             msg = "No feature vectors or fingerprints."
             return ResponseData(Status.Failure, message=msg).to_dict()
+        
+        clear_temp(temp_dir)
     
     except Exception as e:
         clear_temp(temp_dir)
