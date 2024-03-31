@@ -35,7 +35,7 @@ def parse_arguments():
     parser.add_argument('-all_substrates', action='store_true', help="Use classifier that was trained on all substrates")
     
     parser.add_argument('-t', '--tmp', type=str, default=None, required=True, help="Path to temporary directory")
-    parser.add_argument('--hmmer_path', type=str, default=None, help="Path to HMMER3 binaries")
+    parser.add_argument('--hmmer_path', type=str, default=None, required=True, help="Path to HMMER3 binaries")
     parser.add_argument('--model_path_paras', type=str, default=None, help="Path to model for paras prediction")
     parser.add_argument('--model_path_paras_all', type=str, default=None, help="Path to model for paras prediction")
     parser.add_argument('--model_path_paras_onehot', type=str, default=None, help="Path to model for paras prediction")

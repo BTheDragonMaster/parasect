@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import json
 
 from paras.scripts.general import run_parasect, write_results
 from paras.scripts.feature_extraction.sequence_feature_extraction.sequence_labels import SEPARATOR_1, \
@@ -37,6 +38,11 @@ def parse_arguments():
     parser.add_argument('-s2', type=str, default=SEPARATOR_2, help="Symbol used as separator")
     parser.add_argument('-s3', type=str, default=SEPARATOR_3, help="Symbol used as separator")
 
+    parser.add_argument('-t', '--tmp', type=str, default=None, required=True, help="Path to temporary directory")
+    parser.add_argument('--hmmer_path', type=str, default=None, required=True, help="Path to HMMER3 binaries")
+    parser.add_argument('--model_path_parasect', type=str, default=None, help="Path to model for paras prediction")
+    parser.add_argument('--model_path_parasect_one_hot', type=str, default=None, help="Path to model for paras prediction with one-hot encoding")
+
     args = parser.parse_args()
 
     return args
@@ -49,13 +55,34 @@ def run():
     else:
         extraction_method = 'hmm'
 
-    results = run_parasect(args.i, args.o, args.j, args.exclude_standard_substrates,
-                           args.smiles, args.substrate_names, extraction_method, args.save_signatures,
-                           args.save_extended, args.save_domains, args.n, args.s1,
-                           args.s2, args.s3, args.v, args.f, args.one_hot)
+    results = run_parasect(
+        args.i, 
+        args.j, 
+        args.model_path_parasect,
+        args.model_path_parasect_one_hot,
+        args.tmp,
+        args.hmmer_path,
+        args.exclude_standard_substrates,
+        args.smiles, 
+        args.substrate_names, 
+        extraction_method, 
+        args.save_signatures,
+        args.save_extended, 
+        args.save_domains, 
+        args.n, 
+        args.s1,
+        args.s2, 
+        args.s3, 
+        args.v, 
+        args.f, 
+        args.one_hot
+    )
 
-    out_file = os.path.join(args.o, f'{args.j}_parasect_results.txt')
-    write_results(results, out_file)
+    # out_file = os.path.join(args.o, f'{args.j}_parasect_results.txt')
+    # write_results(results, out_file)
+
+    with open(os.path.join(args.o, f'{args.j}_parasect_results.json'), 'w') as f:
+        json.dump(results, f, indent=4)
 
 
 if __name__ == "__main__":

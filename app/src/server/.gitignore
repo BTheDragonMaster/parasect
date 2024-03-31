@@ -162,6 +162,3 @@ cython_debug/
 # Model files with extensions .paras and .parasect
 *.paras
 *.parasect
-
-# Ignore hmmpfam2 in hmmer folder
-hmmer/hmmpfam2

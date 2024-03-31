@@ -6,6 +6,10 @@ import InfoPopUp from "./InfoPopUp";
 const AdvancedOptions = (
     {
         initVisible,
+        smilesSrc,
+        setSmilesSrc,
+        onlyMakePredictionsUploadedSmiles,
+        setOnlyMakePredictionsUploadedSmiles,
         useStructureGuidedProfileAlignment,
         setUseStructureGuidedProfileAlignment,
         separators,
@@ -18,6 +22,19 @@ const AdvancedOptions = (
     }
 ) => {
     const [visible, setVisible] = useState(initVisible);
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = (event) => {
+            setSmilesSrc(event.target.result);
+        };
+
+        reader.readAsText(file);
+    };
+
+    console.log((smilesSrc && setSmilesSrc))
 
     return (
         <div 
@@ -44,6 +61,54 @@ const AdvancedOptions = (
                     {visible ? (
                         <div>
 
+                            {/* Only make predictions for submitted SMILES strings. */}
+                            {(smilesSrc !== null && setSmilesSrc !== null) && (
+                                <div 
+                                    className="panel-block" 
+                                    style={{paddingLeft: "20px"}}
+                                >
+                                    <div className="column is-full">
+                                        Make predictions for uploaded SMILES strings:
+
+                                        {/* Upload file button. */}
+                                        <div className="field is-grouped is-grouped-left">
+                                            <div className="control" style={{width: "100%"}}>
+                                                <input
+                                                    type="file"
+                                                    className="button"
+                                                    style={{width: "100%"}}
+                                                    onChange={handleFileChange}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Only make predictions for uploaded SMILES strings. */}
+                                        {(onlyMakePredictionsUploadedSmiles !== null && setOnlyMakePredictionsUploadedSmiles !== null && smilesSrc.length > 0) && (
+                                            <div className="field has-addons">
+                                                <div className="control">
+                                                    <div 
+                                                        className="checkbox" 
+                                                        style={{cursor: "auto", flexDirection: "row", display: "flex", alignItems: "center"}}
+                                                    >
+                                                        <input
+                                                            id="check1"
+                                                            type="checkbox"
+                                                            name="check1"
+                                                            checked={onlyMakePredictionsUploadedSmiles}
+                                                            onChange={() => setOnlyMakePredictionsUploadedSmiles(!onlyMakePredictionsUploadedSmiles)}
+                                                        />
+                                                        <span style={{marginLeft: "-5px"}}>
+                                                            Only make predictions for uploaded SMILES strings
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Use structure-guided profile alignment. */}
                             <div 
                                 className="panel-block" 
@@ -62,11 +127,12 @@ const AdvancedOptions = (
                                                     name="check1"
                                                     checked={useStructureGuidedProfileAlignment}
                                                     onChange={() => setUseStructureGuidedProfileAlignment(!useStructureGuidedProfileAlignment)}
+                                                    disabled={true}
                                                 />
                                                 <span style={{marginLeft: "-5px"}}>
                                                     Use structure-guided profile alignment instead of pHMM for active site extraction (⚠️ SLOW)
                                                 </span>
-                                                <InfoPopUp infoText={null} />
+                                                <InfoPopUp infoText={"Not implemented."} />
                                             </div>
                                         </div>
                                     </div>

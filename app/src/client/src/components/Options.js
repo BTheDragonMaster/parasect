@@ -79,7 +79,7 @@ const Options = (
                                                     Save active site signatures (Stachelhaus code)
                                                 </span> 
                                             </div>
-                                            <InfoPopUp infoText={null} />
+                                            <InfoPopUp infoText={"Present in download."} />
                                         </div>
                                     </div>
                                     <div className="field has-addons">
@@ -99,7 +99,7 @@ const Options = (
                                                     Save extended signatures (34 amino acid active sites)
                                                 </span>
                                             </div>
-                                            <InfoPopUp infoText={null} />
+                                            <InfoPopUp infoText={"Present in download."} />
                                         </div>
                                     </div>
                                     <div className="field has-addons">
@@ -119,52 +119,54 @@ const Options = (
                                                     Save adenylation domain sequences
                                                 </span>
                                             </div>
-                                            <InfoPopUp infoText={null} />
+                                            <InfoPopUp infoText={"Present in download."} />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Pick model. */}
-                            <div 
-                                className="panel-block" 
-                                style={{paddingLeft: "20px"}}
-                            >
-                                <div className="column is-full">
-                                    <div className="field has-addons">
-                                        <div className="control">
-                                            <label className="radio">
-                                                <input
-                                                    type="radio"
-                                                    name="substrateType"
-                                                    value="allSubstrates"
-                                                    checked={selectedSubstrateChoice === "allSubstrates"}
-                                                    onChange={handleSubstrateChoiceChange}
-                                                />
-                                                <span style={{marginLeft: "5px"}}>
-                                                    Use model trained on all substrates
-                                                </span>
-                                            </label>
+                            {(selectedSubstrateChoice !== null && setSelectedSubstrateChoice !== null) && (
+                                <div 
+                                    className="panel-block" 
+                                    style={{paddingLeft: "20px"}}
+                                >
+                                    <div className="column is-full">
+                                        <div className="field has-addons">
+                                            <div className="control">
+                                                <label className="radio">
+                                                    <input
+                                                        type="radio"
+                                                        name="substrateType"
+                                                        value="allSubstrates"
+                                                        checked={selectedSubstrateChoice === "allSubstrates"}
+                                                        onChange={handleSubstrateChoiceChange}
+                                                    />
+                                                    <span style={{marginLeft: "5px"}}>
+                                                        Use model trained on all substrates
+                                                    </span>
+                                                </label>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="field has-addons">
-                                        <div className="control">
-                                            <label className="radio">
-                                                <input
-                                                    type="radio"
-                                                    name="substrateType"
-                                                    value="commonSubstrates"
-                                                    checked={selectedSubstrateChoice === "commonSubstrates"}
-                                                    onChange={handleSubstrateChoiceChange}
-                                                />
-                                                <span style={{marginLeft: "5px"}}>
-                                                    Use model trained on 34 common substrates
-                                                </span>
-                                            </label>
+                                        <div className="field has-addons">
+                                            <div className="control">
+                                                <label className="radio">
+                                                    <input
+                                                        type="radio"
+                                                        name="substrateType"
+                                                        value="commonSubstrates"
+                                                        checked={selectedSubstrateChoice === "commonSubstrates"}
+                                                        onChange={handleSubstrateChoiceChange}
+                                                    />
+                                                    <span style={{marginLeft: "5px"}}>
+                                                        Use model trained on 34 common substrates
+                                                    </span>
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Dropdown for number of predictions to report. */}
                             <div 

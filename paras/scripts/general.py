@@ -229,10 +229,11 @@ def run_paras(
 
 def run_parasect(
     fasta_file, 
-    out_dir, 
     job_name, 
     model_path_parasect,
     model_path_parasect_onehot,
+    temp_dir,
+    hmmer_path,
     exclude_default_substrates=False, 
     smiles: Optional[List] = None,
     substrate_names: Optional[List] = None, 
@@ -251,11 +252,8 @@ def run_parasect(
 
     assert file_type in ['fasta', 'gbk']
 
-    if not os.path.exists(out_dir):
-        os.mkdir(out_dir)
-
     a_domains = get_domains(fasta_file, extraction_method, job_name, separator_1, separator_2, separator_3, verbose,
-                            file_type)
+                            file_type, temp_dir, hmmer_path)
 
     if verbose:
         print("Extracting domain features..")
@@ -351,8 +349,8 @@ def run_parasect(
     if verbose:
         print("Writing results..")
 
-    write_files(a_domains, out_dir, job_name, save_domains, save_signatures, save_extended_signatures)
-    clear_temp()
+    # write_files(a_domains, out_dir, job_name, save_domains, save_signatures, save_extended_signatures)
+    clear_temp(temp_dir)
 
     return results
 
