@@ -37,22 +37,35 @@ const AdvancedOptions = (
     return (
         <div 
             className="control" 
-            style={{border: "1px solid #dbdbdb", borderRadius: "7.5px", marginBottom: "10px"}}
+            style={{
+                border: "1px solid #dbdbdb", 
+                borderRadius: "7.5px", 
+                marginBottom: "10px"
+            }}
         >
             <div className="panel">
 
                 {/* Panel header. */}
-                <div className="panel-heading">
-                    <div className="title is-5">
+                <div 
+                    className="panel-heading"
+                    style={{ 
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center"
+                    }}
+                >
+                    <div 
+                        className="title is-5" 
+                        style={{ margin: "0px" }}
+                    >
                         Advanced options
-                        <button
-                            className="button is-small is-light"
-                            style={{float: "right", marginLeft: "10px", marginTop: "-5px"}}
-                            onClick={() => setVisible(!visible)}
-                        >
-                            {visible ? "Hide" : "Show"}
-                        </button>
                     </div>
+                    <button
+                        className="button is-small is-light"
+                        onClick={() => setVisible(!visible)}
+                    >
+                        {visible ? "Hide" : "Show"}
+                    </button>
                 </div>
 
                 <div>
@@ -63,18 +76,18 @@ const AdvancedOptions = (
                             {(smilesSrc !== null && setSmilesSrc !== null) && (
                                 <div 
                                     className="panel-block" 
-                                    style={{paddingLeft: "20px"}}
+                                    style={{ paddingLeft: "20px" }}
                                 >
                                     <div className="column is-full">
                                         Make predictions for uploaded SMILES strings:
 
                                         {/* Upload file button. */}
                                         <div className="field is-grouped is-grouped-left">
-                                            <div className="control" style={{width: "100%"}}>
+                                            <div className="control" style={{ width: "100%" }}>
                                                 <input
                                                     type="file"
                                                     className="button"
-                                                    style={{width: "100%"}}
+                                                    style={{ width: "100%" }}
                                                     onChange={handleFileChange}
                                                 />
                                             </div>
@@ -86,7 +99,12 @@ const AdvancedOptions = (
                                                 <div className="control">
                                                     <div 
                                                         className="checkbox" 
-                                                        style={{cursor: "auto", flexDirection: "row", display: "flex", alignItems: "center"}}
+                                                        style={{
+                                                            cursor: "auto", 
+                                                            flexDirection: "row", 
+                                                            display: "flex", 
+                                                            alignItems: "center"
+                                                        }}
                                                     >
                                                         <input
                                                             id="check1"
@@ -95,7 +113,7 @@ const AdvancedOptions = (
                                                             checked={onlyMakePredictionsUploadedSmiles}
                                                             onChange={() => setOnlyMakePredictionsUploadedSmiles(!onlyMakePredictionsUploadedSmiles)}
                                                         />
-                                                        <span style={{marginLeft: "-5px"}}>
+                                                        <span style={{ marginLeft: "-5px" }}>
                                                             Only make predictions for uploaded SMILES strings
                                                         </span>
                                                     </div>
@@ -110,14 +128,19 @@ const AdvancedOptions = (
                             {/* Use structure-guided profile alignment. */}
                             <div 
                                 className="panel-block" 
-                                style={{paddingLeft: "20px"}}
+                                style={{ paddingLeft: "20px" }}
                             >
                                 <div className="column is-full">
                                     <div className="field has-addons">
                                         <div className="control">
                                             <div 
                                                 className="checkbox" 
-                                                style={{cursor: "auto", flexDirection: "row", display: "flex", alignItems: "center"}}
+                                                style={{
+                                                    cursor: "auto", 
+                                                    flexDirection: "row",
+                                                    display: "flex", 
+                                                    alignItems: "center"
+                                                }}
                                             >
                                                 <input
                                                     id="check1"
@@ -127,10 +150,10 @@ const AdvancedOptions = (
                                                     onChange={() => setUseStructureGuidedProfileAlignment(!useStructureGuidedProfileAlignment)}
                                                     disabled={true}
                                                 />
-                                                <span style={{marginLeft: "-5px"}}>
+                                                <span style={{ marginLeft: "-5px" }}>
                                                     Use structure-guided profile alignment instead of pHMM for active site extraction (⚠️ SLOW)
                                                 </span>
-                                                <InfoPopUp infoText={"Not implemented."} />
+                                                <InfoPopUp infoText={"Option currently unavailable."} />
                                             </div>
                                         </div>
                                     </div>
@@ -140,34 +163,34 @@ const AdvancedOptions = (
                             {/* Custom header format. */}
                             <div 
                                 className="panel-block" 
-                                style={{paddingLeft: "20px"}}
+                                style={{ paddingLeft: "20px" }}
                             >   
                                 <div className="column is-full">
-                                    <div style={{marginBottom: "10px"}}>
-                                        <span>
-                                            Set custom header format (current format:
-                                        </span>
-                                        <span style={{fontFamily: "monospace", fontWeight: "bold"}}>
-                                            {` identifier${firstSeparator}domain${secondSeparator}1${firstSeparator}88${thirdSeparator}478`}
-                                        </span>
-                                        <span>
-                                            ):
-                                        </span>
+                                    <div style={{ marginBottom: "10px" }}>
+                                        Set custom header format:
                                     </div>
-                                    <div style={{fontFamily: "monospace", flexDirection: "row", display: "flex", alignItems: "center"}}>
+                                    <div 
+                                        style={{
+                                            fontFamily: "monospace", 
+                                            flexDirection: "row", 
+                                            display: "flex", 
+                                            alignItems: "center",
+                                            flexWrap: "wrap"
+                                        }}
+                                    >
                                         identifier
                                         <DropdownList
                                             data={separators}
                                             defaultValue={firstSeparator}
                                             onChange={(value) => setFirstSeparator(value)}
-                                            style={{width: "65px"}}
+                                            style={{ width: "65px" }}
                                         />
                                         domain
                                         <DropdownList
                                             data={separators}
                                             defaultValue={secondSeparator}
                                             onChange={(value) => setSecondSeparator(value)}
-                                            style={{width: "65px"}}
+                                            style={{ width: "65px" }}
                                         />
                                         1
                                         {firstSeparator}
@@ -176,7 +199,7 @@ const AdvancedOptions = (
                                             data={separators}
                                             defaultValue={thirdSeparator}
                                             onChange={(value) => setThirdSeparator(value)}
-                                            style={{width: "65px"}}
+                                            style={{ width: "65px" }}
                                         />
                                         478
                                     </div>
@@ -186,7 +209,7 @@ const AdvancedOptions = (
                     ) : (
                         <div 
                             className="panel-block" 
-                            style={{padding: "0px", height: "5px"}}
+                            style={{ padding: "0px", height: "5px" }}
                         />
                     )}
                 </div>

@@ -23,8 +23,8 @@ def submit_parasect() -> Response:
 
     try:
         data = data["data"]
-        selected_input = data["src"] # Fasta or Genbank file contents.
-        selected_input_type = data["selectedInputType"] # Fasta or Genbank.
+        selected_input = data["src"] # Fasta or Gbk file contents.
+        selected_input_type = data["selectedInputType"] # Fasta or Gbk.
 
         # Options.
         save_active_site_signatures = data["saveActiveSiteSignatures"]
@@ -46,7 +46,7 @@ def submit_parasect() -> Response:
     
     # Sanity check selected input type.
     selected_input_type = selected_input_type.strip().lower()
-    if selected_input_type not in ["fasta", "genbank"]:
+    if selected_input_type not in ["fasta", "gbk"]:
         msg = f"Invalid input type: {selected_input_type}."
         return ResponseData(Status.Failure, message=msg).to_dict()
     
@@ -62,7 +62,8 @@ def submit_parasect() -> Response:
 
     # Try to write selected_input to file in temp folder.
     try:
-        input_file = os.path.join(temp_dir, "input.fasta")
+        file_name = "input.fasta" if selected_input_type == "fasta" else "input.gbk"
+        input_file = os.path.join(temp_dir, file_name)
         with open(input_file, "w") as f:
             f.write(selected_input)
 
@@ -74,17 +75,18 @@ def submit_parasect() -> Response:
     # Get domains.
     try:
         a_domains = get_domains(
-            input_file=input_file, 
-            extraction_method="hmm", 
-            job_name="run", 
-            separator_1=first_separator, 
-            separator_2=second_separator, 
-            separator_3=third_separator, 
+            input_file=input_file,
+            extraction_method="profile" if use_structure_guided_alignment else "hmm",
+            job_name="run",
+            separator_1=first_separator,
+            separator_2=second_separator,
+            separator_3=third_separator,
             verbose=False,
-            file_type=selected_input_type.lower(), 
+            file_type=selected_input_type.lower(),
             temp_dir=temp_dir
         )
         sequence_ids, sequence_feature_vectors = domains_to_features(a_domains, one_hot=False)
+
         if not sequence_feature_vectors: 
             raise Exception("No feature vectors.")
         

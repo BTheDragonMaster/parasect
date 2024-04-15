@@ -103,12 +103,12 @@ def paras_from_extended_signatures(extended_signatures, model_path, nr_results=3
 
 
 def get_domains(input_file, extraction_method, job_name, separator_1, separator_2, separator_3, verbose, file_type, temp_dir):
-    assert extraction_method in ['hmm', 'profile']
-    assert file_type in ['fasta', 'gbk']
-
+    assert extraction_method in ['hmm', 'profile'], f"Only supported extraction methods are 'hmm' or 'profile'. Got {extraction_method}."
+    assert file_type in ['fasta', 'gbk'], f"Only supported file types are 'fasta' or 'gbk'. Got {file_type}."
+    
     if file_type == 'gbk':
         original_fasta = os.path.join(temp_dir, 'proteins_from_genbank.fasta')
-        proteins_from_genbank(input_file, original_fasta)
+        proteins_from_genbank(input_file, original_fasta) # TODO: ???
         mapping_file, renamed_fasta_file = rename_sequences(original_fasta, temp_dir)
     else:
         mapping_file, renamed_fasta_file = rename_sequences(input_file, temp_dir)

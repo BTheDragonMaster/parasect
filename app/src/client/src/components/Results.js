@@ -38,7 +38,7 @@ const Results = ({ results }) => {
                                 return (
                                     <div 
                                         key={result_index}
-                                        style={{marginTop: "10px"}}
+                                        style={ {marginTop: "10px" }}
                                     >
                                         <div style={{ overflowX: "auto", overflowY: "auto" }}>
                                             <table style={{ borderCollapse: "collapse" }}>

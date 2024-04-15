@@ -69,7 +69,7 @@ def parse_hmm2_results(hmm_results):
     return id_to_hit
 
 
-def hits_to_domains(id_to_hit, fasta_file, profile=False, verbose=False):
+def hits_to_domains(id_to_hit, fasta_file, temp_dir, profile=False, verbose=False):
     hits_by_seq_id = {}
     if verbose:
         print("\tSorting hits by sequence..")
@@ -158,7 +158,10 @@ def hits_to_domains(id_to_hit, fasta_file, profile=False, verbose=False):
         filtered_a_domains = []
         for seq_id, a_domains in seq_id_to_domains.items():
             for a_domain in a_domains:
-                a_domain.set_domain_signatures_profile()
+                print("CHK1", temp_dir)
+                print(a_domain, type(a_domain))
+                a_domain.set_domain_signatures_profile(temp_dir)
+                print("CHK2")
                 if a_domain.sequence and a_domain.extended_signature and a_domain.signature and a_domain.domain_nr:
                     filtered_a_domains.append(a_domain)
 
@@ -179,7 +182,6 @@ def domains_from_fasta(fasta_in, temp_dir, job_name='paras_run', profile=False, 
     fasta_out: str, file location of .fasta file containing detected adomains
 
     """
-
     hmm_out = os.path.join(temp_dir, f'{job_name}.hmm_result')
 
     if verbose:
@@ -192,11 +194,11 @@ def domains_from_fasta(fasta_in, temp_dir, job_name='paras_run', profile=False, 
     if profile:
         if verbose:
             print("Processing hits (profile alignment-based active site extraction)..")
-        a_domains = hits_to_domains(id_to_hit, fasta_in, profile=True, verbose=verbose)
+        a_domains = hits_to_domains(id_to_hit, fasta_in, temp_dir, profile=True, verbose=verbose)
     else:
         if verbose:
             print("Processing hits (hmm-based active site extraction)..")
-        a_domains = hits_to_domains(id_to_hit, fasta_in, verbose=verbose)
+        a_domains = hits_to_domains(id_to_hit, fasta_in, temp_dir, verbose=verbose)
 
     return a_domains
 

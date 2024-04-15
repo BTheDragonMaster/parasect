@@ -18,7 +18,7 @@ const Parasect = () => {
     };
 
     // Input.
-    const [selectedInputType, setSelectedInputType] = useState("Fasta"); // Fasta or Genbank
+    const [selectedInputType, setSelectedInputType] = useState("Fasta"); // Fasta or Gbk
     const [src, setSrc] = useState("");
 
     // Options.

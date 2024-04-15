@@ -9,11 +9,20 @@ const InfoPopUp = ({ infoText }) => {
     };
   
     return (
-        <div style={{display: "flex", alignItems: "center", position: "relative"}}>
+        <div 
+            style={{ 
+                display: "flex", 
+                alignItems: "center", 
+                position: "relative"
+            }}
+        >
             <MdInfoOutline
                 onMouseEnter={() => setIsVisible(true)}
                 onMouseLeave={() => setIsVisible(false)}
-                style={{cursor: "pointer", marginLeft: "5px"}}
+                style={{ 
+                    cursor: "pointer", 
+                    marginLeft: "5px" 
+                }}
             />
             <div 
                 style={{
@@ -25,8 +34,10 @@ const InfoPopUp = ({ infoText }) => {
                     borderRadius: "5px",
                     boxShadow: "0 0 5px rgba(0,0,0,0.3)",
                     zIndex: 1,
-                    width: "210px",
-                    wordWrap: "break-word"
+                    wordWrap: "break-word",
+                    transform: "translateX(-107.5%)",
+                    minWidth: "300px",
+                    maxWidth: "300"
                 }}
             >
                 {infoText}

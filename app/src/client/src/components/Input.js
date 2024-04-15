@@ -19,7 +19,7 @@ const FastaInputContainer = ({ src, setSrc }) => {
             <div className="column is-full">
 
                 {/* Text input. */}
-                <div className="field" style={{width: "100%"}}>
+                <div className="field" style={{ width: "100%" }}>
                     <div className="control">
                         <textarea
                             className="textarea"
@@ -33,11 +33,11 @@ const FastaInputContainer = ({ src, setSrc }) => {
 
                 {/* Upload file button. */}
                 <div className="field is-grouped is-grouped-left">
-                    <div className="control" style={{width: "100%"}}>
+                    <div className="control" style={{ width: "100%" }}>
                         <input
                             type="file"
                             className="button"
-                            style={{width: "100%"}}
+                            style={{ width: "100%" }}
                             onChange={handleFileChange}
                         />
                     </div>
@@ -67,11 +67,11 @@ const GenbankInputContainer = ({ src, setSrc }) => {
 
                 {/* Upload file button. */}
                 <div className="field is-grouped is-grouped-left">
-                    <div className="control" style={{width: "100%"}}>
+                    <div className="control" style={{ width: "100%" }}>
                         <input
                             type="file"
                             className="button"
-                            style={{width: "100%"}}
+                            style={{ width: "100%" }}
                             onChange={handleFileChange}
                         />
                     </div>
@@ -102,28 +102,44 @@ const Input = (
     };
 
     return (
-        <div className="control" style={{border: "1px solid #dbdbdb", borderRadius: "7.5px", marginBottom: "10px"}}>
+        <div 
+            className="control" 
+            style={{
+                border: "1px solid #dbdbdb", 
+                borderRadius: "7.5px", 
+                marginBottom: "10px"
+            }}
+        >
             <div className="panel">
 
                 {/* Panel header. */}
-                <div className="panel-heading">
-                    <div className="title is-5">
+                <div 
+                    className="panel-heading"
+                    style={{ 
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center"
+                    }}
+                >
+                    <div 
+                        className="title is-5" 
+                        style={{ margin: "0px" }}
+                    >
                         Input
-                        <button
-                            className="button is-small is-light"
-                            style={{float: "right", marginLeft: "10px", marginTop: "-5px"}}
-                            onClick={() => setVisible(!visible)}
-                        >
-                            {visible ? "Hide" : "Show"}
-                        </button>
                     </div>
+                    <button
+                        className="button is-small is-light"
+                        onClick={() => setVisible(!visible)}
+                    >
+                        {visible ? "Hide" : "Show"}
+                    </button>
                 </div>
 
                 <div>
                     {visible ? (
                         <div>
-                            {/* Add a radio button to select the input type: Fasta or Genbank. */}
-                            <div className="panel-block" style={{paddingLeft: "20px"}}>
+                            {/* Add a radio button to select the input type: Fasta or Gbk. */}
+                            <div className="panel-block" style={{ paddingLeft: "20px" }}>
                                 <div className="column is-full">
                                     <div className="field has-addons">
                                         <div className="control">
@@ -147,11 +163,11 @@ const Input = (
                                                 <input
                                                     type="radio"
                                                     name="inputType"
-                                                    value="Genbank"
-                                                    checked={selectedInputType === "Genbank"}
+                                                    value="Gbk"
+                                                    checked={selectedInputType === "Gbk"}
                                                     onChange={handleInputTypeChange}
                                                 />
-                                                <span style={{marginLeft: "5px"}}>
+                                                <span style={{ marginLeft: "5px" }}>
                                                     Genbank
                                                 </span>
                                             </label>
@@ -171,11 +187,10 @@ const Input = (
                             <div className="panel-block">
                                 <div className="column is-full">
                                     <div className="field is-grouped is-grouped-right">
-                                        <div className="control">
+                                        <div className="buttons">
                                             {handleLoadExample && (
                                                 <button
                                                     className="button is-secondary"
-                                                    style={{marginRight: "10px"}}
                                                     onClick={() => {
                                                         if (selectedInputType === "Fasta") {
                                                             handleLoadExample(setSrc);
@@ -189,10 +204,7 @@ const Input = (
                                             )}
                                             <button
                                                 className="button is-secondary"
-                                                style={{marginRight: "10px"}}
-                                                onClick={() => {
-                                                    handleRefresh();
-                                                }}
+                                                onClick={() => { handleRefresh(); }}
                                             >
                                                 Refresh
                                             </button>
@@ -217,7 +229,7 @@ const Input = (
                     ) : (
                         <div 
                             className="panel-block" 
-                            style={{padding: "0px", height: "5px"}}
+                            style={{ padding: "0px", height: "5px" }}
                         />
                     )}
                 </div>

@@ -22,8 +22,8 @@ def submit_paras() -> Response:
     # Read settings. Is everything present?
     try:
         data = data["data"]
-        selected_input = data["src"] # Fasta or Genbank file contents.
-        selected_input_type = data["selectedInputType"] # Fasta or Genbank.
+        selected_input = data["src"] # Fasta or Gbk file contents.
+        selected_input_type = data["selectedInputType"] # Fasta or Gbk.
 
         # Options.
         save_active_site_signatures = data["saveActiveSiteSignatures"]
@@ -44,7 +44,7 @@ def submit_paras() -> Response:
     
     # Sanity check selected input type.
     selected_input_type = selected_input_type.strip().lower()
-    if selected_input_type not in ["fasta", "genbank"]:
+    if selected_input_type not in ["fasta", "gbk"]:
         msg = f"Invalid input type: {selected_input_type}."
         return ResponseData(Status.Failure, message=msg).to_dict()
     
@@ -66,7 +66,8 @@ def submit_paras() -> Response:
 
     # Try to write selected_input to file in temp folder.
     try:
-        input_file = os.path.join(temp_dir, "input.fasta")
+        file_name = "input.fasta" if selected_input_type == "fasta" else "input.gbk"
+        input_file = os.path.join(temp_dir, file_name)
         with open(input_file, "w") as f:
             f.write(selected_input)
 
@@ -79,7 +80,7 @@ def submit_paras() -> Response:
     try:
         a_domains = get_domains(
             input_file=input_file, 
-            extraction_method="hmm", 
+            extraction_method="profile" if use_structure_guided_alignment else "hmm", 
             job_name="run", 
             separator_1=first_separator, 
             separator_2=second_separator, 
@@ -89,6 +90,7 @@ def submit_paras() -> Response:
             temp_dir=temp_dir
         )
         ids, feature_vectors = domains_to_features(a_domains, one_hot=False)
+
         if not feature_vectors: 
             raise Exception("No feature vectors.")
         

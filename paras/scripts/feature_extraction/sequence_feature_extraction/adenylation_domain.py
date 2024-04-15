@@ -65,7 +65,7 @@ class AdenylationDomain:
         if extended_signature and all([char in VALID_CHARACTERS for char in extended_signature]):
             self.extended_signature = extended_signature
 
-    def set_domain_signatures_profile(self):
+    def set_domain_signatures_profile(self, temp_dir):
         """Extract (extended) signatures from adenylation domains using profile alignment"""
 
         if not self.sequence:
@@ -73,7 +73,7 @@ class AdenylationDomain:
 
         seq_id = "DOMAIN_TO_QUERY"
 
-        aligned_domain, aligned_reference = align_adomain(seq_id, self.sequence, ALIGNMENT_FILE)
+        aligned_domain, aligned_reference = align_adomain(seq_id, self.sequence, ALIGNMENT_FILE, temp_dir)
 
         aligned_positions_signature = get_reference_positions(POSITIONS_SIGNATURE, aligned_reference)
         aligned_positions_extended_signature = get_reference_positions(POSITIONS_EXTENDED_SIGNATURE, aligned_reference)

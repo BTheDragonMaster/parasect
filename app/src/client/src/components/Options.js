@@ -36,21 +36,37 @@ const Options = (
     };
 
     return (
-        <div className="control" style={{border: "1px solid #dbdbdb", borderRadius: "7.5px", marginBottom: "10px"}}>
+        <div 
+            className="control" 
+            style={{
+                border: "1px solid #dbdbdb", 
+                borderRadius: "7.5px", 
+                marginBottom: "10px"
+            }}
+        >
             <div className="panel">
 
                 {/* Panel header. */}
-                <div className="panel-heading">
-                    <div className="title is-5">
+                <div 
+                    className="panel-heading"
+                    style={{ 
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center"
+                    }}
+                >
+                    <div 
+                        className="title is-5" 
+                        style={{ margin: "0px" }}
+                    >
                         Options
-                        <button
-                            className="button is-small is-light"
-                            style={{float: "right", marginLeft: "10px", marginTop: "-5px"}}
-                            onClick={() => setVisible(!visible)}
-                        >
-                            {visible ? "Hide" : "Show"}
-                        </button>
                     </div>
+                    <button
+                        className="button is-small is-light"
+                        onClick={() => setVisible(!visible)}
+                    >
+                        {visible ? "Hide" : "Show"}
+                    </button>
                 </div>
 
                 <div>
@@ -59,13 +75,13 @@ const Options = (
                             {/* Checkboxes to select what to save. */}
                             <div 
                                 className="panel-block" 
-                                style={{paddingLeft: "20px"}}
+                                style={{ paddingLeft: "20px" }}
                             >
                                 <div className="column is-full">
                                     <div className="field has-addons">
                                         <div 
                                             className="control"
-                                            style={{flexDirection: "row", display: "flex", alignItems: "center"}}
+                                            style={{ flexDirection: "row", display: "flex", alignItems: "center" }}
                                         >                                            
                                             <div className="checkbox" style={{cursor: "auto"}}>
                                                 <input
@@ -85,7 +101,7 @@ const Options = (
                                     <div className="field has-addons">
                                         <div 
                                             className="control"
-                                            style={{flexDirection: "row", display: "flex", alignItems: "center"}}
+                                            style={{ flexDirection: "row", display: "flex", alignItems: "center" }}
                                         >   
                                             <div className="checkbox" style={{cursor: "auto"}}>
                                                 <input
@@ -95,7 +111,7 @@ const Options = (
                                                     checked={saveExtendedSignatures}
                                                     onChange={() => {setSaveExtendedSignatures(!saveExtendedSignatures);}}
                                                 />
-                                                <span style={{marginLeft: "-5px"}}>
+                                                <span style={{ marginLeft: "-5px" }}>
                                                     Save extended signatures (34 amino acid active sites)
                                                 </span>
                                             </div>
@@ -105,7 +121,7 @@ const Options = (
                                     <div className="field has-addons">
                                         <div 
                                             className="control"
-                                            style={{flexDirection: "row", display: "flex", alignItems: "center"}}
+                                            style={{ flexDirection: "row", display: "flex", alignItems: "center" }}
                                         >   
                                             <div className="checkbox" style={{cursor: "auto"}}>
                                                 <input
@@ -115,7 +131,7 @@ const Options = (
                                                     checked={saveAdenylationDomainSequences}
                                                     onChange={() => {setSaveAdenylationDomainSequences(!saveAdenylationDomainSequences);}}
                                                 />
-                                                <span style={{marginLeft: "-5px"}}>
+                                                <span style={{ marginLeft: "-5px" }}>
                                                     Save adenylation domain sequences
                                                 </span>
                                             </div>
@@ -142,7 +158,7 @@ const Options = (
                                                         checked={selectedSubstrateChoice === "allSubstrates"}
                                                         onChange={handleSubstrateChoiceChange}
                                                     />
-                                                    <span style={{marginLeft: "5px"}}>
+                                                    <span style={{ marginLeft: "5px" }}>
                                                         Use model trained on all substrates
                                                     </span>
                                                 </label>
@@ -158,7 +174,7 @@ const Options = (
                                                         checked={selectedSubstrateChoice === "commonSubstrates"}
                                                         onChange={handleSubstrateChoiceChange}
                                                     />
-                                                    <span style={{marginLeft: "5px"}}>
+                                                    <span style={{ marginLeft: "5px" }}>
                                                         Use model trained on 34 common substrates
                                                     </span>
                                                 </label>
@@ -171,9 +187,9 @@ const Options = (
                             {/* Dropdown for number of predictions to report. */}
                             <div 
                                 className="panel-block" 
-                                style={{paddingLeft: "20px", paddingBottom: "20px"}}
+                                style={{ paddingLeft: "20px", paddingBottom: "20px" }}
                             >
-                                <span style={{marginLeft: "10px", marginRight: "10px"}}>
+                                <span style={{ marginLeft: "10px", marginRight: "10px" }}>
                                     Number of top predictions to report:
                                     <NumberPicker
                                         value={numPredictionsToReport}
@@ -189,7 +205,7 @@ const Options = (
                     ) : (
                         <div 
                             className="panel-block" 
-                            style={{padding: "0px", height: "5px"}}
+                            style={{ padding: "0px", height: "5px" }}
                         />
                 )}
 
