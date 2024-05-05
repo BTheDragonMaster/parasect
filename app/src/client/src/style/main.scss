@@ -21,3 +21,19 @@ html, body {
     background-color: white;
     color: black;
 }
+
+@keyframes frame-switch {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+.loader.frame1 {
+    animation: frame-switch 0.5s infinite;
+    animation-delay: 0s;
+}
+
+.loader.frame2 {
+    animation: frame-switch 0.5s infinite;
+    animation-delay: 0.25s;
+}

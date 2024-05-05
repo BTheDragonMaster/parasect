@@ -17,12 +17,31 @@ const LoadingOverlay = () => {
                 zIndex: 1000}}
             >
             <div 
-                className="loader" 
+                className="loader frame1" 
                 style={{
                     position: "absolute", 
-                    top: "50%", 
-                    left: "50%", 
-                    transform: "translate(-50%, -50%)"
+                    backgroundImage: "url(/paras_loading_frame_1.svg)",
+                    // animation: "frame-switch 1s infinite",
+                    borderRadius: 0,
+                    width: "100%",
+                    height: "100%",
+                    backgroundSize: "cover",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "center"
+                }} 
+            />
+            <div 
+                className="loader frame2" 
+                style={{
+                    position: "absolute", 
+                    backgroundImage: "url(/paras_loading_frame_2.svg)",
+                    // animation: "frame-switch 1s infinite",
+                    borderRadius: 0,
+                    width: "100%",
+                    height: "100%",
+                    backgroundSize: "cover",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "center"
                 }} 
             />
         </div>
