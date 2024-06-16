@@ -8,8 +8,21 @@ EXPOSE 4009
 RUN apt-get update 
 RUN apt-get install -y hmmer2
 
-RUN wget https://github.com/rcedgar/muscle/releases/download/5.1.0/muscle5.1.linux_intel64
-RUN chmod +x muscle5.1.linux_intel64
-RUN mv muscle5.1.linux_intel64 /usr/local/bin/muscle
+# RUN wget https://github.com/rcedgar/muscle/releases/download/5.1.0/muscle5.1.linux_intel64
+# RUN chmod +x muscle5.1.linux_intel64
+# RUN mv muscle5.1.linux_intel64 /usr/local/bin/muscle
 
-CMD ["sh", "-c", "gunicorn -b :4009 api:app"]
+# RUN wget https://drive5.com/muscle/downloads3.8.31/muscle3.8.31_i86linux64.tar.gz
+# RUN tar -xvzf muscle3.8.31_i86linux64.tar.gz
+# RUN chmod +x muscle3.8.31_i86linux64
+# RUN mv muscle3.8.31_i86linux64 /usr/local/bin/muscle
+
+RUN mkdir muscle
+WORKDIR /app/muscle
+RUN wget https://drive5.com/muscle/muscle_src_3.8.1551.tar.gz
+RUN tar -xvzf muscle_src_3.8.1551.tar.gz
+RUN make
+RUN cp muscle /usr/local/bin/muscle
+WORKDIR /app
+
+CMD ["sh", "-c", "gunicorn -b :4009 --timeout 300 --workers 4 --threads 2 --keep-alive 75 api:app"]
