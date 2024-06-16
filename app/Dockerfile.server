@@ -25,4 +25,4 @@ RUN make
 RUN cp muscle /usr/local/bin/muscle
 WORKDIR /app
 
-CMD ["sh", "-c", "gunicorn -b :4009 --timeout 300 --workers 4 --threads 2 --keep-alive 75 api:app"]
+CMD ["sh", "-c", "gunicorn -b :4009 --timeout 120 api:app"]

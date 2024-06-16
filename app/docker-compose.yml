@@ -7,6 +7,7 @@ services:
       dockerfile: Dockerfile.server
     image: paras-server
     restart: always
+    container_name: paras-server
 
   client:
     build: 
@@ -16,3 +17,4 @@ services:
     ports:
       - "4010:80"
     restart: always
+    container_name: paras-client
