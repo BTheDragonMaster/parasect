@@ -158,10 +158,7 @@ def hits_to_domains(id_to_hit, fasta_file, temp_dir, profile=False, verbose=Fals
         filtered_a_domains = []
         for seq_id, a_domains in seq_id_to_domains.items():
             for a_domain in a_domains:
-                print("CHK1", temp_dir)
-                print(a_domain, type(a_domain))
                 a_domain.set_domain_signatures_profile(temp_dir)
-                print("CHK2")
                 if a_domain.sequence and a_domain.extended_signature and a_domain.signature and a_domain.domain_nr:
                     filtered_a_domains.append(a_domain)
 

@@ -1,4 +1,5 @@
 import React from "react";
+import { FaGithub } from "react-icons/fa";
 
 const Navbar = () => {
     return (
@@ -50,14 +51,20 @@ const Navbar = () => {
                     </a>
                     <div className="navbar-item has-dropdown is-hoverable">
                         <a className="navbar-link">
-                            Apps
+                            Navigation
                         </a>
                         <div className="navbar-dropdown">
                             <a key={1} className="navbar-item" href="/paras">
-                                Paras
+                                <div style={{ display: "flex", alignItems: "center", flexDirection: "row" }}>
+                                    <img src="/paras.png" alt="PARAS" style={{ width: "20px", borderRadius: "50%", marginRight: "5px" }} />
+                                    PARAS
+                                </div>
                             </a>
                             <a key={2} className="navbar-item" href="/parasect">
-                                Parasect
+                                <div style={{ display: "flex", alignItems: "center", flexDirection: "row" }}>
+                                    <img src="/parasect.png" alt="PARASect" style={{ width: "20px", borderRadius: "50%", marginRight: "5px" }} />
+                                    PARASECT
+                                </div>
                             </a>
                             <hr className="navbar-divider" />
                             <a 
@@ -66,7 +73,10 @@ const Navbar = () => {
                                 target="_blank" 
                                 rel="noopener noreferrer"
                             >
-                                Report an issue
+                                <div style={{ display: "flex", alignItems: "center", flexDirection: "row" }}>
+                                    <FaGithub style={{ marginLeft: "4px", marginRight: "7px" }} />
+                                    Report an issue
+                                </div>
                             </a>
                         </div>
                     </div> 

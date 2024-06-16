@@ -1,6 +1,19 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-const LoadingOverlay = () => {
+const LoadingOverlay = ({ frame1, frame2 }) => {
+    // State to manage which image is currently shown
+    const [currentImage, setCurrentImage] = useState(frame1); // Assuming the images are named image1.png and image2.png
+
+    // useEffect to toggle the image every second (1000 milliseconds)
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setCurrentImage((prevImage) => (prevImage === frame1 ? frame2 : frame1));
+        }, 250); // Change the interval as needed
+
+        // Cleanup function to clear the interval when the component unmounts
+        return () => clearInterval(intervalId);
+    }, []);
+
     return (
         <div 
             className="loader-overlay" 
@@ -16,33 +29,11 @@ const LoadingOverlay = () => {
                 alignItems: "center", 
                 zIndex: 1000}}
             >
-            <div 
-                className="loader frame1" 
-                style={{
-                    position: "absolute", 
-                    backgroundImage: "url(/paras_loading_frame_1.svg)",
-                    // animation: "frame-switch 1s infinite",
-                    borderRadius: 0,
-                    width: "100%",
-                    height: "100%",
-                    backgroundSize: "cover",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center"
-                }} 
-            />
-            <div 
-                className="loader frame2" 
-                style={{
-                    position: "absolute", 
-                    backgroundImage: "url(/paras_loading_frame_2.svg)",
-                    // animation: "frame-switch 1s infinite",
-                    borderRadius: 0,
-                    width: "100%",
-                    height: "100%",
-                    backgroundSize: "cover",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center"
-                }} 
+            <img 
+                width="300px"
+                style={{borderRadius: "50%"}}
+                src={`${process.env.PUBLIC_URL}/${currentImage}`} 
+                alt="Loading..." 
             />
         </div>
     );

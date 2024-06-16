@@ -27,7 +27,7 @@ const Paras = () => {
     const [saveAdenylationDomainSequences, setSaveAdenylationDomainSequences] = useState(false);
     const [selectedSubstrateChoice, setSelectedSubstrateChoice] = useState("allSubstrates"); // allSubstrates or commonSubstrates
     const [maxPredictionsToReport, setMaxPredictionsToReport] = useState(252);
-    const [numPredictionsToReport, setNumPredictionsToReport] = useState(maxPredictionsToReport);
+    const [numPredictionsToReport, setNumPredictionsToReport] = useState(3);
 
     // Advanced options.
     const [useStructureGuidedProfileAlignment, setUseStructureGuidedProfileAlignment] = useState(false);
@@ -99,7 +99,12 @@ const Paras = () => {
 
     return (
         <div className="column is-full">
-            {isLoading && (<LoadingOverlay />)}
+            {isLoading && (
+                <LoadingOverlay 
+                    frame1="paras_loading_1.png"
+                    frame2="paras_loading_2.png"
+                />
+            )}
             <div>
                 <Modal 
                     closeModal={toggleModal} 
@@ -110,8 +115,22 @@ const Paras = () => {
                         <Results results={results} />
                     )}
                 </Modal>
-                <div className="title is-4">
-                    Paras 
+                <div 
+                    style = {{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'left',
+                        alignItems: 'center',
+                    }}
+                >
+                    <img
+                        src="/paras.png"
+                        alt="PARAS"
+                        style={{ width: "100px" }}
+                    />
+                    <div className="title is-4">
+                        PARAS 
+                    </div>
                 </div>
                 <Input 
                     initVisible={true}

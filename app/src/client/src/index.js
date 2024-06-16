@@ -10,6 +10,7 @@ import Navbar from "./components/Navbar";
 import Home from "./components/Home";
 import Paras from "./components/Paras";
 import Parasect from "./components/Parasect";
+import NotFound from "./pages/NotFound";
 
 function AppRoutes () {
     return (
@@ -18,6 +19,7 @@ function AppRoutes () {
                 <Route path="/" element={<div style={{padding: "30px"}}><Home /></div>} />
                 <Route path="/paras" element={<div style={{padding: "20px"}}><Paras /></div>} />
                 <Route path="/parasect" element={<div style={{padding: "20px"}}><Parasect /></div>} />
+                <Route path="*" element={<div style={{padding: "30px"}}><NotFound /></div>} />
             </Routes>
         </div>
     );

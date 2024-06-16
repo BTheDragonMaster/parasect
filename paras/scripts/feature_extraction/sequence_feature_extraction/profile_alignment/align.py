@@ -10,6 +10,8 @@ ALIGNMENT_FILE = os.path.join(os.path.dirname(paras.data.sequence_data.__file__)
 
 def run_muscle(in_file, alignment_file, out_file):
 
+    print(f'Aligning {in_file} to {alignment_file} and saving to {out_file}')
+
     command = ['muscle', '-quiet', '-profile',  '-in1', alignment_file, '-in2', in_file, '-out', out_file]
 
     subprocess.check_call(command)

@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import DropdownList from "react-widgets/DropdownList";
 
-import InfoPopUp from "./InfoPopUp";
-
 const AdvancedOptions = (
     {
         initVisible,
@@ -71,6 +69,18 @@ const AdvancedOptions = (
                 <div>
                     {visible ? (
                         <div>
+                            {/* Short description */}
+                            <div className="panel-block">
+                                <div className="column is-full">
+                                    <p>
+                                        The following options are only relevant for advanced users. 
+                                        Please be aware that changing these settings may affect the 
+                                        performance of the tool. If you are unsure about the 
+                                        implications of these settings, please leave them at their 
+                                        default values.
+                                    </p>
+                                </div>
+                            </div>
 
                             {/* Only make predictions for submitted SMILES strings. */}
                             {(smilesSrc !== null && setSmilesSrc !== null) && (
@@ -148,12 +158,11 @@ const AdvancedOptions = (
                                                     name="check1"
                                                     checked={useStructureGuidedProfileAlignment}
                                                     onChange={() => setUseStructureGuidedProfileAlignment(!useStructureGuidedProfileAlignment)}
-                                                    disabled={true}
+                                                    // disabled={true}
                                                 />
                                                 <span style={{ marginLeft: "-5px" }}>
                                                     Use structure-guided profile alignment instead of pHMM for active site extraction (⚠️ SLOW)
                                                 </span>
-                                                <InfoPopUp infoText={"Option currently unavailable."} />
                                             </div>
                                         </div>
                                     </div>

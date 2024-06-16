@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import NumberPicker from "react-widgets/NumberPicker";
 
-import InfoPopUp from "./InfoPopUp";
-
 const Options = (
     { 
         initVisible,
@@ -28,10 +26,10 @@ const Options = (
         // Update the max number of predictions to report.
         if (event.target.value === "commonSubstrates") {
             setMaxPredictionsToReport(34);
-            setNumPredictionsToReport(34);
+            // setNumPredictionsToReport(34);
         } else {
             setMaxPredictionsToReport(252);
-            setNumPredictionsToReport(252);
+            // setNumPredictionsToReport(252);
         };
     };
 
@@ -72,6 +70,15 @@ const Options = (
                 <div>
                     {visible ? (
                         <div>
+                            {/* Short description */}
+                            <div className="panel-block">
+                                <div className="column is-full">
+                                    <p>
+                                        All selected options for metadata will be included in the results for download.
+                                    </p>
+                                </div>
+                            </div>
+
                             {/* Checkboxes to select what to save. */}
                             <div 
                                 className="panel-block" 
@@ -95,7 +102,6 @@ const Options = (
                                                     Save active site signatures (Stachelhaus code)
                                                 </span> 
                                             </div>
-                                            <InfoPopUp infoText={"Present in download."} />
                                         </div>
                                     </div>
                                     <div className="field has-addons">
@@ -115,7 +121,6 @@ const Options = (
                                                     Save extended signatures (34 amino acid active sites)
                                                 </span>
                                             </div>
-                                            <InfoPopUp infoText={"Present in download."} />
                                         </div>
                                     </div>
                                     <div className="field has-addons">
@@ -135,7 +140,6 @@ const Options = (
                                                     Save adenylation domain sequences
                                                 </span>
                                             </div>
-                                            <InfoPopUp infoText={"Present in download."} />
                                         </div>
                                     </div>
                                 </div>

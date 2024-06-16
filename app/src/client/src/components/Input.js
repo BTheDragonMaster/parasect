@@ -138,6 +138,15 @@ const Input = (
                 <div>
                     {visible ? (
                         <div>
+                            {/* Short description */}
+                            <div className="panel-block">
+                                <div className="column is-full">
+                                    <p>
+                                        Input a protein sequence. For Fasta input, you can either enter the sequence in the text area or upload a Fasta file. For Genbank input, you can only upload a Genbank file.
+                                    </p>
+                                </div>
+                            </div>
+
                             {/* Add a radio button to select the input type: Fasta or Gbk. */}
                             <div className="panel-block" style={{ paddingLeft: "20px" }}>
                                 <div className="column is-full">
@@ -209,7 +218,11 @@ const Input = (
                                                 Refresh
                                             </button>
                                             <button 
-                                                className="button is-primary"
+                                                className="button"
+                                                style={{ 
+                                                    backgroundColor: "#f28732",
+                                                    color: "#fff"
+                                                }}
                                                 onClick={() => {
                                                     if (src === "") {
                                                         toast.error("No input provided.");
