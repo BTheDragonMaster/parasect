@@ -5,13 +5,13 @@ import Plot from "react-plotly.js";
 const layout = {
     autoresize: true,
     autosize: true,
-    xaxis: {
+    yaxis: {
         title: {
             text: "Prediction value",
             standoff: 20,
             font: { size: 16, family: "Arial" }
         },
-        autorange: "reversed",
+        // autorange: "reversed",
         range: [0, 1.1],
         tickformat: ",.1",
         hoverformat: ",.3",
@@ -19,9 +19,9 @@ const layout = {
         titlefont: { size: 16, family: "Arial" },
         tickfont: { size: 16, family: "Arial" },
         ticklen: 10,
-        side: "top",
+        // side: "top",
     },
-    yaxis: {
+    xaxis: {
         automargin: true,
         titlefont: { size: 16, family: "Arial" },
         tickfont: { size: 16, family: "Arial" },
@@ -85,7 +85,7 @@ const Results = ({ results }) => {
         <div>
             {results && (
                 <div>
-                    <div style={{ margin: "15px" }}>
+                    <div style={{ margin: "15px", flexDirection: "column", display: "flex" }}>
                         {`
                             There are ${results.length} domain(s) found in the 
                             input for which substrate specificity predictions are 
@@ -103,74 +103,25 @@ const Results = ({ results }) => {
                             values (TSV) file.
                         `}
                     </div>
-                <div 
-                    style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "center",
-                        alignItems: "left",
-                        width: "100%",
-                        height: "100%",
-                        padding: "10px",
-                        gap: "30px",
-                    }}
-                >
-                    <div
-                        style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "left",
-                            width: "70%",
-                            height: "100%",
-                        }}
-                    >
-                        <DropdownList
-                            data={domain_ids}
-                            defaultValue={selectedDomainId}
-                            onChange={(value) => setSelectedDomainId(value)}
-                            style={{ marginBottom: "10px" }}
-                        />
-                        <Plot
-                            data={[
-                                {
-                                    x: probabilities,
-                                    y: labels,
-                                    type: "bar",
-                                    orientation: "h",
-                                    marker: { color: "#f28732" }
-                                }
-                            ]}
-                            layout={layout}
-                            config={{ responsive: true }}
-                        />
-                    </div>
-                    <div 
-                        style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: "left",
-                            alignItems: "left",
-                            width: "30%",
-                            height: "100%",
-                        }}
-                    >
-                        <button
+                    <button
                             className="button"
                             style={{ 
                                 backgroundColor: "#ccc",
                                 color: "#000",
                                 marginBottom: "10px",
+                                width: "100%",
                             }}
                             onClick={handleDownload}
                         >
                             Download all results (JSON)
-                        </button>
-                        <button
+                    </button>
+                    <button
                             className="button"
                             style={{ 
                                 backgroundColor: "#ccc",
                                 color: "#000",
                                 marginBottom: "10px",
+                                width: "100%",
                             }}
                             onClick={() => {
                                 const tsv = json2tsv(results);
@@ -183,9 +134,27 @@ const Results = ({ results }) => {
                             }}
                         >
                             Download predictions (TSV)
-                        </button>
-                    </div>
-                </div>
+                    </button>
+                    <DropdownList
+                        data={domain_ids}
+                        defaultValue={selectedDomainId}
+                        onChange={(value) => setSelectedDomainId(value)}
+                        style={{ marginBottom: "10px" }}
+                    />
+                    <Plot
+                        data={[
+                            {
+                                x: labels,
+                                y: probabilities,
+                                type: "bar",
+                                orientation: "v",
+                                marker: { color: "#f28732" }
+                            }
+                        ]}
+                        layout={layout}
+                        useResizeHandler={true}
+                        style={{ width: "100%", height: "100%" }}
+                    />     
                 </div>
             )}
         </div>

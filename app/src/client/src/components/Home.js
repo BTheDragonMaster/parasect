@@ -37,10 +37,11 @@ const Home = () => {
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
+                margin: '20px',
             }}
         >
             <div style={{ fontSize: '1.5em', marginBottom: '20px' }}>
-                Welcome to Paras! Pick an app from below or the navigation menu above to get started.
+                Welcome to PARAS(ECT)! Pick an app from below or the navigation menu above to get started.
             </div>
             <div style={{ fontSize: '1.5em', marginBottom: '20px' }}>
                 Read more about PARAS and PARASECT in our <a href="/publication">publication</a>.
