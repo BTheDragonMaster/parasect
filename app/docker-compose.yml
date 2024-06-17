@@ -18,3 +18,7 @@ services:
       - "4010:80"
     restart: always
     container_name: paras-client
+
+networks:
+  paras-network:
+    driver: bridge
