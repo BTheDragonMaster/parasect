@@ -1,7 +1,7 @@
 version: "3.3"
 
 services:
-  api:
+  paras-server:
     build:
       context: . 
       dockerfile: Dockerfile.server
@@ -9,7 +9,7 @@ services:
     restart: always
     container_name: paras-server
 
-  client:
+  paras-client:
     build: 
       context: . 
       dockerfile: Dockerfile.client 
