@@ -45,7 +45,7 @@ Visit `https://localhost:3000/` in your browser to view the app.
 Run the following script to build and runt he app in a Docker container:
 
 ```bash
-docker-compose up --build --force-recreate -d
+docker-compose -p paras up --build --force-recreate --remove-orphans -d
 ```
 
 The app will be available at `https://localhost:4010/`.
