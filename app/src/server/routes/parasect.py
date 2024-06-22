@@ -140,7 +140,8 @@ def submit_parasect() -> Response:
         if len(smiles_input) > 0:
             smiles_input = smiles_input.strip().split("\n")
             for smiles_string in smiles_input:
-                fingerprint = bitvector_from_smiles(smiles_string, fingerprints)
+                bitvector_file_path = os.path.join(absolute_path, "data/fingerprints.txt")
+                fingerprint = bitvector_from_smiles(smiles_string, bitvector_file_path)
                 fingerprints.append(fingerprint)
                 substrates.append(smiles_string)
     
