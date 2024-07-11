@@ -1,30 +1,37 @@
 from collections import OrderedDict
-from flask import Blueprint, Response, request 
+from flask import Blueprint, Response, request
 import os
 import joblib
 
-from paras.scripts.data_processing.temp import clear_temp
-from paras.scripts.feature_extraction.sequence_feature_extraction.seq_to_features import domains_to_features
-from paras.scripts.feature_extraction.compound_feature_extraction.fingerprinting import bitvector_from_smiles, bitvectors_from_substrate_names
-from paras.scripts.general import get_domains, get_top_n_aa_parasect
-from paras.scripts.parsers.parsers import parse_substrate_list
+from parasect.scripts.data_processing.temp import clear_temp
+from parasect.scripts.feature_extraction.sequence_feature_extraction.seq_to_features import (
+    domains_to_features,
+)
+from parasect.scripts.feature_extraction.compound_feature_extraction.fingerprinting import (
+    bitvector_from_smiles,
+    bitvectors_from_substrate_names,
+)
+from parasect.scripts.general import get_domains, get_top_n_aa_parasect
+from parasect.scripts.parsers.parsers import parse_substrate_list
 
 from .common import Status, ResponseData
 
 blueprint_submit_parasect = Blueprint("submit_parasect", __name__)
+
+
 @blueprint_submit_parasect.route("/api/submit_parasect", methods=["POST"])
 def submit_parasect() -> Response:
     """
     Submit settings for prediction with Parasect model.
-    
+
     :return: Response
     """
     data = request.get_json()
 
     try:
         data = data["data"]
-        selected_input = data["src"] # Fasta or Gbk file contents.
-        selected_input_type = data["selectedInputType"] # Fasta or Gbk.
+        selected_input = data["src"]  # Fasta or Gbk file contents.
+        selected_input_type = data["selectedInputType"]  # Fasta or Gbk.
 
         # Options.
         save_active_site_signatures = data["saveActiveSiteSignatures"]
@@ -43,13 +50,13 @@ def submit_parasect() -> Response:
     except Exception as e:
         msg = f"Failed to read settings: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     # Sanity check selected input type.
     selected_input_type = selected_input_type.strip().lower()
     if selected_input_type not in ["fasta", "gbk"]:
         msg = f"Invalid input type: {selected_input_type}."
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     # Locate temp directory.
     try:
         absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -71,7 +78,7 @@ def submit_parasect() -> Response:
         clear_temp(temp_dir)
         msg = f"Failed to write input to file: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     # Get domains.
     try:
         a_domains = get_domains(
@@ -83,18 +90,18 @@ def submit_parasect() -> Response:
             separator_3=third_separator,
             verbose=False,
             file_type=selected_input_type.lower(),
-            temp_dir=temp_dir
+            temp_dir=temp_dir,
         )
         sequence_ids, sequence_feature_vectors = domains_to_features(a_domains, one_hot=False)
 
-        if not sequence_feature_vectors: 
+        if not sequence_feature_vectors:
             raise Exception("No feature vectors.")
-        
+
     except Exception as e:
         clear_temp(temp_dir)
         msg = f"Failed to get domains: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     # Locate file containing included substrates.
     try:
         absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -104,7 +111,7 @@ def submit_parasect() -> Response:
     except Exception as e:
         msg = f"Failed to locate substrate file: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     # Parse included substrates.
     try:
         included_substrates = parse_substrate_list(substrate_file)
@@ -113,28 +120,28 @@ def submit_parasect() -> Response:
     except Exception as e:
         msg = f"Failed to parse included substrates: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
-    # Locate file containing substrate fingerprints. 
+
+    # Locate file containing substrate fingerprints.
     try:
         absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         fingerprint_file = os.path.join(absolute_path, "data/fingerprints.txt")
         assert os.path.exists(fingerprint_file)
-    
+
     except Exception as e:
         msg = f"Failed to locate substrate fingerprints: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     # Parse fingerprints.
     try:
         if only_predict_for_smiles_input:
-            substrates, fingerprints = [], [] # Only use user-provided SMILES strings.
+            substrates, fingerprints = [], []  # Only use user-provided SMILES strings.
         else:
             substrates, fingerprints = bitvectors_from_substrate_names(included_substrates, fingerprint_file)
-    
+
     except Exception as e:
         msg = f"Failed to parse fingerprints: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     # Parse SMILES strings, if provided.
     try:
         if len(smiles_input) > 0:
@@ -144,11 +151,11 @@ def submit_parasect() -> Response:
                 fingerprint = bitvector_from_smiles(smiles_string, bitvector_file_path)
                 fingerprints.append(fingerprint)
                 substrates.append(smiles_string)
-    
+
     except Exception as e:
         msg = f"Failed to parse SMILES strings: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     # Run model and retrieve class predictions.
     try:
         results = OrderedDict()
@@ -207,10 +214,10 @@ def submit_parasect() -> Response:
             clear_temp()
             msg = "No feature vectors or fingerprints."
             return ResponseData(Status.Failure, message=msg).to_dict()
-        
+
         classifier = None
         clear_temp(temp_dir)
-    
+
     except Exception as e:
         classifier = None
         clear_temp(temp_dir)
@@ -223,27 +230,22 @@ def submit_parasect() -> Response:
         for domain in a_domains:
             domain_results[domain.domain_id] = {}
             if save_adenylation_domain_sequences:
-                domain_results[domain.domain_id]['sequence'] = domain.sequence
+                domain_results[domain.domain_id]["sequence"] = domain.sequence
             if save_active_site_signatures:
-                domain_results[domain.domain_id]['signature'] = domain.signature
+                domain_results[domain.domain_id]["signature"] = domain.signature
             if save_extended_signatures:
-                domain_results[domain.domain_id]['extended_signature'] = domain.extended_signature
+                domain_results[domain.domain_id]["extended_signature"] = domain.extended_signature
 
         for domain_id in results:
             preds = results[domain_id]
-            domain_results[domain_id]['predictions'] = preds
+            domain_results[domain_id]["predictions"] = preds
 
     except Exception as e:
         msg = f"Failed to parse results: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     # Create payload.
-    payload = {"results": [
-        {
-            "domain_id": domain_id,
-            "data": domain_results[domain_id]
-        } for domain_id in domain_results
-    ]}
-    
+    payload = {"results": [{"domain_id": domain_id, "data": domain_results[domain_id]} for domain_id in domain_results]}
+
     msg = "Submission was successful."
     return ResponseData(Status.Success, message=msg, payload=payload).to_dict()
