@@ -15,6 +15,66 @@ def test_point3d_construction():
     assert point.z == 3.0
 
 
+def test_point3d_construction_invalid_x_str_input():
+    """Test the construction of a Point3D object with an invalid str x-coordinate."""
+    try:
+        pcm.Point3D("1.0", 2.0, 3.0)
+    except TypeError:
+        assert True
+    else:
+        assert False
+
+
+def test_point3d_construction_invalid_x_int_input():
+    """Test the construction of a Point3D object with an invalid int x-coordinate."""
+    try:
+        pcm.Point3D(1, 2.0, 3.0)
+    except TypeError:
+        assert True
+    else:
+        assert False
+
+
+def test_point3d_construction_invalid_y__str_input():
+    """Test the construction of a Point3D object with an invalid str y-coordinate."""
+    try:
+        pcm.Point3D(1.0, "2.0", 3.0)
+    except TypeError:
+        assert True
+    else:
+        assert False
+
+
+def test_point3d_construction_invalid_y_int_input():
+    """Test the construction of a Point3D object with an invalid int y-coordinate."""
+    try:
+        pcm.Point3D(1.0, 2, 3.0)
+    except TypeError:
+        assert True
+    else:
+        assert False
+
+
+def test_point3d_construction_invalid_z_str_input():
+    """Test the construction of a Point3D object with an invalid str z-coordinate."""
+    try:
+        pcm.Point3D(1.0, 2.0, "3.0")
+    except TypeError:
+        assert True
+    else:
+        assert False
+
+
+def test_point3d_construction_invalid_z_int_input():
+    """Test the construction of a Point3D object with an invalid int z-coordinate."""
+    try:
+        pcm.Point3D(1.0, 2.0, 3)
+    except TypeError:
+        assert True
+    else:
+        assert False
+
+
 def test_point3d_equality():
     """Test the equality of two Point3D objects."""
     point1 = pcm.Point3D(1.0, 2.0, 3.0)
@@ -62,6 +122,17 @@ def test_pont3d_calc_euclidean_distance_same_point():
     assert math.isclose(calc_dist, 0.0, rel_tol=0.01)
 
 
+def test_pont3d_calc_euclidean_distance_invalid_other_type():
+    """Test the calculation of the Euclidean distance between a Point3D object and an invalid type."""
+    point1 = pcm.Point3D(1.0, 2.0, 3.0)
+    try:
+        point1.calc_euclidean_distance([1.0, 2.0, 3.0])
+    except TypeError:
+        assert True
+    else:
+        assert False
+
+
 def test_sphere_construction():
     """Test the construction of a Sphere object."""
     center = pcm.Point3D(1.0, 2.0, 3.0)
@@ -90,3 +161,15 @@ def test_cube_and_sphere_intersect_no_intersection():
     cube = pcm.Cube(pcm.Point3D(0.0, 0.0, 0.0), 1.0)
     sphere = pcm.Sphere(pcm.Point3D(2.0, 0.0, 0.0), 1.0)
     assert not pcm.calc_if_cube_and_sphere_intersect(cube, sphere)
+
+
+def test_cube_and_sphere_interect_invalid_input():
+    """Test the intersection of a Cube and a Sphere with invalid input."""
+    cube = pcm.Cube(pcm.Point3D(0.0, 0.0, 0.0), 1.0)
+    sphere = pcm.Sphere(pcm.Point3D(0.0, 0.0, 0.0), 1.0)
+    try:
+        pcm.calc_if_cube_and_sphere_intersect(cube, sphere.center)
+    except TypeError:
+        assert True
+    else:
+        assert False
