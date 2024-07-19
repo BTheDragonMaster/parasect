@@ -7,7 +7,7 @@ import typing as ty
 
 
 class Point3D:
-    """The Point3D class represents a 3D vector"""
+    """The Point3D class represents a 3D vector."""
 
     def __init__(self, x: float, y: float, z: float) -> None:
         """Initialize the 3D point.
@@ -22,10 +22,10 @@ class Point3D:
         """
         if not isinstance(x, (float)):
             raise TypeError(f"Point3D expects float for x, got {type(x)}")
-    
+
         if not isinstance(y, (float)):
             raise TypeError(f"Point3D expects float for y, got {type(y)}")
-        
+
         if not isinstance(z, (float)):
             raise TypeError(f"Point3D expects float for z, got {type(z)}")
 
@@ -41,7 +41,7 @@ class Point3D:
         :return: True if the points are equal, otherwise False.
         :rtype: bool
         """
-        if not isinstance(other, Point3D):
+        if type(self) is not type(other):
             return False
 
         if (
@@ -78,7 +78,7 @@ class Point3D:
         :rtype: float
         :raises TypeError: If the other point is not a Point3D object.
         """
-        if type(self) != type(other):
+        if type(self) is not type(other):
             raise TypeError(f"Point3D expects Point3D for other, got {type(other)}")
 
         return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2)
@@ -133,10 +133,10 @@ def calc_if_cube_and_sphere_intersect(voxel: Cube, sphere: Sphere) -> bool:
     :rtype: bool
     :raises TypeError: If the voxel is not a Cube object or the sphere is not a Sphere object.
     """
-    if type(voxel) != Cube:
+    if type(voxel) is not Cube:
         raise TypeError(f"calc_if_cube_and_sphere_intersect expects Cube for voxel, got {type(voxel)}")
-    
-    if type(sphere) != Sphere:
+
+    if type(sphere) is not Sphere:
         raise TypeError(f"calc_if_cube_and_sphere_intersect expects Sphere for sphere, got {type(sphere)}")
 
     sphere_x = sphere.center.x - voxel.center.x
