@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-"""The PARAS parasect module contains code for running PARAS from the command line."""
+"""The PARAS parasect subpackage contains code for running PARAS from the command line."""
