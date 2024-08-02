@@ -1,0 +1,67 @@
+abbreviation	full name	smiles	
+hiv	2S-hydroxyisovaleric acid	CC(C)[C@@H](C(=O)O)O
+abu	2-aminobutyric acid	
+thr	threonine	
+an	anthranilic acid	
+glu	glutamic acid	
+dhpg	3,5-dihydroxyphenylglycine	
+alaninol	alaninol	
+ala-d	D-alanine	
+ile	isoleucine	
+asn	asparagine	
+bht	beta-hydroxytyrosine	
+lys	lysine	
+cap	capreomycidine	
+iva	isovaline	NC(CC)(C)C(=O)O
+hforn	N5-formyl-N5-hydroxyornithine	
+leu	leucine	
+allo-thr	allo-threonine	
+aad	2-aminoadipic acid	
+meval	methylvaline	NC(C(C)(C)C)C(=O)O
+LDAP	diaminopimelic acid	NC(CCCC(N)C(=O)O)C(=O)O
+mephe	beta-methylphenylalanine	NC(C(C)c1ccccc1)C(=O)O
+N-(1,1-dimethyl-1-allyl)Trp	1-(1,1-dimethylallyl)-tryptophan	
+alle	allo-isoleucine	
+dhb	2,3-dihydroxybenzoic acid	
+tcl	(4S)-5,5,5-trichloroleucine	
+3-me-glu	3-methylglutamic acid	NC(C(C)CC(=O))C(=O)O
+d-lyserg	D-lysergic acid	CN1C[C@@H](C=C2C1CC3=CNC4=CC=CC2=C34)C(=O)O
+sal	salicylic acid	
+bmt	4R-E-butenyl-4R-methylthreonine	
+beta-ala	beta-alanine	
+hasn	3-hydroxyasparagine	
+phg	phenylglycine	
+hpg	4-hydroxyphenylglycine	
+phe	phenylalanine	
+aeo	2S-amino-8-oxodecanoic acid	
+vol	valinol	NC(C(C)C)CO
+dht	dehydrothreonine	NC(C(=O)C)C(=O)O
+hiv-d	2R-hydroxyisovaleric acid	CC(C)[C@H](C(=O)O)O
+tyr	tyrosine	
+pro	proline	
+gln	glutamine	
+cys	cysteine	
+4ppro	4R-propylproline	
+2-oxo-isovaleric-acid	2-oxo-isovaleric-acid	O=C(C(C)C)C(=O)O
+orn	ornithine	
+val	valine	
+gly	glycine	
+arg	arginine	
+horn	N5-hydroxyornithine	
+ser	serine	
+ala	alanine	
+dpg	3,5-dihydroxyphenylglycine	
+ala-b	beta-alanine	
+haorn	N5-acetyl-N5-hydroxyornithine	
+lys-b	beta-lysine	
+trp	tryptophan	
+alpha-hydroxy-isocaproic acid	2S-hydroxyisocaproic acid	
+s-nmethoxy-trp	N1-methoxytryptophan	
+his	histidine	
+alloile	allo-isoleucine	
+pip	pipecolic acid	
+OHval	3-hydroxyvaline	
+asp	aspartic acid	
+aoda	2S-amino-8-oxodecanoic acid	N[C@@H](CCCCCC(=O)CC)C(=O)O
+hmp-D	2R-hydroxy-3-methylpentanoic acid	
+dab	2,4-diaminobutyric acid	
