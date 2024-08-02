@@ -418,6 +418,7 @@ class Dataset:
         plt.grid(True)
         plt.ylabel(ylabel)
         plt.savefig(box_out, bbox_inches='tight')
+        plt.clf()
 
         with open(accuracy_file, 'w') as out:
             accuracy = correct / (correct + incorrect)
