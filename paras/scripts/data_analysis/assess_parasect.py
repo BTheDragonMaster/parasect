@@ -1,7 +1,10 @@
 from sys import argv
+import os
 
 from paras.scripts.parsers.tabular import Tabular
+from paras.scripts.parsers.iterate_over_dir import iterate_over_dir
 import matplotlib.pyplot as plt
+import math
 
 
 def count_correct_in_top_x(interaction_file, top_x):
@@ -68,11 +71,42 @@ def plot_interactions(interaction_file, top_range, out_file):
     plt.ylabel("% true substrate in predictions")
     plt.xticks([1, 2, 3, 4, 5], [1, 2, 3, 4, 5])
     plt.xlim(1, max(x) + 1)
-    plt.ylim(70, 100)
+
+    nearest_ten = math.floor(min(y) / 10.0) * 10
+    if min(y) - nearest_ten < 3:
+        nearest_ten -= 5
+    plt.ylim(nearest_ten, 100)
+    yticks = []
+
+    if nearest_ten % 10 == 0:
+        ytick = nearest_ten
+    else:
+        ytick = nearest_ten + 5
+
+    while ytick <= 100:
+        yticks.append(ytick)
+        ytick += 10
+
+    plt.yticks(yticks, yticks)
 
     plt.savefig(out_file, bbox_inches='tight')
+    plt.clf()
+
+
+def plot_interactions_bulk(results_directory, top_range=5):
+
+    for model_name, model_dir in iterate_over_dir(results_directory, get_dirs=True):
+        if model_name == 'parasect':
+            for _, extraction_dir in iterate_over_dir(model_dir, get_dirs=True):
+                for _, featurisation_dir in iterate_over_dir(extraction_dir, get_dirs=True):
+                    for test_dir_name, test_dir in iterate_over_dir(featurisation_dir, get_dirs=True):
+                        if test_dir_name == 'test_performance':
+                            interaction_file = os.path.join(test_dir, "interaction_probabilities.txt")
+                            out_file = os.path.join(test_dir, f"correct_in_top_{top_range}.svg")
+                            plot_interactions(interaction_file, top_range, out_file)
 
 
 if __name__ == "__main__":
-    plot_interactions(argv[1], int(argv[2]), argv[3])
+    # plot_interactions(argv[1], int(argv[2]), argv[3])
+    plot_interactions_bulk(argv[1])
 

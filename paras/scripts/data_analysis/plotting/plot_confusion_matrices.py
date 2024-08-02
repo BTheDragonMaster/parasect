@@ -7,6 +7,8 @@ import pandas as pd
 import scipy.spatial as sp
 import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
+from pprint import pprint
 
 from paras.scripts.parsers.parsers import parse_cm_matrix
 
@@ -132,6 +134,62 @@ def average_matrices(matrices):
     return averaged_matrix
 
 
+def plot_all_models(models_dir):
+    for model_name in os.listdir(models_dir):
+        print(model_name)
+        model_dir = os.path.join(models_dir, model_name)
+        if os.path.isdir(model_dir):
+            for extraction_method in os.listdir(model_dir):
+                print(extraction_method)
+                extraction_dir = os.path.join(model_dir, extraction_method)
+                if os.path.isdir(extraction_dir):
+                    for featurisation_method in os.listdir(extraction_dir):
+                        print(featurisation_method)
+
+                        crossval_dir = os.path.join(extraction_dir, featurisation_method)
+                        if os.path.isdir(crossval_dir):
+                            out_path = os.path.join(crossval_dir, "confusion_matrix.svg")
+                            matrices = []
+                            test_matrix, labels = parse_cm_matrix(os.path.join(crossval_dir, "test_performance/confusion_matrix.txt"))
+
+                            for crossval_set in os.listdir(crossval_dir):
+                                print(crossval_set)
+                                if 'crossval' in crossval_set:
+                                    crossval_set_dir = os.path.join(crossval_dir, crossval_set)
+
+                                    if os.path.isdir(crossval_set_dir):
+
+                                        confusion_matrix = os.path.join(crossval_set_dir, "test_performance/confusion_matrix.txt")
+
+                                        matrix, _ = parse_cm_matrix(confusion_matrix)
+                                        matrices.append(matrix)
+
+                            average_matrix = average_matrices(matrices)
+
+                            data = pd.DataFrame(average_matrix, index=labels, columns=labels)
+
+                            data_correlation = data.T.corr()
+
+                            data_correlation = data_correlation.fillna(0)
+                            distance_matrix = 1 - data_correlation
+                            np.fill_diagonal(distance_matrix.values, 0.0)
+
+                            linkage = hc.linkage(sp.distance.squareform(distance_matrix), method='average')
+
+                            test_data = pd.DataFrame(test_matrix, index=labels, columns=labels)
+
+                            clustermap = sns.clustermap(test_data, cmap=sns.cm.rocket_r, row_linkage=linkage,
+                                                        col_linkage=linkage, figsize=(10, 10),
+                                                        cbar_pos=(0, .6, .03, .4),
+                                                        dendrogram_ratio=0.15)
+
+                            clustermap.ax_row_dendrogram.set_visible(False)
+
+                            clustermap.savefig(out_path)
+                            plt.clf()
+                            plt.close()
+
+
 def plot_average(crossval_dir, output_folder):
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
@@ -179,5 +237,6 @@ def plot_average(crossval_dir, output_folder):
 if __name__ == "__main__":
     # make_cm_frames(argv[1], argv[2])
     # plot_average(argv[1], argv[2])
-    linkage = get_clustering(argv[1])
-    plot_cm_matrix(argv[1], linkage, argv[2])
+    # linkage = get_clustering(argv[1])
+    # plot_cm_matrix(argv[1], linkage, argv[2])
+    plot_all_models(argv[1])

@@ -1,27 +1,37 @@
 from sys import argv
 import os
+
 from matplotlib import pyplot as plt
 
 from paras.scripts.parsers.tabular import Tabular
 from paras.scripts.parsers.external_parsers import parse_sandpuma_data
 from paras.scripts.parsers.parsers import parse_domain_list, parse_specificities, parse_substrate_list
+import paras.data.compound_data
+# from paras.scripts.data_analysis.summarise_results import SUBSTRATE_FILE
+
+SUBSTRATE_FILE = os.path.join(os.path.dirname(paras.data.compound_data.__file__), 'all_substrates.txt')
 
 
-def plot_histogram(summary_file, out_plot, sequence_only=True):
+def plot_histogram(summary_file, out_plot, sequence_only=True, paras_only=False):
     summary = Tabular(summary_file, [0])
     predictor_to_metrics = {}
     has_no_call = False
     labels = []
     predictors = []
+    substrates = parse_substrate_list(SUBSTRATE_FILE)
     for datapoint in summary.data:
         true_substrates = summary.get_value(datapoint, "substrate").split('|')
 
-        for predictor in summary.categories[1:-1]:
+        for predictor in summary.categories[2:]:
             if sequence_only:
-                if 'structure' in predictor:
+                if 'Structure' in predictor:
                     continue
 
-            if sequence_only and 'sequence' in predictor:
+            if paras_only:
+                if 'PARAS' not in predictor:
+                    continue
+
+            if sequence_only and 'Sequence' in predictor:
                 label = predictor.split(' ')[0]
             else:
                 label = predictor
@@ -38,11 +48,14 @@ def plot_histogram(summary_file, out_plot, sequence_only=True):
             is_correct = False
             no_call = False
             for prediction in predictions:
+
                 if prediction in true_substrates:
                     is_correct = True
                 elif prediction in ['no_call', 'N/A', "no_confident_result", "no_force_needed"]:
                     no_call = True
                     has_no_call = True
+                elif prediction not in substrates:
+                    print(predictor, prediction)
 
             if is_correct:
                 predictor_to_metrics[predictor]["correct"] += 1
@@ -245,5 +258,5 @@ def benchmark_nrpspredictor(domain_file, parasect_data, included_substrates):
 if __name__ == "__main__":
     # benchmark_sandpuma(argv[1], argv[2], argv[3], False)
     # benchmark_nrpspredictor(argv[1], argv[2], argv[3])
-    plot_histogram(argv[1], argv[2], sequence_only=False)
+    plot_histogram(argv[1], argv[2], sequence_only=True, paras_only=False)
 

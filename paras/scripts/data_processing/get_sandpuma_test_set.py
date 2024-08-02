@@ -30,8 +30,8 @@ def get_sandpuma_test_set(sandpuma_fasta, parasect_dataset, domain_file, out_dir
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
 
-    fasta_path = os.path.join(out_dir, "sandpuma_test.fasta")
-    domain_path = os.path.join(out_dir, "sandpuma_test.txt")
+    fasta_path = os.path.join(out_dir, "benchmarking_set.fasta")
+    domain_path = os.path.join(out_dir, "benchmarking_set.txt")
 
     write_fasta(test_to_sequence, fasta_path)
 

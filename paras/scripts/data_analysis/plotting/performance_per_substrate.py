@@ -1,8 +1,10 @@
 from sys import argv
+import os
 
 from matplotlib import pyplot as plt
 
 from paras.scripts.parsers.parsers import parse_specificities, parse_test_results, parse_substrate_list
+from paras.scripts.parsers.iterate_over_dir import iterate_over_dir
 
 
 def plot_performance_per_aa(specificities, included_substrates, test_results, out_plot):
@@ -50,7 +52,23 @@ def plot_performance_per_aa(specificities, included_substrates, test_results, ou
     plt.legend(loc="upper right", bbox_to_anchor=(1.2, 1.05))
     plt.ylabel("# datapoints")
     plt.savefig(out_plot, bbox_inches='tight')
+    plt.clf()
+
+
+def plot_performance_per_aa_bulk(specificities, included_substrates, results_directory):
+
+    for _, model_dir in iterate_over_dir(results_directory, get_dirs=True):
+        for _, extraction_dir in iterate_over_dir(model_dir, get_dirs=True):
+            for _, featurisation_dir in iterate_over_dir(extraction_dir, get_dirs=True):
+                for test_dir_name, test_dir in iterate_over_dir(featurisation_dir, get_dirs=True):
+                    if test_dir_name == 'test_performance':
+                        test_results = os.path.join(test_dir, "test_results.txt")
+                        out_file = os.path.join(test_dir, "performance_per_substrate.svg")
+                        plot_performance_per_aa(specificities, included_substrates, test_results, out_file)
+
+
 
 
 if __name__ == "__main__":
-    plot_performance_per_aa(argv[1], argv[2], argv[3], argv[4])
+    # plot_performance_per_aa(argv[1], argv[2], argv[3], argv[4])
+    plot_performance_per_aa_bulk(argv[1], argv[2], argv[3])
