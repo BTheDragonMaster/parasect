@@ -36,7 +36,7 @@ def parse_hmm3_results(hmm_results: str) -> dict[str, HSP]:
 
     for result in SearchIO.parse(hmm_results, 'hmmer3-text'):
         for hsp in result.hsps:
-            if hsp.bitscore > 20:
+            if hsp.evalue < 0.001:
                 if hsp.hit_id == 'AMP-binding' or hsp.hit_id == 'AMP-binding_C':
                     header = make_domain_id(result.id, hsp.hit_id, hsp.query_start, hsp.query_end)
                     id_to_hit[header] = hsp
@@ -62,7 +62,7 @@ def parse_hmm2_results(hmm_results):
 
     for result in SearchIO.parse(hmm_results, 'hmmer2-text'):
         for hsp in result.hsps:
-            if hsp.bitscore > 20:
+            if hsp.evalue < 0.001:
                 if hsp.hit_id == 'AMP-binding' or hsp.hit_id == 'AMP-binding_C':
                     header = make_domain_id(result.id, hsp.hit_id, hsp.query_start, hsp.query_end)
                     id_to_hit[header] = hsp
