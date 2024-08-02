@@ -329,7 +329,6 @@ def analyse_first_splits(model, out_folder):
         # pprint(count_residues_per_substrate(position, "threonine", True))
 
 
-
 if __name__ == "__main__":
     # get_splits_per_class_paras(PARAS)
     analyse_first_splits(argv[1], argv[2])
