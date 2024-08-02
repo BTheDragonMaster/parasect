@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 from paras.scripts.parsers.fasta import read_fasta
 from paras.scripts.parsers.datapoint import DataPoint
 from paras.scripts.parsers.tabular import Tabular
@@ -169,6 +169,8 @@ def parse_cm_matrix(cm_file):
     with open(cm_file, 'r') as cm_data:
         matrix = []
         amino_acids = cm_data.readline().split('\t')[1:]
+        for i, amino_acid in enumerate(amino_acids[:]):
+            amino_acids[i] = amino_acid.strip()
         for line in cm_data:
             row_repr = line.split('\t')[1:]
             row = []
@@ -178,6 +180,93 @@ def parse_cm_matrix(cm_file):
             matrix.append(row)
 
         return matrix, amino_acids
+
+
+@dataclass
+class Prediction:
+    predictor: str
+    predicted_substrates: List[str]
+    true_substrates: List[str]
+    correct: bool
+    no_call: bool
+
+
+@dataclass
+class SubstrateMetrics:
+    substrate: str
+    tp: int = 0
+    fp: int = 0
+    fn: int = 0
+
+    precision: float = 0
+    recall: float = 0
+    f1: float = 0
+
+    def set_metrics(self):
+        if self.tp or self. fp:
+            self.precision = float(self.tp) / (self.tp + self.fp)
+        else:
+            self.precision = 0.0
+        if self.tp or self.fn:
+            self.recall = float(self.tp) / (self.tp + self.fn)
+        else:
+            self.recall = 0.0
+
+        if self.precision > 0.0 or self.recall > 0.0:
+            self.f1 = 2 * self.precision * self.recall / (self.precision + self.recall)
+        else:
+            self.f1 = 0.0
+
+
+@dataclass
+class ToolPerformance:
+    predictor: str
+    predictions: List[Prediction] = field(default_factory=list)
+    substrate_metrics: Dict[str, SubstrateMetrics] = field(default_factory=dict)
+
+    def set_per_substrate_metrics(self, included_substrates):
+        for substrate in included_substrates:
+            substrate_metrics = SubstrateMetrics(substrate)
+
+            for prediction in self.predictions:
+                if prediction.correct and substrate in prediction.true_substrates:
+                    substrate_metrics.tp += 1
+                elif substrate in prediction.true_substrates:
+                    substrate_metrics.fn += 1
+                elif substrate in prediction.predicted_substrates and not prediction.correct:
+                    substrate_metrics.fp += 1
+
+            substrate_metrics.set_metrics()
+            self.substrate_metrics[substrate] = substrate_metrics
+
+
+def parse_summary_file(summary_file):
+    summary = Tabular(summary_file, [0])
+    predictor_to_performance = {}
+
+    for datapoint in summary.data:
+        true_substrates = summary.get_value(datapoint, "substrate").split('|')
+
+        for predictor in summary.categories[2:]:
+
+            if predictor not in predictor_to_performance:
+                predictor_to_performance[predictor] = ToolPerformance(predictor)
+
+            substrate_predictions = summary.get_value(datapoint, predictor).split('|')
+
+            is_correct = False
+            no_call = False
+            for prediction in substrate_predictions:
+
+                if prediction in true_substrates:
+                    is_correct = True
+                elif prediction in ['no_call', 'N/A', "no_confident_result", "no_force_needed"]:
+                    no_call = True
+
+            prediction = Prediction(predictor, substrate_predictions, true_substrates, is_correct, no_call)
+            predictor_to_performance[predictor].predictions.append(prediction)
+
+    return predictor_to_performance
 
 
 def parse_substrate_list(in_file):

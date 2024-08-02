@@ -3,16 +3,32 @@ from dataclasses import dataclass
 
 import paras.data.benchmarking
 import paras.data.benchmarking.benchmarking_set
+import paras.data
 from paras.scripts.parsers.tabular import Tabular
+from paras.scripts.parsers.parsers import parse_taxonomy
 from pprint import pprint
 
+ADENPREDICTOR_PREDICTIONS = os.path.join(os.path.dirname(paras.data.benchmarking.__file__), 'adenpredictor_results.tsv')
+ADENPREDICTOR_ABBREVIATIONS = os.path.join(os.path.dirname(paras.data.benchmarking.__file__), 'adenpredictor_abbreviations.txt')
 
 SANDPUMA_IDENTITY = os.path.join(os.path.dirname(paras.data.benchmarking.benchmarking_set.__file__), 'pid.res.tsv')
 SANDPUMA_INDIVIDUAL_PREDICTIONS = os.path.join(os.path.dirname(paras.data.benchmarking.benchmarking_set.__file__), 'ind.res.tsv')
 SANDPUMA_PREDICTIONS = os.path.join(os.path.dirname(paras.data.benchmarking.benchmarking_set.__file__), 'sandpuma.tsv')
 FORCED_PREDICTIONS = os.path.join(os.path.dirname(paras.data.benchmarking.benchmarking_set.__file__), 'ens.res.tsv')
 
+TAXONOMY = os.path.join(os.path.dirname(paras.data.__file__), 'taxonomy.txt')
+
 SANDPUMA_ABBREVIATIONS = os.path.join(os.path.dirname(paras.data.benchmarking.__file__), 'sandpuma_abbreviations.txt')
+NRPSPREDICTOR_ABBREVIATIONS = os.path.join(os.path.dirname(paras.data.benchmarking.__file__), 'nrpspredictor_abbreviations.txt')
+NRPSPREDICTOR_PREDICTIONS_BACTERIAL = os.path.join(os.path.dirname(paras.data.benchmarking.__file__), 'nrpspredictor_output_bacterial.txt')
+NRPSPREDICTOR_PREDICTIONS_FUNGAL = os.path.join(os.path.dirname(paras.data.benchmarking.__file__), 'nrpspredictor_output_fungal.txt')
+
+
+@dataclass
+class AdenPredictorPrediction:
+    name: str
+    prediction: str
+    signature: str
 
 
 @dataclass
@@ -30,6 +46,14 @@ class SandpumaPrediction:
     path_accuracy: float = None
 
 
+@dataclass
+class NrpsPredictorPrediction:
+    name: str
+    prediction: str
+    bacterial_prediction: str
+    fungal_prediction: str
+
+
 def parse_identity_file(identity_file):
     name_to_identity = {}
     with open(identity_file, 'r') as identities:
@@ -43,14 +67,68 @@ def parse_identity_file(identity_file):
     return name_to_identity
 
 
-def parse_sandpuma_mapping(sandpuma_mapping_file):
-    sandpuma_mapping_data = Tabular(sandpuma_mapping_file, [0])
+def parse_external_mapping(mapping_file):
+    mapping_data = Tabular(mapping_file, [0])
+    print(mapping_data.categories)
+    print("full name" in mapping_data.categories)
     abbreviation_to_substrate = {}
-    for datapoint in sandpuma_mapping_data.data:
-        abbreviation_to_substrate[sandpuma_mapping_data.get_value(datapoint, "abbreviation").lower()] = \
-            sandpuma_mapping_data.get_value(datapoint, "full name")
+    for datapoint in mapping_data.data:
+        abbreviation = mapping_data.get_value(datapoint, "abbreviation").lower()
+        print(abbreviation)
+        abbreviation_to_substrate[abbreviation] = \
+            mapping_data.get_value(datapoint, "full name")
 
     return abbreviation_to_substrate
+
+
+def get_nrpspredictor_substrate(raw_output, abbreviation_to_substrate):
+    abbreviation = raw_output.split('(')[0].lower()
+    if abbreviation.lower() in abbreviation_to_substrate:
+        prediction = abbreviation_to_substrate[abbreviation]
+    elif abbreviation.upper() == "N/A":
+        prediction = 'N/A'
+    else:
+        raise Exception(f"Cannot link abbreviation '{abbreviation}' to paras substrate")
+
+    return prediction
+
+
+def parse_adenpredictor_predictions(prediction_file, abbreviation_to_substrate):
+    name_to_prediction = {}
+    adenpredictor_data = Tabular(prediction_file, [0])
+    for datapoint in adenpredictor_data.data:
+        domain_name = adenpredictor_data.get_value(datapoint, 'Id')
+        signature = adenpredictor_data.get_value(datapoint, 'Signature')
+        prediction_abbreviation = adenpredictor_data.get_value(datapoint, 'Prediction 1')
+        prediction = abbreviation_to_substrate[prediction_abbreviation]
+        name_to_prediction[domain_name] = AdenPredictorPrediction(domain_name, prediction, signature)
+
+    return name_to_prediction
+
+
+def parse_nrpspredictor_predictions(prediction_file_bacterial, prediction_file_fungal, abbreviation_to_substrate):
+    name_to_prediction = {}
+    domain_to_taxonomy = parse_taxonomy(TAXONOMY)
+    nrpspredictor_data_bacterial = Tabular(prediction_file_bacterial, [0])
+    nrpspredictor_data_fungal = Tabular(prediction_file_fungal, [0])
+    for datapoint in nrpspredictor_data_bacterial.data:
+
+        domain_name = nrpspredictor_data_bacterial.get_value(datapoint, "Name")
+        abbreviated_fungal_prediction = nrpspredictor_data_fungal.get_value(datapoint, "SingleV2")
+        abbreviated_bacterial_prediction = nrpspredictor_data_bacterial.get_value(datapoint, "SingleV2")
+        fungal_prediction = get_nrpspredictor_substrate(abbreviated_fungal_prediction, abbreviation_to_substrate)
+        bacterial_prediction = get_nrpspredictor_substrate(abbreviated_bacterial_prediction, abbreviation_to_substrate)
+
+        if domain_name not in domain_to_taxonomy:
+            prediction = bacterial_prediction
+        elif 'Fungi' in domain_to_taxonomy[domain_name]:
+            prediction = fungal_prediction
+        else:
+            prediction = bacterial_prediction
+
+        name_to_prediction[domain_name] = NrpsPredictorPrediction(domain_name, prediction, bacterial_prediction,
+                                                                  fungal_prediction)
+    return name_to_prediction
 
 
 def parse_prediction(prediction_file, abbreviation_to_substrate):
@@ -79,7 +157,6 @@ def parse_prediction(prediction_file, abbreviation_to_substrate):
                 else:
                     name_to_method_to_prediction[domain_name]['path_score'] = None
 
-
             results = result.split('|')
             for result in results:
                 name_to_method_to_prediction[domain_name][method] = []
@@ -94,8 +171,22 @@ def parse_prediction(prediction_file, abbreviation_to_substrate):
     return name_to_method_to_prediction
 
 
+def parse_nrpspredictor_data():
+    abbreviation_to_substrate = parse_external_mapping(NRPSPREDICTOR_ABBREVIATIONS)
+    domain_to_prediction = parse_nrpspredictor_predictions(NRPSPREDICTOR_PREDICTIONS_BACTERIAL,
+                                                           NRPSPREDICTOR_PREDICTIONS_FUNGAL, abbreviation_to_substrate)
+    return domain_to_prediction
+
+
+def parse_adenpredictor_data():
+    abbreviation_to_substrate = parse_external_mapping(ADENPREDICTOR_ABBREVIATIONS)
+    domain_to_prediction = parse_adenpredictor_predictions(ADENPREDICTOR_PREDICTIONS, abbreviation_to_substrate)
+
+    return domain_to_prediction
+
+
 def parse_sandpuma_data():
-    abbreviation_to_substrate = parse_sandpuma_mapping(SANDPUMA_ABBREVIATIONS)
+    abbreviation_to_substrate = parse_external_mapping(SANDPUMA_ABBREVIATIONS)
     individual_predictions = parse_prediction(SANDPUMA_INDIVIDUAL_PREDICTIONS, abbreviation_to_substrate)
     ensemble_predictions = parse_prediction(FORCED_PREDICTIONS, abbreviation_to_substrate)
     sandpuma_predictions = parse_prediction(SANDPUMA_PREDICTIONS, abbreviation_to_substrate)
@@ -115,14 +206,19 @@ def parse_sandpuma_data():
         sandpuma_prediction.predicat_mp = individual_predictions[domain]["prediCAT_MP"]
         sandpuma_prediction.predicat_snn = individual_predictions[domain]["prediCAT_SNN"]
 
-
         domain_to_prediction[domain] = sandpuma_prediction
 
     return domain_to_prediction
 
 
 if __name__ == "__main__":
-    domain_to_prediction = parse_sandpuma_data()
-    pprint(domain_to_prediction)
+    sandpuma_domain_to_prediction = parse_sandpuma_data()
+    pprint(sandpuma_domain_to_prediction)
+
+    nrpspredictor_domain_to_prediction = parse_nrpspredictor_data()
+    pprint(nrpspredictor_domain_to_prediction)
+
+    adenpredictor_domain_to_prediction = parse_adenpredictor_data()
+    pprint(adenpredictor_domain_to_prediction)
 
 
