@@ -26,7 +26,7 @@ from paras.scripts.feature_extraction.sequence_feature_extraction.adenylation_do
 PARAS = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'model.paras')
 PARASECT = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'model.parasect')
 
-PARAS_ALL = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'model_all_substrates.paras')
+PARAS_ALL = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'all_substrates_model.paras')
 
 PARAS_ONEHOT = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'model_onehot.paras')
 PARASECT_ONEHOT = os.path.join(os.path.dirname(paras.models.random_forest.__file__), 'model_onehot.parasect')
