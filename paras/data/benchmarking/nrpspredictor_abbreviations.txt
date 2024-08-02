@@ -9,7 +9,7 @@ alaninol	alaninol
 ala-d	D-alanine	
 ile	isoleucine	
 asn	asparagine	
-bht	beta-hydroxytyrosine	
+bht	R-beta-hydroxytyrosine
 lys	lysine	
 cap	capreomycidine	
 iva	isovaline	NC(CC)(C)C(=O)O
