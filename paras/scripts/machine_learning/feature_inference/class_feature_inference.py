@@ -6,17 +6,21 @@ from sys import argv
 from joblib import load
 import dtreeviz
 import numpy as np
+from math import log2
+from statistics import mean
 
 from paras.scripts.parsers.fasta import read_fasta
 from paras.scripts.feature_extraction.sequence_feature_extraction.seq_to_features import PROPERTIES_FILE
 from paras.scripts.feature_extraction.sequence_feature_extraction.seq_to_features import get_sequence_features
-from paras.scripts.parsers.parsers import parse_amino_acid_properties, parse_morgan_fingerprint, parse_specificities, \
+from paras.scripts.parsers.parsers import parse_amino_acid_properties, parse_specificities, \
     parse_domain_list
 import paras.data.sequence_data.sequences
 import paras.data
+from sklearn import preprocessing
 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+from pprint import pprint
 mpl.rcParams['font.size'] = 9.0
 
 SIGNATURES = os.path.join(os.path.dirname(paras.data.sequence_data.sequences.__file__), 'active_site_34_hmm.fasta')
@@ -231,6 +235,48 @@ CATEGORY_TO_VERBOSE = {"WOLS870101": "Hydrophilicity z1",
                        "NEU3": "Hydrophobicity pc3"}
 
 
+def calculate_shannon_entropy(class_probability):
+    if not class_probability:
+        return 0.0
+    else:
+        return class_probability * log2(class_probability)
+
+
+def calculate_entropy(node_counts, class_index):
+    not_class_count = 0
+    class_count = 0
+    for i, count in enumerate(node_counts):
+        if i == class_index:
+            class_count += count
+        else:
+            not_class_count += count
+
+    total = not_class_count + class_count
+
+    probability_class = class_count / total
+    probability_not_class = not_class_count / total
+
+    entropy = -1 * (calculate_shannon_entropy(probability_class) + calculate_shannon_entropy(probability_not_class))
+    return entropy
+
+
+def calculate_information_gain(parent_node_counts, child_1_counts, child_2_counts, class_index):
+    parent_entropy = calculate_entropy(parent_node_counts, class_index)
+    child_1_entropy = calculate_entropy(child_1_counts, class_index)
+    child_2_entropy = calculate_entropy(child_2_counts, class_index)
+    child_1_total = sum(child_1_counts)
+    child_2_total = sum(child_2_counts)
+    child_total = child_1_total + child_2_total
+
+    child_1_sample_probability = child_1_total / child_total
+    child_2_sample_probability = child_2_total / child_total
+
+    average_child_entropy = child_1_sample_probability * child_1_entropy + child_2_sample_probability * child_2_entropy
+    information_gain = parent_entropy - average_child_entropy
+
+    return information_gain
+
+
 def get_categories():
     _, sequence_categories = parse_amino_acid_properties(PROPERTIES_FILE, return_categories=True)
     categories = []
@@ -240,18 +286,158 @@ def get_categories():
             categories.append(f"{CATEGORY_TO_VERBOSE[category]}|res{i + 1}")
     return categories
 
+def normalize_residue_gains(average_gains, substrate_to_gains):
+    min_gains = [50000000.0] * 34
+    max_gains = [0.0] * 34
+    substrate_to_normalized = {}
+    substrate_to_relative = {}
+    for substrate, gains in substrate_to_gains.items():
+        substrate_to_normalized[substrate] = [0.0] * 34
+        substrate_to_relative[substrate] = [0.0] * 34
+        for i, gain in enumerate(gains):
+            if not average_gains[i]:
+                assert not gain
+                normalized_gain = 0.0
+            else:
+                normalized_gain = gain / average_gains[i]
+            substrate_to_normalized[substrate][i] = normalized_gain
+            if normalized_gain < min_gains[i]:
+                min_gains[i] = normalized_gain
+            if normalized_gain > max_gains[i]:
+                max_gains[i] = normalized_gain
 
-def get_splits_per_class_paras(model):
+    substrates = list(substrate_to_normalized.keys())
+    substrates.sort()
+
+    for substrate in substrates:
+        normalized_values = substrate_to_normalized[substrate]
+        relative_values = preprocessing.normalize([normalized_values])[0]
+        max_value = max(relative_values)
+        if not max_value:
+            substrate_to_relative[substrate] = relative_values
+        else:
+            scaling_factor = 0.8 / max_value
+            substrate_to_relative[substrate] = [x * scaling_factor for x in relative_values]
+
+    return substrate_to_relative
+
+
+def get_information_gain_paras(model, out_folder):
+    if not os.path.exists(out_folder):
+        os.mkdir(out_folder)
+
     categories = get_categories()
     classifier = load(model)
 
+    information_gain_matrix = []
+
+    for i in range(len(classifier.classes_)):
+        information_gain_row = []
+        for j in range(len(categories)):
+            information_gains: list[float] = []
+            information_gain_row.append(information_gains)
+
+        information_gain_matrix.append(information_gain_row)
+
+    counter = 0
+
+    for tree in [estimator.tree_ for estimator in classifier.estimators_]:
+        for node_index, feature_index in enumerate(tree.feature):
+            if feature_index >= 0:
+                values_per_class = tree.value[node_index][0]
+
+                left_child = tree.children_left[node_index]
+                right_child = tree.children_right[node_index]
+
+                if left_child != right_child:
+                    values_left_child = tree.value[left_child][0]
+                    values_right_child = tree.value[right_child][0]
+
+                    for j, value in enumerate(values_per_class):
+
+                        if value > 0:
+
+                            information_gain = calculate_information_gain(values_per_class,
+                                                                          values_left_child,
+                                                                          values_right_child,
+                                                                          j)
+                            information_gain_matrix[j][feature_index].append(information_gain)
+        counter += 1
+        if counter % 10 == 0:
+            print(f"{counter} trees processed...")
+
+    for inclusion_limit in range(0, 501, 50):
+
+        average_information_gains = []
+        substrate_to_residue_gains = {}
+        per_residue_gains = [0.0] * 34
+
+        for i in range(len(classifier.classes_)):
+            substrate = classifier.classes_[i]
+            information_gain_row = []
+            average_residue_gains = [0.0] * 34
+            for j in range(len(categories)):
+                if len(information_gain_matrix[i][j]) > inclusion_limit:
+                    average_gain = mean(information_gain_matrix[i][j])
+                else:
+                    average_gain = 0.0
+
+                information_gain_row.append(average_gain)
+                residue = int(categories[j].split('|res')[1])
+                average_residue_gains[residue - 1] += average_gain
+                per_residue_gains[residue - 1] += average_gain
+            average_information_gains.append(information_gain_row)
+
+            for k in range(len(average_residue_gains)):
+                average_residue_gains[k] /= 15.0
+
+            # print(substrate, average_residue_gains, '\n')
+            substrate_to_residue_gains[substrate] = average_residue_gains
+
+        for i in range(len(per_residue_gains)):
+            per_residue_gains[i] /= 510
+
+        substrate_to_relative = normalize_residue_gains(per_residue_gains, substrate_to_residue_gains)
+
+        gains_out = os.path.join(out_folder, f'per_residue_information_gain_l{inclusion_limit}.txt')
+
+        with open(gains_out, 'w') as out:
+            out.write("substrate")
+            for i in range(34):
+                out.write(f"\tres{i + 1}")
+            out.write('\n')
+
+            substrates = list(substrate_to_relative.keys())
+            substrates.sort()
+
+            for substrate in substrates:
+                out.write(f"{substrate}")
+                for information_gain in substrate_to_relative[substrate]:
+                    out.write(f"\t{information_gain:.5f}")
+                out.write('\n')
+
+
+def get_splits_per_class_paras(model, out_folder):
+    if not os.path.exists(out_folder):
+        os.mkdir(out_folder)
+    per_residue_out = os.path.join(out_folder, 'per_residue_importances.txt')
+    categories = get_categories()
+    classifier = load(model)
+
+    # Keeps track of how often each feature is used across all trees. Used for normalising per-substrate frequencies
     feature_frequencies = [0.0] * len(categories)
 
+    # Matrix with the following dimensions: nr_features x nr_substrates
+    # Counts the number of times a certain feature is used to split a node for each substrate
     node_count_matrix: list[list[Union[float, int]]] = []
 
     for i in range(len(classifier.classes_)):
         row = [0.0] * len(categories)
         node_count_matrix.append(row)
+
+    residue_importances = {}
+    for substrate in classifier.classes_:
+        residue_importances[substrate] = [0.0] * 34
 
     for tree in [estimator.tree_ for estimator in classifier.estimators_]:
         for node_index, feature_index in enumerate(tree.feature):
@@ -262,22 +448,59 @@ def get_splits_per_class_paras(model):
                     if value > 0:
                         node_count_matrix[j][feature_index] += 1
 
-    for i, substrate in enumerate(classifier.classes_):
-        relative_importances = node_count_matrix[i]
-        normalised_importances = []
-        for j, frequency in enumerate(relative_importances):
-            if frequency > 0.0:
-                normalised_importances.append(frequency / feature_frequencies[j])
-            else:
-                normalised_importances.append(0.0)
+    residue_frequencies = [0.0] * 34
 
-        print(f"{substrate} (normalized)")
-        named_features = list(zip(normalised_importances, categories))
-        named_raw_features = list(zip(relative_importances, categories))
-        named_raw_features.sort(key=lambda x: x[0], reverse=True)
-        named_features.sort(key=lambda x: x[0], reverse=True)
-        for importance, named_feature in named_features[:10]:
-            print(f"{named_feature}: {importance}")
+    for i, frequency in enumerate(feature_frequencies):
+        category = categories[i]
+        residue_index = int(category.split('|res')[1]) - 1
+        residue_frequencies[residue_index] += frequency
+
+    with open(per_residue_out, 'w') as residue_out:
+        residue_out.write("substrate")
+        for i in range(34):
+            residue_out.write(f"\tres{i + 1}")
+        residue_out.write('\n')
+
+        for i, substrate in enumerate(classifier.classes_):
+            per_substrate_out = os.path.join(out_folder, f"{substrate}_feature_importances.txt")
+
+            # All importances for a given substrate
+            relative_importances = node_count_matrix[i]
+
+            # Normalise them based on how often a feature is used in general to make splits in all trees
+            normalised_importances = []
+            substrate_residue_frequencies = [0.0] * 34
+            for j, frequency in enumerate(relative_importances):
+                if frequency > 0.0:
+                    normalised_importances.append(frequency / feature_frequencies[j])
+                else:
+                    normalised_importances.append(0.0)
+                category = categories[j]
+                residue_index = int(category.split('|res')[1]) - 1
+                substrate_residue_frequencies[residue_index] += frequency
+
+            normalized_residue_importances = []
+            for j, frequency in enumerate(substrate_residue_frequencies):
+                if frequency > 0.0:
+                    # print(substrate, residue_frequencies[j])
+                    normalized_residue_importances.append(frequency / residue_frequencies[j])
+                else:
+                    normalized_residue_importances.append(0.0)
+
+            residue_out.write(f"{substrate}")
+            for importance in normalized_residue_importances:
+                residue_out.write(f"\t{importance:.5f}")
+            residue_out.write('\n')
+
+            named_features = list(zip(normalised_importances, categories))
+            named_raw_features = list(zip(relative_importances, categories))
+
+            named_raw_features.sort(key=lambda x: x[0], reverse=True)
+            named_features.sort(key=lambda x: x[0], reverse=True)
+            with open(per_substrate_out, 'w') as out:
+                out.write("feature_name\tnormalized_importance\n")
+                for importance, named_feature in named_features:
+                    out.write(f"{named_feature}\t{importance:.5f}\n")
 
 
 def analyse_first_splits(model, out_folder):
@@ -330,5 +553,10 @@ def analyse_first_splits(model, out_folder):
 
 
 if __name__ == "__main__":
-    # get_splits_per_class_paras(PARAS)
-    analyse_first_splits(argv[1], argv[2])
+    print(calculate_information_gain([50, 50, 50], [50, 50, 5], [0, 0, 45], 0))
+    print(calculate_information_gain([50, 50, 50], [50, 50, 5], [0, 0, 45], 1))
+    print(calculate_information_gain([50, 50, 50], [50, 50, 5], [0, 0, 45], 2))
+    # get_splits_per_class_paras(argv[1], argv[2])
+
+    get_information_gain_paras(argv[1], argv[2])
+    # analyse_first_splits(argv[1], argv[2])
