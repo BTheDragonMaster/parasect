@@ -1,15 +1,15 @@
 import os
 from collections import OrderedDict
 
-from parasect.core.helpers import clear_temp_dir
 from parasect.core.feature_extraction import domains_to_features
-from parasect.core.general import get_domains, get_top_n_aa_paras, get_top_n_aa_parasect 
+from parasect.core.general import get_domains, get_top_n_aa_paras, get_top_n_aa_parasect
+from parasect.core.helpers import clear_temp_dir
 
 
 def run_paras(
     selected_input: str,
     selected_input_type: str,
-    temp_dir: str,  
+    temp_dir: str,
     first_separator: str,
     second_separator: str,
     third_separator: str,
@@ -28,27 +28,29 @@ def run_paras(
 
     # get domains
     a_domains = get_domains(
-        input_file=input_file, 
-        extraction_method="profile" if use_structure_guided_alignment else "hmm", 
-        job_name="run", 
-        separator_1=first_separator, 
-        separator_2=second_separator, 
-        separator_3=third_separator, 
+        input_file=input_file,
+        extraction_method="profile" if use_structure_guided_alignment else "hmm",
+        job_name="run",
+        separator_1=first_separator,
+        separator_2=second_separator,
+        separator_3=third_separator,
         verbose=False,
-        file_type=selected_input_type.lower(), 
-        temp_dir=temp_dir
+        file_type=selected_input_type.lower(),
+        temp_dir=temp_dir,
     )
     ids, feature_vectors = domains_to_features(a_domains, one_hot=False)
 
     # run model and retrieve class predictions
     results = OrderedDict()
-    
+
     probabilities = model.predict_proba(feature_vectors)
     amino_acid_classes = model.classes_
 
     for i, seq_id in enumerate(ids):
         probability_list = probabilities[i]
-        probs_and_aa = get_top_n_aa_paras(amino_acid_classes, probability_list, num_predictions_to_report)
+        probs_and_aa = get_top_n_aa_paras(
+            amino_acid_classes, probability_list, num_predictions_to_report
+        )
         results[seq_id] = probs_and_aa
 
     model = None
@@ -59,22 +61,20 @@ def run_paras(
     for domain in a_domains:
         domain_results[domain.domain_id] = {}
         if save_adenylation_domain_sequences:
-            domain_results[domain.domain_id]['sequence'] = domain.sequence
+            domain_results[domain.domain_id]["sequence"] = domain.sequence
         if save_active_site_signatures:
-            domain_results[domain.domain_id]['signature'] = domain.signature
+            domain_results[domain.domain_id]["signature"] = domain.signature
         if save_extended_signatures:
-            domain_results[domain.domain_id]['extended_signature'] = domain.extended_signature
+            domain_results[domain.domain_id]["extended_signature"] = domain.extended_signature
 
     for domain_id in results:
         preds = results[domain_id]
-        domain_results[domain_id]['predictions'] = preds
+        domain_results[domain_id]["predictions"] = preds
 
     return [
-        {
-            "domain_id": domain_id,
-            "data": domain_results[domain_id]
-        } for domain_id in domain_results
+        {"domain_id": domain_id, "data": domain_results[domain_id]} for domain_id in domain_results
     ]
+
 
 def run_parasect(
     model,
@@ -101,11 +101,11 @@ def run_parasect(
         separator_3=third_separator,
         verbose=False,
         file_type=selected_input_type.lower(),
-        temp_dir=temp_dir
+        temp_dir=temp_dir,
     )
     sequence_ids, sequence_feature_vectors = domains_to_features(a_domains, one_hot=False)
 
-    if not sequence_feature_vectors: 
+    if not sequence_feature_vectors:
         raise Exception("No feature vectors.")
 
     # Run model and retrieve class predictions.
@@ -153,28 +153,27 @@ def run_parasect(
         batch_nr += 1
 
     for seq_id in sequence_ids:
-        results[seq_id] = get_top_n_aa_parasect(seq_id, id_to_probabilities, num_predictions_to_report)
+        results[seq_id] = get_top_n_aa_parasect(
+            seq_id, id_to_probabilities, num_predictions_to_report
+        )
 
     model = None
     clear_temp_dir(temp_dir, keep=[".gitkeep"])
-    
+
     domain_results = {}
     for domain in a_domains:
         domain_results[domain.domain_id] = {}
         if save_adenylation_domain_sequences:
-            domain_results[domain.domain_id]['sequence'] = domain.sequence
+            domain_results[domain.domain_id]["sequence"] = domain.sequence
         if save_active_site_signatures:
-            domain_results[domain.domain_id]['signature'] = domain.signature
+            domain_results[domain.domain_id]["signature"] = domain.signature
         if save_extended_signatures:
-            domain_results[domain.domain_id]['extended_signature'] = domain.extended_signature
+            domain_results[domain.domain_id]["extended_signature"] = domain.extended_signature
 
     for domain_id in results:
         preds = results[domain_id]
-        domain_results[domain_id]['predictions'] = preds
+        domain_results[domain_id]["predictions"] = preds
 
     return [
-        {
-            "domain_id": domain_id,
-            "data": domain_results[domain_id]
-        } for domain_id in domain_results
+        {"domain_id": domain_id, "data": domain_results[domain_id]} for domain_id in domain_results
     ]

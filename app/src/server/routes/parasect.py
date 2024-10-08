@@ -1,31 +1,37 @@
-from collections import OrderedDict
-from flask import Blueprint, Response, request 
 import os
+from collections import OrderedDict
+
 import joblib
+from flask import Blueprint, Response, request
 
 from parasect.api import run_parasect
-
-from parasect.core.helpers import clear_temp_dir
-from parasect.core.feature_extraction import domains_to_features, bitvector_from_smiles, bitvectors_from_substrate_names
+from parasect.core.feature_extraction import (
+    bitvector_from_smiles,
+    bitvectors_from_substrate_names,
+    domains_to_features,
+)
 from parasect.core.general import get_domains, get_top_n_aa_parasect
+from parasect.core.helpers import clear_temp_dir
 from parasect.core.parsers import parse_substrate_list
 
-from .common import Status, ResponseData
+from .common import ResponseData, Status
 
 blueprint_submit_parasect = Blueprint("submit_parasect", __name__)
+
+
 @blueprint_submit_parasect.route("/api/submit_parasect", methods=["POST"])
 def submit_parasect() -> Response:
     """
     Submit settings for prediction with Parasect model.
-    
+
     :return: Response
     """
     data = request.get_json()
 
     try:
         data = data["data"]
-        selected_input = data["src"] # Fasta or Gbk file contents.
-        selected_input_type = data["selectedInputType"] # Fasta or Gbk.
+        selected_input = data["src"]  # Fasta or Gbk file contents.
+        selected_input_type = data["selectedInputType"]  # Fasta or Gbk.
 
         # Options.
         save_active_site_signatures = data["saveActiveSiteSignatures"]
@@ -44,13 +50,13 @@ def submit_parasect() -> Response:
     except Exception as e:
         msg = f"Failed to read settings: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     # Sanity check selected input type.
     selected_input_type = selected_input_type.strip().lower()
     if selected_input_type not in ["fasta", "gbk"]:
         msg = f"Invalid input type: {selected_input_type}."
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     # Locate temp directory.
     try:
         absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -72,7 +78,7 @@ def submit_parasect() -> Response:
         clear_temp_dir(temp_dir, keep=[".gitkeep"])
         msg = f"Failed to write input to file: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     # Locate file containing included substrates.
     try:
         absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -82,7 +88,7 @@ def submit_parasect() -> Response:
     except Exception as e:
         msg = f"Failed to locate substrate file: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     # Parse included substrates.
     try:
         included_substrates = parse_substrate_list(substrate_file)
@@ -91,28 +97,30 @@ def submit_parasect() -> Response:
     except Exception as e:
         msg = f"Failed to parse included substrates: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
-    # Locate file containing substrate fingerprints. 
+
+    # Locate file containing substrate fingerprints.
     try:
         absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         fingerprint_file = os.path.join(absolute_path, "data/fingerprints.txt")
         assert os.path.exists(fingerprint_file)
-    
+
     except Exception as e:
         msg = f"Failed to locate substrate fingerprints: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     # Parse fingerprints.
     try:
         if only_predict_for_smiles_input:
-            substrates, fingerprints = [], [] # Only use user-provided SMILES strings.
+            substrates, fingerprints = [], []  # Only use user-provided SMILES strings.
         else:
-            substrates, fingerprints = bitvectors_from_substrate_names(included_substrates, fingerprint_file)
-    
+            substrates, fingerprints = bitvectors_from_substrate_names(
+                included_substrates, fingerprint_file
+            )
+
     except Exception as e:
         msg = f"Failed to parse fingerprints: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     # Parse SMILES strings, if provided.
     try:
         if len(smiles_input) > 0:
@@ -122,17 +130,17 @@ def submit_parasect() -> Response:
                 fingerprint = bitvector_from_smiles(smiles_string, bitvector_file_path)
                 fingerprints.append(fingerprint)
                 substrates.append(smiles_string)
-    
+
     except Exception as e:
         msg = f"Failed to parse SMILES strings: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     try:
         absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         classifier = joblib.load(os.path.join(absolute_path, "models/model.parasect"))
         classifier.set_params(n_jobs=1)
         assert classifier is not None
-    
+
     except Exception as e:
         msg = f"Failed to load model: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
@@ -152,13 +160,13 @@ def submit_parasect() -> Response:
             num_predictions_to_report=num_predictions_to_report,
             save_active_site_signatures=save_active_site_signatures,
             save_extended_signatures=save_extended_signatures,
-            save_adenylation_domain_sequences=save_adenylation_domain_sequences
+            save_adenylation_domain_sequences=save_adenylation_domain_sequences,
         )
     except Exception as e:
         msg = f"Failed to run model: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     payload = {"results": results}
-    
+
     msg = "Submission was successful."
     return ResponseData(Status.Success, message=msg, payload=payload).to_dict()
