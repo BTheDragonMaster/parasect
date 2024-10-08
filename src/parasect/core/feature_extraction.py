@@ -8,7 +8,7 @@ from Bio.SearchIO._model import HSP
 from pikachu.fingerprinting.ecfp_4 import ECFP
 from pikachu.general import read_smiles, Structure
 
-from paras.parsers import parse_morgan_fingerprint, parse_amino_acid_properties, read_fasta
+from parasect.core.parsers import parse_morgan_fingerprint, parse_amino_acid_properties, read_fasta
 
 
 ONE_HOT_CATEGORIES = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
@@ -23,19 +23,19 @@ VALID_CHARACTERS = {"A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", 
 
 
 
-import paras.data
+import parasect.data
 
-ALIGNMENT_FILE = os.path.join(os.path.dirname(paras.data.__file__), 'structure_alignment.fasta')
-PROPERTIES_FILE: str = os.path.join(os.path.dirname(paras.data.__file__), 'physicochemical_properties.txt')
+ALIGNMENT_FILE = os.path.join(os.path.dirname(parasect.data.__file__), 'structure_alignment.fasta')
+PROPERTIES_FILE: str = os.path.join(os.path.dirname(parasect.data.__file__), 'physicochemical_properties.txt')
 PROPERTIES: dict[str, list[float]] = parse_amino_acid_properties(PROPERTIES_FILE)
-HMM2_FILE = os.path.join(os.path.dirname(paras.data.__file__), 'AMP-binding_hmmer2.hmm')
-REF_SEQ_FILE = os.path.join(os.path.dirname(paras.data.__file__), 'reference_sequence.fasta')
+HMM2_FILE = os.path.join(os.path.dirname(parasect.data.__file__), 'AMP-binding_hmmer2.hmm')
+REF_SEQ_FILE = os.path.join(os.path.dirname(parasect.data.__file__), 'reference_sequence.fasta')
 
 
-APOSITION_FILE = os.path.join(os.path.dirname(paras.data.__file__), 'stachelhaus.txt')
-APOSITION_FILE_34 = os.path.join(os.path.dirname(paras.data.__file__), 'active_site.txt')
-APOSITION_FILE_HMM2 = os.path.join(os.path.dirname(paras.data.__file__), 'stachelhaus_hmm2.txt')
-APOSITION_FILE_34_HMM2 = os.path.join(os.path.dirname(paras.data.__file__), 'active_site_hmm2.txt')
+APOSITION_FILE = os.path.join(os.path.dirname(parasect.data.__file__), 'stachelhaus.txt')
+APOSITION_FILE_34 = os.path.join(os.path.dirname(parasect.data.__file__), 'active_site.txt')
+APOSITION_FILE_HMM2 = os.path.join(os.path.dirname(parasect.data.__file__), 'stachelhaus_hmm2.txt')
+APOSITION_FILE_34_HMM2 = os.path.join(os.path.dirname(parasect.data.__file__), 'active_site_hmm2.txt')
 
 
 

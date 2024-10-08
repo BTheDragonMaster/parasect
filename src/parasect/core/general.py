@@ -1,8 +1,8 @@
 import os
 
-from paras.parsers import proteins_from_genbank
-from paras.feature_extraction import domains_from_fasta
-from paras.feature_extraction import rename_sequences, reverse_renaming
+from parasect.core.parsers import proteins_from_genbank
+from parasect.core.feature_extraction import domains_from_fasta
+from parasect.core.feature_extraction import rename_sequences, reverse_renaming
 
 
 def write_results(results, out_file):

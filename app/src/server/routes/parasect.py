@@ -3,11 +3,12 @@ from flask import Blueprint, Response, request
 import os
 import joblib
 
-from paras.helpers import clear_temp
-from paras.feature_extraction import domains_to_features
-from paras.feature_extraction import bitvector_from_smiles, bitvectors_from_substrate_names
-from paras.general import get_domains, get_top_n_aa_parasect
-from paras.parsers import parse_substrate_list
+from parasect.api import run_parasect
+
+from parasect.core.helpers import clear_temp_dir
+from parasect.core.feature_extraction import domains_to_features, bitvector_from_smiles, bitvectors_from_substrate_names
+from parasect.core.general import get_domains, get_top_n_aa_parasect
+from parasect.core.parsers import parse_substrate_list
 
 from .common import Status, ResponseData
 
@@ -68,31 +69,8 @@ def submit_parasect() -> Response:
             f.write(selected_input)
 
     except Exception as e:
-        clear_temp(temp_dir)
+        clear_temp_dir(temp_dir, keep=[".gitkeep"])
         msg = f"Failed to write input to file: {str(e)}"
-        return ResponseData(Status.Failure, message=msg).to_dict()
-    
-    # Get domains.
-    try:
-        a_domains = get_domains(
-            input_file=input_file,
-            extraction_method="profile" if use_structure_guided_alignment else "hmm",
-            job_name="run",
-            separator_1=first_separator,
-            separator_2=second_separator,
-            separator_3=third_separator,
-            verbose=False,
-            file_type=selected_input_type.lower(),
-            temp_dir=temp_dir
-        )
-        sequence_ids, sequence_feature_vectors = domains_to_features(a_domains, one_hot=False)
-
-        if not sequence_feature_vectors: 
-            raise Exception("No feature vectors.")
-        
-    except Exception as e:
-        clear_temp(temp_dir)
-        msg = f"Failed to get domains: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
     
     # Locate file containing included substrates.
@@ -149,101 +127,38 @@ def submit_parasect() -> Response:
         msg = f"Failed to parse SMILES strings: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
     
-    # Run model and retrieve class predictions.
     try:
-        results = OrderedDict()
-        if fingerprints and sequence_feature_vectors:
-
-            absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            classifier = joblib.load(os.path.join(absolute_path, "models/model.parasect"))
-            classifier.set_params(n_jobs=1)
-
-            batch_size = 1000
-            counter = 0
-            start = 0
-            end = batch_size
-
-            id_to_probabilities = {}
-
-            batch_nr = 1
-            while start < len(sequence_feature_vectors):
-
-                labels, feature_vectors = [], []
-                for i, sequence_feature_vector in enumerate(sequence_feature_vectors[start:end]):
-                    counter += 1
-                    for j, fingerprint in enumerate(fingerprints):
-                        feature_vector = sequence_feature_vector + fingerprint
-                        label = (sequence_ids[start + i], substrates[j])
-                        labels.append(label)
-                        feature_vectors.append(feature_vector)
-
-                start = counter
-                end = min([counter + batch_size, len(sequence_feature_vectors)])
-
-                probabilities = classifier.predict_proba(feature_vectors)
-                interaction_labels = classifier.classes_
-
-                if interaction_labels[0] == 1:
-                    interaction_index = 0
-                elif interaction_labels[1] == 1:
-                    interaction_index = 1
-                else:
-                    raise ValueError("Interaction values must be 0 and 1")
-
-                for i, label in enumerate(labels):
-                    seq_id, substrate = label
-                    if seq_id not in id_to_probabilities:
-                        id_to_probabilities[seq_id] = []
-
-                    id_to_probabilities[seq_id].append((probabilities[i][interaction_index], substrate))
-
-                batch_nr += 1
-
-            for seq_id in sequence_ids:
-                results[seq_id] = get_top_n_aa_parasect(seq_id, id_to_probabilities, num_predictions_to_report)
-
-        else:
-            classifier = None
-            clear_temp()
-            msg = "No feature vectors or fingerprints."
-            return ResponseData(Status.Failure, message=msg).to_dict()
-        
-        classifier = None
-        clear_temp(temp_dir)
+        absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        classifier = joblib.load(os.path.join(absolute_path, "models/model.parasect"))
+        classifier.set_params(n_jobs=1)
+        assert classifier is not None
     
     except Exception as e:
-        classifier = None
-        clear_temp(temp_dir)
+        msg = f"Failed to load model: {str(e)}"
+        return ResponseData(Status.Failure, message=msg).to_dict()
+
+    try:
+        results = run_parasect(
+            model=classifier,
+            input_file=input_file,
+            selected_input_type=selected_input_type,
+            first_separator=first_separator,
+            second_separator=second_separator,
+            third_separator=third_separator,
+            use_structure_guided_alignment=use_structure_guided_alignment,
+            fingerprints=fingerprints,
+            temp_dir=temp_dir,
+            substrates=substrates,
+            num_predictions_to_report=num_predictions_to_report,
+            save_active_site_signatures=save_active_site_signatures,
+            save_extended_signatures=save_extended_signatures,
+            save_adenylation_domain_sequences=save_adenylation_domain_sequences
+        )
+    except Exception as e:
         msg = f"Failed to run model: {str(e)}"
         return ResponseData(Status.Failure, message=msg).to_dict()
-
-    # Parse results
-    try:
-        domain_results = {}
-        for domain in a_domains:
-            domain_results[domain.domain_id] = {}
-            if save_adenylation_domain_sequences:
-                domain_results[domain.domain_id]['sequence'] = domain.sequence
-            if save_active_site_signatures:
-                domain_results[domain.domain_id]['signature'] = domain.signature
-            if save_extended_signatures:
-                domain_results[domain.domain_id]['extended_signature'] = domain.extended_signature
-
-        for domain_id in results:
-            preds = results[domain_id]
-            domain_results[domain_id]['predictions'] = preds
-
-    except Exception as e:
-        msg = f"Failed to parse results: {str(e)}"
-        return ResponseData(Status.Failure, message=msg).to_dict()
     
-    # Create payload.
-    payload = {"results": [
-        {
-            "domain_id": domain_id,
-            "data": domain_results[domain_id]
-        } for domain_id in domain_results
-    ]}
+    payload = {"results": results}
     
     msg = "Submission was successful."
     return ResponseData(Status.Success, message=msg, payload=payload).to_dict()
