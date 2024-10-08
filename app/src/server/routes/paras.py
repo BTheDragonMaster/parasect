@@ -3,9 +3,9 @@ from flask import Blueprint, Response, request
 import joblib 
 import os
 
-from paras.scripts.data_processing.temp import clear_temp
-from paras.scripts.feature_extraction.sequence_feature_extraction.seq_to_features import domains_to_features
-from paras.scripts.general import get_domains, get_top_n_aa_paras
+from paras.helpers import clear_temp
+from paras.feature_extraction import domains_to_features
+from paras.general import get_domains, get_top_n_aa_paras
 
 from .common import Status, ResponseData
 

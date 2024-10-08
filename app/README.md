@@ -12,6 +12,10 @@ conda activate paras
 pip install -r src/server/requirements.txt
 ```
 
+Install the following dependencies on your machine:
+* hmmer2
+* muscle (v.3.8.1551)
+
 ### Client
 
 First install NPM package manager and Node.js on your device.

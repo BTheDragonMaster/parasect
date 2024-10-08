@@ -3,11 +3,11 @@ from flask import Blueprint, Response, request
 import os
 import joblib
 
-from paras.scripts.data_processing.temp import clear_temp
-from paras.scripts.feature_extraction.sequence_feature_extraction.seq_to_features import domains_to_features
-from paras.scripts.feature_extraction.compound_feature_extraction.fingerprinting import bitvector_from_smiles, bitvectors_from_substrate_names
-from paras.scripts.general import get_domains, get_top_n_aa_parasect
-from paras.scripts.parsers.parsers import parse_substrate_list
+from paras.helpers import clear_temp
+from paras.feature_extraction import domains_to_features
+from paras.feature_extraction import bitvector_from_smiles, bitvectors_from_substrate_names
+from paras.general import get_domains, get_top_n_aa_parasect
+from paras.parsers import parse_substrate_list
 
 from .common import Status, ResponseData
 
