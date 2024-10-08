@@ -17,7 +17,8 @@ def clear_temp_dir(dir_path: str, keep: List[str]) -> None:
     """
     for file_name in os.listdir(dir_path):
         
-        # remove all content from the temp directory, except for .gitkeep file
+        # remove all content from the temp directory, except for files in the keep 
+        # list (e.g., ".gitkeep")
         if file_name in keep:
             continue
 
