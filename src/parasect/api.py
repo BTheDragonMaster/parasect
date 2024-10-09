@@ -1,9 +1,23 @@
 import os
 from collections import OrderedDict
 
-from parasect.core.feature_extraction import domains_to_features
-from parasect.core.general import get_domains, get_top_n_aa_paras, get_top_n_aa_parasect
+from parasect.core.featurisation import domains_to_features, get_domains
 from parasect.core.helpers import clear_temp_dir
+
+
+def get_top_n_aa_paras(amino_acid_classes, probabilities, n):
+    probs_and_aa = []
+    for i, probability in enumerate(probabilities):
+        probs_and_aa.append((probability, amino_acid_classes[i]))
+
+    probs_and_aa.sort(reverse=True)
+
+    return probs_and_aa[:n]
+
+def get_top_n_aa_parasect(seq_id, id_to_probabilities, n):
+    probabilities = id_to_probabilities[seq_id]
+    probabilities.sort(reverse=True)
+    return probabilities[:n]
 
 
 def run_paras(

@@ -1,5 +1,4 @@
 import os
-from collections import OrderedDict
 
 import joblib
 from flask import Blueprint, Response, request

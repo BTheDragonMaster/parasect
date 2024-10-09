@@ -5,14 +5,12 @@ import joblib
 from flask import Blueprint, Response, request
 
 from parasect.api import run_parasect
-from parasect.core.feature_extraction import (
+from parasect.core.featurisation import (
     bitvector_from_smiles,
     bitvectors_from_substrate_names,
-    domains_to_features,
 )
-from parasect.core.general import get_domains, get_top_n_aa_parasect
 from parasect.core.helpers import clear_temp_dir
-from parasect.core.parsers import parse_substrate_list
+from parasect.core.parsing import parse_substrate_list
 
 from .common import ResponseData, Status
 
