@@ -1,26 +1,21 @@
 # PARASECT
-Documentation is a work in progress.
+
+Welcome to PARASECT: Predictive Algorithm for Resolving A-domain Specificity featurising Enzyme and Compound in Tandem. Detect NRPS AMP-binding domains from an amino acid sequence and predict their substrate specificity profile.
+
+## Information on branches
+
+The current `master` branch contains all code that is needed to reproduce our findings in the manuscript.
+
+The `webapp` branch contains minimal code from the `master` branch that is needed to run the web application.
+
+You can find a live version of the web application [here](https://paras.bioinformatics.nl/).
+
+## Trained models
+
+The trained models for PARAS and PARASECT can be found on Zenodo [here](https://zenodo.org/records/13165500).
+
 
 ## To do
-- [ ] Add documentation to README.md webapp branch, explain data files
-- [ ] Add documentation to README.md master branch
-- [x] Add LICENSE to README.md webapp branch
-- [ ] Add LICENSE to README.md master branch
-- [x] Refactor core.helpers
-- [x] Refactor core.general
-- [x] Refactor core.parsers
-- [x] Refactor core.featurisation
-- [x] Refactor core.hmmer
-- [x] Refactor api
-- [x] Refactor cli
-- [x] Refactor server.paras
-- [x] Refactor server.parasect
-- [x] Refactor version
-- [x] Add tests
-- [x] Add testing and linting with tox
+- [ ] Add explaination on data files to README.md
 - [ ] Refactor frontend, and implement results page instead of results modal
-- [ ] Remove old webapp code from master branch
-- [ ] Add training scripts/routines for all three models
-
-# Models
-Models can be downloaded from Zenodo: https://zenodo.org/records/13165500
+- [ ] Add training scripts for all three models
