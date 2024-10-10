@@ -3,20 +3,21 @@
 """Constants used throughout the PARASECT package."""
 
 import os
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import parasect.data
 from parasect.core.parsing import Tabular
 
 
-def _parse_amino_acid_properties_file(path_in: str) -> Dict[str, List[float]]:
-    """Parses a dictionary of amino acid to property vector from a file.
-    
+def _parse_amino_acid_properties_file(path_in: str) -> Dict[Union[int, float, str], List[float]]:
+    """Parse a dictionary of amino acid to property vector from a file.
+
     :param path_in: Path to input file.
     :type path_in: str
     :return: Dictionary of amino acid to property vector.
-    :rtype: Dict[str, List[float]]
+    :rtype: Dict[Union[int, float, str], List[float]]
     :raises FileNotFoundError: If the file at the specified path does not exist.
+    :raises ValueError: If the property vector for an amino acid is not of length 15.
     """
     # check if the file exists
     if not os.path.exists(path_in):
@@ -32,10 +33,12 @@ def _parse_amino_acid_properties_file(path_in: str) -> Dict[str, List[float]]:
         # get the amino acid ID and property vector
         amino_acid_id = data.get_row_value(row_id, column_name="AA")
         amino_acid_props = [float(v) for v in data.get_row_values(row_id)[1:]]
-        
+
         # check if the property vector is of length 15
         if len(amino_acid_props) != 15:
-            raise ValueError(f"amino acid property vector for {amino_acid_id} is not of length 15")  # noqa: E501
+            raise ValueError(
+                f"amino acid property vector for {amino_acid_id} is not of length 15"
+            )  # noqa: E501
 
         # add the amino acid ID and property vector to the dictionary
         amino_acid_properties[amino_acid_id] = amino_acid_props

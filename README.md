@@ -9,14 +9,14 @@ Documentation is a work in progress.
 - [x] Refactor core.helpers
 - [x] Refactor core.general
 - [x] Refactor core.parsers
-- [ ] Refactor core.featurisation
-- [ ] Refactor core.hmmer
-- [ ] Refactor api
-- [ ] Refactor cli
-- [ ] Refactor server.paras
-- [ ] Refactor server.parasect
+- [x] Refactor core.featurisation
+- [x] Refactor core.hmmer
+- [x] Refactor api
+- [x] Refactor cli
+- [x] Refactor server.paras
+- [x] Refactor server.parasect
 - [x] Refactor version
-- [ ] Add tests
+- [x] Add tests
 - [x] Add testing and linting with tox
 - [ ] Refactor frontend, and implement results page instead of results modal
 - [ ] Remove old webapp code from master branch

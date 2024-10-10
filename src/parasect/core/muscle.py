@@ -14,7 +14,6 @@ def run_muscle(path_in: str, path_in_alignment: str, path_out: str) -> None:
     :type path_in_alignment: str
     :param path_out: path to the output file
     :type path_out: str
-    :raises subprocess.CalledProcessError: If the MUSCLE command fails.
     """
     # compile the command for running MUSCLE
     command = [
@@ -31,7 +30,7 @@ def run_muscle(path_in: str, path_in_alignment: str, path_out: str) -> None:
 
     # use subprocess to run the compiled command
     subprocess.check_call(
-        command, 
-        stdout=subprocess.DEVNULL,  # hide stdout 
+        command,
+        stdout=subprocess.DEVNULL,  # hide stdout
         stderr=subprocess.DEVNULL,  # hide stderr
     )

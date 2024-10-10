@@ -4,12 +4,13 @@
 
 import os
 import subprocess
+from typing import Dict, List, Tuple
 
 from Bio import SearchIO
 from Bio.SearchIO._model import HSP
 
 from parasect.core.abstractions import AdenylationDomain
-from parasect.core.parsing import read_fasta_file
+from parasect.core.parsing import parse_fasta_file
 
 
 def run_hmmpfam2(hmm_dir: str, fasta_file: str, hmm_out: str) -> None:
@@ -27,107 +28,85 @@ def run_hmmpfam2(hmm_dir: str, fasta_file: str, hmm_out: str) -> None:
         subprocess.call(command, stdout=out)
 
 
-def make_domain_id(seq_id: str, hit_id: str, start: int, end: int) -> str:
-    """Compose a domain identifier from the sequence ID, hit ID, and start and end positions.
+def parse_hmm2_results(path_in: str) -> Dict[str, HSP]:
+    """Parse hmmpfam2 output file and return dictionary of domain identifier to Biopython HSP instance.
 
-    :param seq_id: sequence ID.
-    :type seq_id: str
-    :param hit_id: hit ID.
-    :type hit_id: str
-    :param start: start position.
-    :type start: int
-    :param end: end position.
-    :type end: int
-    :return: domain identifier.
-    :rtype: str
-
-    .. note:: Uses '|' as a separator between the sequence ID, hit ID, and start 
-        and end positions.
+    :param path_in: path to hmmpfam2 output file (hmmer-2).
+    :type path_in: str
+    :return: Dictionary mapping domain identifier to Biopython HSP instance.
+    :rtype: Dict[str, HSP]
     """
-    return f"{seq_id}|{hit_id}|{start}-{end}"
+    filtered_hits = {}
 
-
-###########################################################################################
-###########################################################################################
-###########################################################################################
-###########################################################################################
-###########################################################################################
-
-
-def parse_hmm2_results(hmm_results):
-    """
-    Return dictionary of domain identifier to Biopython HSP instance
-
-    Parameters
-    ----------
-    hmm_results: str, path to hmmpfam2 output file (hmmer-2)
-
-    Returns
-    -------
-    id_to_hit: dict of {domain_id: HSP, ->}, with domain_id str and HSP a Biopython HSP instance containing a HMM hit
-        between an Hmm2 adenylation domain HMM and a query sequence
-
-    """
-    id_to_hit: dict[str, HSP] = {}
-
-    for result in SearchIO.parse(hmm_results, "hmmer2-text"):
+    # parse relevant information from hmmpfam2 output
+    for result in SearchIO.parse(path_in, "hmmer2-text"):
         for hsp in result.hsps:
+
+            # filter hits based on bitscore and hit_id
             if hsp.bitscore > 20:
                 if hsp.hit_id == "AMP-binding" or hsp.hit_id == "AMP-binding_C":
-                    header = make_domain_id(result.id, hsp.hit_id, hsp.query_start, hsp.query_end)
-                    id_to_hit[header] = hsp
 
-    return id_to_hit
+                    header = f"{result.id}|{hsp.hit_id}|{hsp.query_start}-{hsp.query_end}"
+                    filtered_hits[header] = hsp
+
+    return filtered_hits
 
 
-def rename_sequences(fasta_file: str, out_dir: str) -> tuple[str, str]:
+def rename_sequences(path_in: str, path_out: str) -> Tuple[str, str]:
+    """Rename sequences before running hmmscan, and return file paths of mapping and new fasta file.
+
+    :param path_in: path to input fasta file.
+    :type path_in: str
+    :param path_out: path to output directory.
+    :type path_out: str
+    :return: Tuple of mapping file path and new fasta file path. The mapping file
+        maps renamed sequence IDs to the original sequence IDs.
+    :rtype: Tuple[str, str]
+    :raises FileNotFoundError: If the input file is not found.
     """
+    # check if input file exists
+    if not os.path.exists(path_in):
+        raise FileNotFoundError(f"File {path_in} not found")
 
-    Rename sequences before running hmmscan, and return file paths of mapping and new fasta file
+    # check if output exists, if not create it
+    if not os.path.isdir(path_out):
+        os.mkdir(path_out)
 
-    Parameters
-    ----------
-    fasta_file: str, path to input fasta file
-    out_dir: str, path to output directory
+    # create paths for mapping and new fasta file
+    path_mapping_file = os.path.join(path_out, "mapping.txt")
+    path_new_fasta_file = os.path.join(path_out, "renamed_fasta.txt")
 
-    Returns
-    -------
-    mapping_file: str, path to mapping file which maps renamed sequence IDs to the original sequence IDs
-    new_fasta_file: str, path to output fasta file
+    # read fasta file
+    id_to_seq = parse_fasta_file(path_in)
 
-    """
-    if not os.path.exists(out_dir):
-        os.mkdir(out_dir)
+    counter = 0
+    with open(path_new_fasta_file, "w") as fo_fasta:
+        with open(path_mapping_file, "w") as fo_mapping:
 
-    mapping_file: str = os.path.join(out_dir, "mapping.txt")
-    new_fasta_file: str = os.path.join(out_dir, "renamed_fasta.txt")
-
-    id_to_seq: dict[str, str] = read_fasta_file(fasta_file)
-    counter: int = 0
-    with open(new_fasta_file, "w") as new_fasta:
-        with open(mapping_file, "w") as mapping:
             for seq_id, seq in id_to_seq.items():
                 counter += 1
-                mapping.write(f"{counter}\t{seq_id}\n")
-                new_fasta.write(f">{counter}\n{seq}\n")
 
-    return mapping_file, new_fasta_file
+                fo_fasta.write(f">{counter}\n{seq}\n")
+                fo_mapping.write(f"{counter}\t{seq_id}\n")
+
+    return path_mapping_file, path_new_fasta_file
 
 
-def reverse_renaming(adenylation_domains: list["AdenylationDomain"], mapping_file: str) -> None:
-    """
-    Reverses the renaming of sequences within adenylation domain instances
+def reverse_renaming(
+    adenylation_domains: List[AdenylationDomain], path_in_mapping_file: str
+) -> None:
+    """Reverse the renaming of sequences within adenylation domain instances.
 
-    Parameters
-    ----------
-
-    adenylation_domains: list of [domain, ->], with each domain an AdenylationDomain instance
-    mapping_file: str, path to mapping file which maps renamed sequence IDs to the original sequence IDs
-
+    :param adenylation_domains: Adenylation domain instances.
+    :type adenylation_domains: List[AdenylationDomain]
+    :param path_in_mapping_file: path to mapping file which maps renamed sequence
+        IDs to the original sequence IDs.
+    :type path_in_mapping_file: str
     """
     new_to_original = {}
-    with open(mapping_file, "r") as mapping:
-        for line in mapping:
+
+    with open(path_in_mapping_file, "r") as fo:
+        for line in fo:
             line = line.strip()
             line_segments = line.split("\t")
             new = line_segments[0]
