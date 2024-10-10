@@ -20,6 +20,7 @@ Documentation is a work in progress.
 - [x] Add testing and linting with tox
 - [ ] Refactor frontend, and implement results page instead of results modal
 - [ ] Remove old webapp code from master branch
+- [ ] Add training scripts/routines for all three models
 
 # Models
 Models can be downloaded from Zenodo: https://zenodo.org/records/13165500
