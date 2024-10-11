@@ -87,6 +87,9 @@ A_POSITION_FILE_34 = get_path("active_site.txt")
 A_POSITION_FILE_HMM2 = get_path("stachelhaus_hmm2.txt")
 A_POSITION_FILE_34_HMM2 = get_path("active_site_hmm2.txt")
 
+FINGERPRINTS_FILE = os.path.join(DATA_DIR, "fingerprints.txt")
+INCLUDED_SUBSTRATES_FILE = os.path.join(DATA_DIR, "included_substrates.txt")
+
 HMM2_POSITIONS_SIGNATURE = _read_positions(A_POSITION_FILE_HMM2, 0)
 HMM2_POSITIONS_EXTENDED_SIGNATURE = _read_positions(A_POSITION_FILE_34_HMM2, 0)
 POSITIONS_SIGNATURE = _read_positions(A_POSITION_FILE, 66)

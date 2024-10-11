@@ -8,6 +8,7 @@ import joblib
 from flask import Blueprint, Response, request
 
 from parasect.api import run_parasect
+from parasect.core.constants import FINGERPRINTS_FILE, INCLUDED_SUBSTRATES_FILE
 from parasect.core.parsing import (
     bitvector_from_smiles,
     bitvectors_from_substrate_names,
@@ -15,7 +16,7 @@ from parasect.core.parsing import (
 )
 
 from .common import ResponseData, Status
-from .constants import FINGERPRINTS_FILE, INCLUDED_SUBSTRATES_FILE, MODEL_DIR, TEMP_DIR
+from .constants import MODEL_DIR, TEMP_DIR
 
 blueprint_submit_parasect = Blueprint("submit_parasect", __name__)
 
