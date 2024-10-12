@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 
 const LoadingOverlay = ({ frame1, frame2 }) => {
-    // State to manage which image is currently shown
-    const [currentImage, setCurrentImage] = useState(frame1); // Assuming the images are named image1.png and image2.png
+    // state to manage which image is currently shown
+    const [currentImage, setCurrentImage] = useState(frame1); // assuming the images are named image1.png and image2.png
 
     // useEffect to toggle the image every second (1000 milliseconds)
     useEffect(() => {
         const intervalId = setInterval(() => {
             setCurrentImage((prevImage) => (prevImage === frame1 ? frame2 : frame1));
-        }, 250); // Change the interval as needed
+        }, 250); // change the interval as needed
 
-        // Cleanup function to clear the interval when the component unmounts
+        // cleanup function to clear the interval when the component unmounts
         return () => clearInterval(intervalId);
     }, []);
 

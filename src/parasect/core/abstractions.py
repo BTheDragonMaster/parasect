@@ -157,27 +157,13 @@ class AdenylationDomain:
         :type domain_end: int
         """
         self.protein_name = protein_name
+        self.domain_nr = 0
         self.start = domain_start
         self.end = domain_end
 
-        self.sequence: Optional[str] = None
-        self.signature: Optional[str] = None
-        self.extended_signature: Optional[str] = None
-        self.domain_nr = 0
-        self._domain_id: Optional[str] = None
-
-    @property
-    def domain_id(self) -> str:
-        """Return the domain ID.
-
-        :return: The domain ID.
-        :rtype: str
-        :raises Exception: If the domain ID is not defined.
-        """
-        if self._domain_id is None:
-            raise Exception("domain ID not defined")
-
-        return self._domain_id
+        self.sequence = ""
+        self.signature = ""
+        self.extended_signature = ""
 
     def set_domain_number(self, domain_nr: int) -> None:
         """Set the domain number.
@@ -198,34 +184,6 @@ class AdenylationDomain:
         .. note:: This function modifies the sequence attribute.
         """
         self.sequence = sequence
-
-    def set_domain_id_separators(
-        self, separator_1: str, separator_2: str, separator_3: str
-    ) -> None:
-        """Set the domain ID separators.
-
-        :param separator_1: The first separator. This is used to separate the protein
-            name from the domain number, and the domain number from the start and end
-            positions.
-        :type separator_1: str
-        :param separator_2: The second separator. This is used to separate the domain
-            name 'domain' from the domain number.
-        :type separator_2: str
-        :param separator_3: The third separator. This is used to separate the start and
-            end positions.
-        :type separator_3: str
-        :raises Exception: If the protein name or domain number is not defined.
-
-        .. note:: This functions modifies the domain ID attribute.
-        """
-        if not self.protein_name or not self.domain_nr:
-            raise Exception("protein name and domain number need to be defined first")
-
-        self._domain_id = (
-            f"{self.protein_name}{separator_1}"
-            f"domain{separator_2}{self.domain_nr}{separator_1}"
-            f"{self.start}{separator_3}{self.end}"
-        )
 
     def set_domain_signatures_hmm(
         self, hit_n_terminal: HSP, hit_c_terminal: Optional[HSP] = None

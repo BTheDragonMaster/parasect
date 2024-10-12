@@ -14,7 +14,7 @@ from parasect.core.hmmer import parse_hmm2_results, rename_sequences, reverse_re
 from parasect.core.parsing import parse_fasta_file, parse_genbank_file
 
 
-def _get_sequence_features(amino_acid_sequence: str) -> List[float]:
+def get_domain_features(amino_acid_sequence: str) -> List[float]:
     """Return a feature list of NRPSPredictor features from a sequence.
 
     :param amino_acid_sequence: Amino acid sequence.
@@ -29,38 +29,6 @@ def _get_sequence_features(amino_acid_sequence: str) -> List[float]:
         features.extend(properties)
 
     return features
-
-
-def domains_to_features(domains: List[AdenylationDomain]) -> Tuple[List[str], List[List[float]]]:
-    """Featurise a list of AdenylationDomain instances.
-
-    :param domains: AdenylationDomain instances.
-    :type domains: List[AdenylationDomain]
-    :return: sequence_ids, feature_vectors. Index of sequence_ids corresponds to
-        index of feature_vectors.
-    :rtype: Tuple[List[str], List[List[float]]]
-    :raises ValueError: if domain id is not set.
-    :raises ValueError: if extended domain signature is not set.
-    """
-    # initialise output lists
-    sequence_ids = []
-    feature_vectors = []
-
-    for domain in domains:
-
-        # append domain id to sequence_ids
-        if domain.domain_id is None:
-            raise ValueError("domain id not set")
-        sequence_ids.append(domain.domain_id)
-
-        if domain.extended_signature is None:
-            raise ValueError("extended signature not set")
-        feature_vector = _get_sequence_features(domain.extended_signature)
-
-        # append feature vector to feature_vectors
-        feature_vectors.append(feature_vector)
-
-    return sequence_ids, feature_vectors
 
 
 def _hits_to_domains(
@@ -256,9 +224,6 @@ def get_domains(
     path_temp_dir: str,
     extraction_method: str,
     file_type: str,
-    separator_1: str,
-    separator_2: str,
-    separator_3: str,
 ) -> List[AdenylationDomain]:
     """Extract adenylation domains from a fasta or genbank file.
 
@@ -270,12 +235,6 @@ def get_domains(
     :type extraction_method: str
     :param file_type: File type. Must be 'fasta' or 'gbk'.
     :type file_type: str
-    :param separator_1: Separator 1.
-    :type separator_1: str
-    :param separator_2: Separator 2.
-    :type separator_2: str
-    :param separator_3: Separator 3.
-    :type separator_3: str
     :return: a_domains. List of AdenylationDomain instances.
     :rtype: List[AdenylationDomain]
     :raises ValueError: If extraction_method or file_type is invalid.
@@ -322,8 +281,5 @@ def get_domains(
         raise ValueError(msg)
 
     reverse_renaming(adenylation_domains=a_domains, path_in_mapping_file=mapping_file)
-
-    for a_domain in a_domains:
-        a_domain.set_domain_id_separators(separator_1, separator_2, separator_3)
 
     return a_domains

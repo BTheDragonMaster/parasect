@@ -1,10 +1,14 @@
+# -*- coding: utf-8 -*-
+
+"""API for PARSECT."""
+
 from flask import Flask, Response
-from routes.paras import blueprint_submit_paras
-from routes.parasect import blueprint_submit_parasect
+from routes.submit import blueprint_submit_raw
+
+from parasect.version import get_version
 
 app = Flask(__name__)
-app.register_blueprint(blueprint_submit_paras)
-app.register_blueprint(blueprint_submit_parasect)
+app.register_blueprint(blueprint_submit_raw)
 
 
 @app.errorhandler(404)
@@ -15,6 +19,12 @@ def not_found(error) -> Response:
 @app.route("/")
 def index() -> Response:
     return app.send_static_file("index.html")
+
+
+# api endpoint for fetching version
+@app.route("/api/version")
+def version() -> Response:
+    return {"version": get_version()}
 
 
 def main() -> None:
