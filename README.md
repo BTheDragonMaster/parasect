@@ -13,9 +13,3 @@ You can find a live version of the web application [here](https://paras.bioinfor
 ## Trained models
 
 The trained models for PARAS and PARASECT can be found on Zenodo [here](https://zenodo.org/records/13165500).
-
-
-## To do
-- [ ] Add explaination on data files to README.md
-- [ ] Refactor frontend, and implement results page instead of results modal
-- [ ] Add training scripts for all three models
