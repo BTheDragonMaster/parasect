@@ -1,21 +1,21 @@
-import React, { useState } from "react";
-import ReactDOM from "react-dom/client";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { AppBar, Toolbar, IconButton, Typography, Menu, MenuItem } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
 import UploadIcon from '@mui/icons-material/Upload';
 import GitHubIcon from '@mui/icons-material/GitHub';
 
-import "react-widgets/scss/styles.scss";
-import "./style/main.scss";
+import 'react-widgets/scss/styles.scss';
+import './style/main.scss';
 
-import Toast from "./components/Toast";
-import Home from "./pages/home";
-import Submit from "./pages/submit";
-import Results from "./pages/results";
-import NotFound from "./pages/not_found";
+import Toast from './components/Toast';
+import Home from './pages/home';
+import Submit from './pages/submit';
+import Results from './pages/results';
+import NotFound from './pages/not_found';
 
 const theme = createTheme({});
 
@@ -24,10 +24,10 @@ const CustomToolbar = () => {
     const navigate = useNavigate();
 
     // version of the app
-    const [version, setVersion] = useState("");
+    const [version, setVersion] = useState('');
 
     // fetch version from server
-    fetch("/api/version")
+    fetch('/api/version')
         .then((response) => response.json())
         .then((data) => setVersion(`v${data.version}`));
 
@@ -58,13 +58,13 @@ const CustomToolbar = () => {
     };
 
     return (
-        <AppBar position="static">
+        <AppBar position='static'>
             <Toolbar>
                 {/* hamburger Menu Icon */}
                 <IconButton 
-                    edge="start" 
-                    color="inherit" 
-                    aria-label="menu" 
+                    edge='start' 
+                    color='inherit' 
+                    aria-label='menu' 
                     onClick={handleMenuOpen}
                 >
                     <MenuIcon />
@@ -91,7 +91,7 @@ const CustomToolbar = () => {
                 </Menu>
 
                 {/* display name and version next to hamburger */}
-                <Typography variant="h6" style={{ marginLeft: '16px' }}>
+                <Typography variant='h6' style={{ marginLeft: '16px' }}>
                     PARAS {version}
                 </Typography>
             </Toolbar>
@@ -100,25 +100,23 @@ const CustomToolbar = () => {
 };
 
 function AppRoutes () {
-    const [results, setResults] = useState([]);
-
     return (
         <div>
             <Routes>
                 <Route 
-                    path="/" 
+                    path='/' 
                     element={<Home />}
                 />
                 <Route 
-                    path="/submit" 
+                    path='/submit' 
                     element={<Submit />}
                 />
                 <Route 
-                    path="/results" 
-                    element={<Results results={results} setResults={setResults} />}
+                    path='/results/:jobId' 
+                    element={<Results />}
                 />
                 <Route 
-                    path="*" 
+                    path='*' 
                     element={<NotFound />}
                 />
             </Routes>
@@ -138,6 +136,6 @@ function App () {
     );
 };
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(<App />);

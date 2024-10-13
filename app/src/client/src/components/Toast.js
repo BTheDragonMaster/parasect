@@ -1,10 +1,10 @@
-import { ToastContainer } from "react-toastify";
+import { ToastContainer } from 'react-toastify';
 
 const Toast = () =>  {
     return (
         <ToastContainer
             // set the position of the toast notifications to bottom-right.
-            position="bottom-right"
+            position='bottom-right'
             
             // automatically close the toast after 5000 milliseconds (5 seconds).
             autoClose={5000}
@@ -32,10 +32,10 @@ const Toast = () =>  {
             
             // customize the toast icons based on the type (success, warning, error, or info).
             icon={({ type }) => {
-                if (type === "success") return "🎉";
-                if (type === "warning") return "⚠️";
-                if (type === "error") return "🚨";
-                else return "ℹ️";
+                if (type === 'success') return '🎉';
+                if (type === 'warning') return '⚠️';
+                if (type === 'error') return '🚨';
+                else return 'ℹ️';
             }}
         />
     );

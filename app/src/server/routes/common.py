@@ -17,6 +17,7 @@ class Status(Enum):
     Success = auto()
     Warning = auto()
     Failure = auto()
+    Pending = auto()
 
     def __str__(self) -> str:
         """Return the string representation of the status.

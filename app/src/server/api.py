@@ -2,12 +2,15 @@
 
 """API for PARSECT."""
 
-from flask import Flask, Response
+from flask import Response
+from routes.app import app
+from routes.retrieval import blueprint_retrieve
 from routes.submit import blueprint_submit_raw
 
 from parasect.version import get_version
 
-app = Flask(__name__)
+
+app.register_blueprint(blueprint_retrieve)
 app.register_blueprint(blueprint_submit_raw)
 
 

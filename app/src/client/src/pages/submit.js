@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { toast } from "react-toastify";
-import { Box, Button, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Switch, CircularProgress, Typography, Input, Checkbox } from "@mui/material";
-import LoadingOverlay from "../components/LoadingOverlay";
+import React, { useState } from 'react';
+import { toast } from 'react-toastify';
+import { Box, Button, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Switch, CircularProgress, Typography, Input, Checkbox, Modal, IconButton } from '@mui/material';
+import SettingsIcon from '@mui/icons-material/Settings';
 
-const exampleFastaInput = ">dptA\nMDMQSQRLGVTAAQQSVWLAGQLADDHRLYHCAAYLSLTGSIDPRTLGTAVRRTLDETEALRTRFVPQDGELLQILEPGAGQLLLEADFSGDPDPERAAHDWMHAALAAPVRLDRAGTATHALLTLGPSRHLLYFGYHHIALDGYGALLHLRRLAHVYTALSNGDDPGPCPFGPLAGVLTEEAAYRDSDNHRRDGEFWTRSLAGADEAPGLSEREAGALAVPLRRTVELSGERTEKLAASAAATGARWSSLLVAATAAFVRRHAAADDTVIGLPVTARLTGPALRTPCMLANDVPLRLDARLDAPFAALLADTTRAVGTLARHQRFRGEELHRNLGGVGRTAGLARVTVNVLAYVDNIRFGDCRAVVHELSSGPVRDFHINSYGTPGTPDGVQLVFSGNPALYTATDLADHQERFLRFLDAVTADPDLPTGRHRLLSPGTRARLLDDSRGTERPVPRATLPELFAEQARRTPDAPAVQHDGTVLTYRDLHRSVERAAGRLAGLGLRTEDVVALALPKSAESVAILLGIQRAGAAYVPLDPTHPAERLARVLDDTRPRYLVTTGHIDGLSHPTPQLAAADLLREGGPEPAPGRPAPGNAAYIIQTSGSTGRPKGVVVTHEGLATLAADQIRRYRTGPDARVLQFISPGFDVFVSELSMTLLSGGCLVIPPDGLTGRHLADFLAAEAVTTTSLTPGALATMPATDLPHLRTLIVGGEVCPPEIFDQWGRGRDIVNAYGPTETTVEATAWHRDGATHGPVPLGRPTLNRRGYVLDPALEPVPDGTTGELYLAGEGLARGYVAAPGPTAERFVADPFGPPGSRMYRTGDLVRRRSGGMLEFVGRADGQVKLRGFRIELGEVQAALTALPGVRQAGVLIREDRPGDPRLVGYIVPAPGAEPDAGELRAALARTLPPHMVPWALVPLPALPLTSNGKLDRAALPVPAARAGGSGQRPVTPQEKTLCALFADVLGVTEVATDDVFFELGGHSLNGTRLLARIRTEFGTDLTLRDLFAFPTVAGLLPLLDDNGRQHTTPPLPPRPERLPLSHAQQRLWFLDQVEGPSPAYNIPTAVRLEGPLDIPALAVALQDVTNRHEPLRTLLAEDSEGPHQVILPPEAARPELTHSTVAPGDLAAALAEAARRPFDLAGEIPLKAHLFGCGPDDHTLLLLVHHTAGDGASVEVLVRDLAHAYGARRAGDAPHFEPLPLQYADHTLRRRHLLDDPSDSTQLDHWRDALAGLPEQLELPTDHTRPAVPTRRGEAIAFTVPEHTHHTLRAMAQAHGVTVFMVMQAALAALLSRHGAGHDIPLGTPVAGRSDDGTEDLVGFFVNTLVLRNDVSGDPTFAELVSRVRAANLDAYAYQDVPFERLVDVLKPERSLSWHPLFQIMIAYNGPATNDTADGSRFAGLTSRVHAVHTGMSKFDLSFFLTEHADGLGIDGALEFSTDLFTRITAERLVQRYLTVLEQAAGAPDRPISSYELLGDDERALLAQWNDTAHPTPPGTVLDLLESRAARTPDRPAVVENDHVLTYADLHTRANRLARHLITAHGVGPERLVAVALPRSAELLVALLAVLKTGAAYVPLDLTHPAERTAVVLDDCRPAVILTDAGAARELPRRDIPQLRLDEPEVHAAIAEQPGGPVTDRDRTCVTPVSGEHVAYVIYTSGSTGRPKGVAVEHRSLADFVRYSVTAYPGAFDVTLLHSPVTFDLTVTSLFPPLVVGGAIHVADLTEACPPSLAAAGGPTFVKATPSHLPLLTHEATWAASAKVLLVGGEQLLGRELDKWRAGSPEAVVFNDYGPTEATVNCVDFRIDPGQPIGAGPVAIGRPLRNTRVFVLDGGLRAVPVGVVGELHVAGEGLARGYLGQPGLTAERFVACPFGDAGERMYRTGDLVRWRADGMLEFVGRVDDQVKVRGFRIELGEVEAAVAACPGVDRSVVVVREDRPGDRRLVAYVTAAGDEAEGLAPLIVETAAGRLPGYMVPSAVVVLDEIPLTPNGKVDRAALPAPRVAPAAEFRVTGSPREEALCALFAEVLGVERVGVDDGFFDLGGDSILSIQLVARARRAGLEVSVRDVFEHRTVRALAGVVRESGGVAAAVVDSGVGAVERWPVVEWLAERGGGGLGGAVRAFNQSVVVATPAGITWDELRTVLDAVRERHDAWRLRVVDSGDGAWSLRVDAPAPGGEPDWITRHGMASADLEEQVNAVRAAAVEARSRLDPLTGRMVRAVWLDRGPDRRGVLVLVAHHLVVDGVSWRIVLGDLGEAWTQARAGGHVRLDTVGTSLRGWAAALAEQGRHGARATEANLWAQMVHGSDPLVGPRAVDPSVDVFGVVESVGSRASVGVSRALLTEVPSVLGVGVQEVLLAAFGLAVTRWRGRGGSVVVDVEGHGRNEDAVPGADLSRTVGWFTSIYPVRLPLEPAAWDEIRAGGPAVGRTVREIKECLRTLPDQGLGYGILRYLDPENGPALAQHPTPHFGFNYLGRVSVSADAASLDEGDAHADGLGGLVGGRAAADSDEEQWADWVPVSGPFAVGAGQDPVLPVAHAVEFNAITLDTPDGPRLSVTWSWPTTLLSESRIRELARFWDEALEGLVAHARRPDAGGLTPSDLPLVALDHAELEALQADVTGGVHDILPVSPLQEGLLFHSSFAADGVDVYVGQLTFDLTGPVDADHLHAVVESLVTRHDVLRTGYRQAQSGEWIAVVARQVHTPWQYIHTLDTDADTLTNDERWRPFDMTQGPLARFTLARINDTHFRFIVTYHHVILDGWSVAVLIRELFTTYRDTALGRRPEVPYSPPRRDFMAWLAERDQTAAGQAWRSALAGLAEPTVLALGTEGSGVIPEVLEEEISEELTSELVAWARGRGVTVASVVQAAWALVLGRLVGRDDVVFGLTVSGRPAEVAGVEDMVGLFVNTIPLRARMDPAESLGAFVERLQREQTELLEHQHVRLAEVQRWAGHKELFDVGMVFENYPMDSLLQDSLFHGSGLQIDGIQGADATHFALNLAVVPLPAMRFRLGYRPDVFDAGRVRELWGWIVRALECVVCERDVPVSGVDVLGAGERETLLGWGAGAEPGVRALPGAGAGAGAGLVGLFEERVRTDPDAVAVRGAGVEWSYAELNARANAVARWLIGRGVGPERGVGVVMDRGPDVVAMLLAVAKSGGFYLPVDPQWPTERIDWVLADAGIDLAVVGENLAAAVEAVRDCEVVDYAQIARETRLNEQAATDAGDVTDGERVSALLSGHPLYVIYTSGSTGLPKGVVVTHASVGAYLRRGRNAYRGAADGLGHVHSSLAFDLTVTVLFTPLVSGGCVTLGDLDDTANGLGATFLKATPSHLPLLGQLDRVLAPDATLLLGGEALTAGALHHWRTHHPHTTVINAYGPTELTVNCAEYRIPPGHCLPDGPVPIGRPFTGHHLFVLDPALRLTPPDTIGELYVAGDGLARGYLGRPDLTAERFVACPFRSPGERMYRTGDLARWRSDGTLEFIGRADDQVKIRGFRIELGEVEAAVAAHPHVARAIAVVREDRPGDQRLVAYVTGSDPSGLSSAVTDTVAGRLPAYMVPSAVVVLDQIPLTPNGKVDRAALPAPGTASGTTSRAPGTAREEILCTLFADVLGLDQVGVDEDFFDLGGHSLLATRLTSRIRSALGIDLGVRALFKAPTVGRLDQLLQQQTTSLRAPLVARERTGCEPLSFAQQRLWFLHQLEGPNAAYNIPMALRLTGRLDLTALEAALTDVIARHESLRTVIAQDDSGGVWQNILPTDDTRTHLTLDTMPVDAHTLQNRVDEAARHPFDLTTEIPLRATVFRVTDDEHVLLLVLHHIAGDGWSMAPLAHDLSAAYTVRLEHHAPQLPALAVQYADYAAWQRDVLGTENNTSSQLSTQLDYWYSKLEGLPAELTLPTSRVRPAVASHACDRVEFTVPHDVHQGLTALARTQGATVFMVVQAALAALLSRLGAGTDIPIGTPIAGRTDQAMENLIGLFVNTLVLRTDVSGDPTFAELLARVRTTALDAYAHQDIPFERLVEAINPERSLTRHPLFQVMLAFNNTDRRSALDALDAMPGLHARPADVLAVTSPYDLAFSFVETPGSTEMPGILDYATDLFDRSTAEAMTERLVRLLAEIARRPELSVGDIGILSADEVKALSPEAPPAAEELHTSTLPELFEEQVAARGHAVAVVCEGEELSYKELNARANRLARVLMERGAGPERFVGVALPRGLDLIVALLAVTKTGAAYVPLDPEYPTDRLAYMVTDANPTAVVTSTDVHIPLIAPRIELDDEAIRTELAAAPDTAPCVGSGPAHPAYVIYTSGSTGRPKGVVISHANVVRLFTACSDSFDFGPDHVWTLFHSYAFDFSVWEIWGALLHGGRLVVVPFEVTRSPAEFLALLAEQQVTLLSQTPSAFHQLTEAARQEPARCAGLALRHVVFGGEALDPSRLRDWFDLPLGSRPTLVNMYGITETTVHVTVLPLEDRATSLSGSPIGRPLADLQVYVLDERLRPVPPGTVGEMYVAGAGLARGYLGRPALTAERFVADPNSRSGGRLYRTGDLAKVRPDGGLEYVGRGDRQVKIRGFRIELGEIEAALVTHAGVVQAVVLVRDEQTDDQRLVAHVVPALPHRAPTLAELHEHLAATLPAYMVPSAYRTLDELPLTANGKLDRAALAGQWQGGTRTRRLPRTPQEEILCELFADVLRLPAAGADDDFFALGGHSLLATRLLSAVRGTLGVELGIRDLFAAPTPAGLATVLAASGTALPPVTRIDRRPERLPLSFAQRRLWFLSKLEGPSATYNIPVAVRLTGALDVPALRAALGDVTARHESLRTVFPDDGGEPRQLVLPHAEPPFLTHEVTVGEVAEQAASATGYAFDITSDTPLRATLLRVSPEEHVLVVVIHHIAGDGWSMGPLVRDLVTAYRARTRGDAPEYTPLPVQYADYALWQHAVAGDEDAPDGRTARRLGYWREMLAGLPEEHTLPADRPRPVRSSHRGGRVRFELPAGVHRSLLAVARDRRATLFMVVQAALAGLLSRLGAGDDIPIGTPVAGRGDEALDDVVGFFVNTLVLRTNLAGDPSFADLVDRVRTADLDAFAHQDVPFERLVEALAPRRSLARHPLFQIWYTLTNADQDITGQALNALPGLTGDEYPLGASAAKFDLSFTFTEHRTPDGDAAGLSVLLDYSSDLYDHGTAAALGHRLTGFFAALAADPTAPLGTVPLLTDDERDRILGDWGSGTHTPLPPRSVAEQIVRRAALDPDAVAVITAEEELSYRELERLSGETARLLADRGIGRESLVAVALPRTAGLVTTLLGVLRTGAAYLPLDTGYPAERLAHVLSDARPDLVLTHAGLAGRLPAGLAPTVLVDEPQPPAAAAPAVPTSPSGDHLAYVIHTSGSTGRPKGVAIAESSLRAFLADAVRRHDLTPHDRLLAVTTVGFDIAGLELFAPLLAGAAIVLADEDAVRDPASITSLCARHHVTVVQATPSWWRAMLDGAPADAAARLEHVRILVGGEPLPADLARVLTATGAAVTNVYGPTEATIWATAAPLTAGDDRTPGIGTPLDNWRVHILDAALGPVPPGVPGEIHIAGSGLARGYLRRPDLTAERFVANPFAPGERMYRTGDLGRFRPDGTLEHLGRVDDQVKVRGFRIELGDVEAALARHPDVGRAAAAVRPDHRGQGRLVAYVVPRPGTRGPDAGELRETVRELLPDYMVPSAQVTLTTLPHTPNGKLDRAALPAPVFGTPAGRAPATREEKILAGLFADILGLPDVGADSGFFDLGGDSVLSIQLVSRARREGLHITVRDVFEHGTVGALAAAALPAPADDADDTVPGTDVLPSISDDEFEEFELELGLEGEEEQW";
+const exampleFastaInput = '>dptA\nMDMQSQRLGVTAAQQSVWLAGQLADDHRLYHCAAYLSLTGSIDPRTLGTAVRRTLDETEALRTRFVPQDGELLQILEPGAGQLLLEADFSGDPDPERAAHDWMHAALAAPVRLDRAGTATHALLTLGPSRHLLYFGYHHIALDGYGALLHLRRLAHVYTALSNGDDPGPCPFGPLAGVLTEEAAYRDSDNHRRDGEFWTRSLAGADEAPGLSEREAGALAVPLRRTVELSGERTEKLAASAAATGARWSSLLVAATAAFVRRHAAADDTVIGLPVTARLTGPALRTPCMLANDVPLRLDARLDAPFAALLADTTRAVGTLARHQRFRGEELHRNLGGVGRTAGLARVTVNVLAYVDNIRFGDCRAVVHELSSGPVRDFHINSYGTPGTPDGVQLVFSGNPALYTATDLADHQERFLRFLDAVTADPDLPTGRHRLLSPGTRARLLDDSRGTERPVPRATLPELFAEQARRTPDAPAVQHDGTVLTYRDLHRSVERAAGRLAGLGLRTEDVVALALPKSAESVAILLGIQRAGAAYVPLDPTHPAERLARVLDDTRPRYLVTTGHIDGLSHPTPQLAAADLLREGGPEPAPGRPAPGNAAYIIQTSGSTGRPKGVVVTHEGLATLAADQIRRYRTGPDARVLQFISPGFDVFVSELSMTLLSGGCLVIPPDGLTGRHLADFLAAEAVTTTSLTPGALATMPATDLPHLRTLIVGGEVCPPEIFDQWGRGRDIVNAYGPTETTVEATAWHRDGATHGPVPLGRPTLNRRGYVLDPALEPVPDGTTGELYLAGEGLARGYVAAPGPTAERFVADPFGPPGSRMYRTGDLVRRRSGGMLEFVGRADGQVKLRGFRIELGEVQAALTALPGVRQAGVLIREDRPGDPRLVGYIVPAPGAEPDAGELRAALARTLPPHMVPWALVPLPALPLTSNGKLDRAALPVPAARAGGSGQRPVTPQEKTLCALFADVLGVTEVATDDVFFELGGHSLNGTRLLARIRTEFGTDLTLRDLFAFPTVAGLLPLLDDNGRQHTTPPLPPRPERLPLSHAQQRLWFLDQVEGPSPAYNIPTAVRLEGPLDIPALAVALQDVTNRHEPLRTLLAEDSEGPHQVILPPEAARPELTHSTVAPGDLAAALAEAARRPFDLAGEIPLKAHLFGCGPDDHTLLLLVHHTAGDGASVEVLVRDLAHAYGARRAGDAPHFEPLPLQYADHTLRRRHLLDDPSDSTQLDHWRDALAGLPEQLELPTDHTRPAVPTRRGEAIAFTVPEHTHHTLRAMAQAHGVTVFMVMQAALAALLSRHGAGHDIPLGTPVAGRSDDGTEDLVGFFVNTLVLRNDVSGDPTFAELVSRVRAANLDAYAYQDVPFERLVDVLKPERSLSWHPLFQIMIAYNGPATNDTADGSRFAGLTSRVHAVHTGMSKFDLSFFLTEHADGLGIDGALEFSTDLFTRITAERLVQRYLTVLEQAAGAPDRPISSYELLGDDERALLAQWNDTAHPTPPGTVLDLLESRAARTPDRPAVVENDHVLTYADLHTRANRLARHLITAHGVGPERLVAVALPRSAELLVALLAVLKTGAAYVPLDLTHPAERTAVVLDDCRPAVILTDAGAARELPRRDIPQLRLDEPEVHAAIAEQPGGPVTDRDRTCVTPVSGEHVAYVIYTSGSTGRPKGVAVEHRSLADFVRYSVTAYPGAFDVTLLHSPVTFDLTVTSLFPPLVVGGAIHVADLTEACPPSLAAAGGPTFVKATPSHLPLLTHEATWAASAKVLLVGGEQLLGRELDKWRAGSPEAVVFNDYGPTEATVNCVDFRIDPGQPIGAGPVAIGRPLRNTRVFVLDGGLRAVPVGVVGELHVAGEGLARGYLGQPGLTAERFVACPFGDAGERMYRTGDLVRWRADGMLEFVGRVDDQVKVRGFRIELGEVEAAVAACPGVDRSVVVVREDRPGDRRLVAYVTAAGDEAEGLAPLIVETAAGRLPGYMVPSAVVVLDEIPLTPNGKVDRAALPAPRVAPAAEFRVTGSPREEALCALFAEVLGVERVGVDDGFFDLGGDSILSIQLVARARRAGLEVSVRDVFEHRTVRALAGVVRESGGVAAAVVDSGVGAVERWPVVEWLAERGGGGLGGAVRAFNQSVVVATPAGITWDELRTVLDAVRERHDAWRLRVVDSGDGAWSLRVDAPAPGGEPDWITRHGMASADLEEQVNAVRAAAVEARSRLDPLTGRMVRAVWLDRGPDRRGVLVLVAHHLVVDGVSWRIVLGDLGEAWTQARAGGHVRLDTVGTSLRGWAAALAEQGRHGARATEANLWAQMVHGSDPLVGPRAVDPSVDVFGVVESVGSRASVGVSRALLTEVPSVLGVGVQEVLLAAFGLAVTRWRGRGGSVVVDVEGHGRNEDAVPGADLSRTVGWFTSIYPVRLPLEPAAWDEIRAGGPAVGRTVREIKECLRTLPDQGLGYGILRYLDPENGPALAQHPTPHFGFNYLGRVSVSADAASLDEGDAHADGLGGLVGGRAAADSDEEQWADWVPVSGPFAVGAGQDPVLPVAHAVEFNAITLDTPDGPRLSVTWSWPTTLLSESRIRELARFWDEALEGLVAHARRPDAGGLTPSDLPLVALDHAELEALQADVTGGVHDILPVSPLQEGLLFHSSFAADGVDVYVGQLTFDLTGPVDADHLHAVVESLVTRHDVLRTGYRQAQSGEWIAVVARQVHTPWQYIHTLDTDADTLTNDERWRPFDMTQGPLARFTLARINDTHFRFIVTYHHVILDGWSVAVLIRELFTTYRDTALGRRPEVPYSPPRRDFMAWLAERDQTAAGQAWRSALAGLAEPTVLALGTEGSGVIPEVLEEEISEELTSELVAWARGRGVTVASVVQAAWALVLGRLVGRDDVVFGLTVSGRPAEVAGVEDMVGLFVNTIPLRARMDPAESLGAFVERLQREQTELLEHQHVRLAEVQRWAGHKELFDVGMVFENYPMDSLLQDSLFHGSGLQIDGIQGADATHFALNLAVVPLPAMRFRLGYRPDVFDAGRVRELWGWIVRALECVVCERDVPVSGVDVLGAGERETLLGWGAGAEPGVRALPGAGAGAGAGLVGLFEERVRTDPDAVAVRGAGVEWSYAELNARANAVARWLIGRGVGPERGVGVVMDRGPDVVAMLLAVAKSGGFYLPVDPQWPTERIDWVLADAGIDLAVVGENLAAAVEAVRDCEVVDYAQIARETRLNEQAATDAGDVTDGERVSALLSGHPLYVIYTSGSTGLPKGVVVTHASVGAYLRRGRNAYRGAADGLGHVHSSLAFDLTVTVLFTPLVSGGCVTLGDLDDTANGLGATFLKATPSHLPLLGQLDRVLAPDATLLLGGEALTAGALHHWRTHHPHTTVINAYGPTELTVNCAEYRIPPGHCLPDGPVPIGRPFTGHHLFVLDPALRLTPPDTIGELYVAGDGLARGYLGRPDLTAERFVACPFRSPGERMYRTGDLARWRSDGTLEFIGRADDQVKIRGFRIELGEVEAAVAAHPHVARAIAVVREDRPGDQRLVAYVTGSDPSGLSSAVTDTVAGRLPAYMVPSAVVVLDQIPLTPNGKVDRAALPAPGTASGTTSRAPGTAREEILCTLFADVLGLDQVGVDEDFFDLGGHSLLATRLTSRIRSALGIDLGVRALFKAPTVGRLDQLLQQQTTSLRAPLVARERTGCEPLSFAQQRLWFLHQLEGPNAAYNIPMALRLTGRLDLTALEAALTDVIARHESLRTVIAQDDSGGVWQNILPTDDTRTHLTLDTMPVDAHTLQNRVDEAARHPFDLTTEIPLRATVFRVTDDEHVLLLVLHHIAGDGWSMAPLAHDLSAAYTVRLEHHAPQLPALAVQYADYAAWQRDVLGTENNTSSQLSTQLDYWYSKLEGLPAELTLPTSRVRPAVASHACDRVEFTVPHDVHQGLTALARTQGATVFMVVQAALAALLSRLGAGTDIPIGTPIAGRTDQAMENLIGLFVNTLVLRTDVSGDPTFAELLARVRTTALDAYAHQDIPFERLVEAINPERSLTRHPLFQVMLAFNNTDRRSALDALDAMPGLHARPADVLAVTSPYDLAFSFVETPGSTEMPGILDYATDLFDRSTAEAMTERLVRLLAEIARRPELSVGDIGILSADEVKALSPEAPPAAEELHTSTLPELFEEQVAARGHAVAVVCEGEELSYKELNARANRLARVLMERGAGPERFVGVALPRGLDLIVALLAVTKTGAAYVPLDPEYPTDRLAYMVTDANPTAVVTSTDVHIPLIAPRIELDDEAIRTELAAAPDTAPCVGSGPAHPAYVIYTSGSTGRPKGVVISHANVVRLFTACSDSFDFGPDHVWTLFHSYAFDFSVWEIWGALLHGGRLVVVPFEVTRSPAEFLALLAEQQVTLLSQTPSAFHQLTEAARQEPARCAGLALRHVVFGGEALDPSRLRDWFDLPLGSRPTLVNMYGITETTVHVTVLPLEDRATSLSGSPIGRPLADLQVYVLDERLRPVPPGTVGEMYVAGAGLARGYLGRPALTAERFVADPNSRSGGRLYRTGDLAKVRPDGGLEYVGRGDRQVKIRGFRIELGEIEAALVTHAGVVQAVVLVRDEQTDDQRLVAHVVPALPHRAPTLAELHEHLAATLPAYMVPSAYRTLDELPLTANGKLDRAALAGQWQGGTRTRRLPRTPQEEILCELFADVLRLPAAGADDDFFALGGHSLLATRLLSAVRGTLGVELGIRDLFAAPTPAGLATVLAASGTALPPVTRIDRRPERLPLSFAQRRLWFLSKLEGPSATYNIPVAVRLTGALDVPALRAALGDVTARHESLRTVFPDDGGEPRQLVLPHAEPPFLTHEVTVGEVAEQAASATGYAFDITSDTPLRATLLRVSPEEHVLVVVIHHIAGDGWSMGPLVRDLVTAYRARTRGDAPEYTPLPVQYADYALWQHAVAGDEDAPDGRTARRLGYWREMLAGLPEEHTLPADRPRPVRSSHRGGRVRFELPAGVHRSLLAVARDRRATLFMVVQAALAGLLSRLGAGDDIPIGTPVAGRGDEALDDVVGFFVNTLVLRTNLAGDPSFADLVDRVRTADLDAFAHQDVPFERLVEALAPRRSLARHPLFQIWYTLTNADQDITGQALNALPGLTGDEYPLGASAAKFDLSFTFTEHRTPDGDAAGLSVLLDYSSDLYDHGTAAALGHRLTGFFAALAADPTAPLGTVPLLTDDERDRILGDWGSGTHTPLPPRSVAEQIVRRAALDPDAVAVITAEEELSYRELERLSGETARLLADRGIGRESLVAVALPRTAGLVTTLLGVLRTGAAYLPLDTGYPAERLAHVLSDARPDLVLTHAGLAGRLPAGLAPTVLVDEPQPPAAAAPAVPTSPSGDHLAYVIHTSGSTGRPKGVAIAESSLRAFLADAVRRHDLTPHDRLLAVTTVGFDIAGLELFAPLLAGAAIVLADEDAVRDPASITSLCARHHVTVVQATPSWWRAMLDGAPADAAARLEHVRILVGGEPLPADLARVLTATGAAVTNVYGPTEATIWATAAPLTAGDDRTPGIGTPLDNWRVHILDAALGPVPPGVPGEIHIAGSGLARGYLRRPDLTAERFVANPFAPGERMYRTGDLGRFRPDGTLEHLGRVDDQVKVRGFRIELGDVEAALARHPDVGRAAAAVRPDHRGQGRLVAYVVPRPGTRGPDAGELRETVRELLPDYMVPSAQVTLTTLPHTPNGKLDRAALPAPVFGTPAGRAPATREEKILAGLFADILGLPDVGADSGFFDLGGDSVLSIQLVSRARREGLHITVRDVFEHGTVGALAAAALPAPADDADDTVPGTDVLPSISDDEFEEFELELGLEGEEEQW';
 
 
 const Submit = () => {
@@ -11,28 +11,35 @@ const Submit = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     // input method and type
-    const [inputMethod, setInputMethod] = useState("paste"); // 'paste' or 'upload'
-    const [selectedInputType, setSelectedInputType] = useState("fasta"); // fasta or gbk
-    const [selectedInput, setSelectedInput] = useState("");
+    const [inputMethod, setInputMethod] = useState('paste'); // 'paste' or 'upload'
+    const [selectedInputType, setSelectedInputType] = useState('fasta'); // fasta or gbk
+    const [selectedInput, setSelectedInput] = useState('');
 
     // options
-    const [selectedModel, setSelectedModel] = useState("parasAllSubstrates"); // parasAllSubstrates, parasCommonSubstrates, or parasect
+    const [selectedModel, setSelectedModel] = useState('parasAllSubstrates'); // parasAllSubstrates, parasCommonSubstrates, or parasect
     const [useStructureGuidedAlignment, setUseStructureGuidedAlignment] = useState(false);
 
     // SMILES file state (for PARASECT model)
-    const [smilesFileContent, setSmilesFileContent] = useState(""); // Stores content of uploaded SMILES file
+    const [smilesFileContent, setSmilesFileContent] = useState(''); // Stores content of uploaded SMILES file
     const [useOnlyUploadedSubstrates, setUseOnlyUploadedSubstrates] = useState(false); // Checkbox state
+
+    // modal state
+    const [openSettingsModal, setOpenSettingsModal] = useState(false);
+
+    // open and close modal handlers
+    const handleOpenSettingsModal = () => setOpenSettingsModal(true);
+    const handleCloseSettingsModal = () => setOpenSettingsModal(false);
 
     // load example input
     function handleLoadExample() {
-        setSelectedInputType("fasta");
+        setSelectedInputType('fasta');
         setSelectedInput(exampleFastaInput);
     };
 
     // refresh the page
     function handleRefresh() {
         // remove results from local storage
-        localStorage.removeItem("results");
+        localStorage.removeItem('results');
 
         // reload the page
         window.location.reload();
@@ -78,29 +85,28 @@ const Submit = () => {
         };
 
         try {
-            const response = await fetch("/api/submit_raw", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
+            const response = await fetch('/api/submit_raw', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ data })
             });
 
             if (!response.ok) {
-                throw new Error("Network response was not ok!");
-            }
+                throw new Error('Network response was not ok!');
+            };
 
             const json = await response.json();
 
-            if (json.status === "success") {
-                localStorage.setItem("results", JSON.stringify(json.payload["results"]));
-                toast.success(json.message);
-                window.location.href = "/results";
-            } else if (json.status === "warning") {
+            if (json.status === 'success') {
+                const jobId = json.payload['jobId'];
+                window.location.href = `/results/${jobId}`;
+            } else if (json.status === 'warning') {
                 toast.warn(json.message);
-            } else if (json.status === "failure") {
+            } else if (json.status === 'failure') {
                 toast.error(json.message);
-            }
+            };
         } catch (error) {
-            console.error("Error:", error);
+            console.error('Error:', error);
             toast.error(error.message);
         };
 
@@ -109,112 +115,154 @@ const Submit = () => {
 
     return (
         <>
-            {isLoading && (
-                <LoadingOverlay 
-                    frame1="paras_loading_1.png"
-                    frame2="paras_loading_2.png"
-                />
-            )}
-            <Box display="flex" flexDirection="column" alignItems="center" padding={4} maxWidth={800} margin="auto">
-                <Typography variant="h4" gutterBottom>
+            <Box display='flex' flexDirection='column' alignItems='center' padding={4} maxWidth={800} margin='auto'>
+                <Typography variant='h4' gutterBottom>
                     Submit your data
                 </Typography>
 
                 {/* input method selection */}
-                <FormControl component="fieldset" margin="normal">
-                    <FormLabel component="legend">Input method</FormLabel>
+                <FormControl component='fieldset' margin='normal'>
+                    <FormLabel component='legend'>Input method</FormLabel>
                     <RadioGroup
                         row
                         value={inputMethod}
                         onChange={(e) => setInputMethod(e.target.value)}
                     >
-                        <FormControlLabel value="paste" control={<Radio />} label="Paste sequence" />
-                        <FormControlLabel value="upload" control={<Radio />} label="Upload file" />
+                        <FormControlLabel value='paste' control={<Radio />} label='Paste sequence' />
+                        <FormControlLabel value='upload' control={<Radio />} label='Upload file' />
                     </RadioGroup>
                 </FormControl>
 
                 {/* input type selection */}
-                <FormControl component="fieldset" margin="normal">
-                    <FormLabel component="legend">Input type</FormLabel>
+                <FormControl component='fieldset' margin='normal'>
+                    <FormLabel component='legend'>Input type</FormLabel>
                     <RadioGroup
                         row
                         value={selectedInputType}
                         onChange={(e) => setSelectedInputType(e.target.value)}
                     >
-                        <FormControlLabel value="fasta" control={<Radio />} label="FASTA" />
-                        <FormControlLabel value="gbk" control={<Radio />} label="GBK" />
+                        <FormControlLabel value='fasta' control={<Radio />} label='FASTA' />
+                        <FormControlLabel value='gbk' control={<Radio />} label='GBK' />
                     </RadioGroup>
                 </FormControl>
 
                 {/* text field or file upload */}
-                {inputMethod === "paste" ? (
+                {inputMethod === 'paste' ? (
                     <TextField
-                        label="Input Data"
+                        label='Input Data'
                         multiline
                         rows={8}
                         fullWidth
-                        variant="outlined"
+                        variant='outlined'
                         value={selectedInput}
                         onChange={(e) => setSelectedInput(e.target.value)}
-                        margin="normal"
-                        placeholder="Paste your sequence here"
+                        margin='normal'
+                        placeholder='Paste your sequence here'
                     />
                 ) : (
-                    <Box width="100%" margin="normal">
-                        <Typography variant="body1" gutterBottom>
+                    <Box width='100%' margin='normal'>
+                        <Typography variant='body1' gutterBottom>
                             Upload your {selectedInputType.toUpperCase()} file:
                         </Typography>
                         <Input
-                            type="file"
-                            inputProps={{ accept: ".fasta,.fa,.gbk" }} // accept FASTA or GBK files
+                            type='file'
+                            inputProps={{ accept: '.fasta,.fa,.gbk' }} // accept FASTA or GBK files
                             onChange={handleFileUpload}
                         />
                     </Box>
                 )}
 
                 {/* load example button */}
-                {inputMethod === "paste" && (
-                    <Button variant="text" color="primary" onClick={handleLoadExample}>
+                {inputMethod === 'paste' && (
+                    <Button variant='text' color='primary' onClick={handleLoadExample}>
                         Load example input
                     </Button>
                 )}
 
                 {/* model selection */}
-                <FormControl component="fieldset" margin="normal">
-                    <FormLabel component="legend">Select model</FormLabel>
+                <FormControl component='fieldset' margin='normal'>
+                    <FormLabel component='legend'>Select model</FormLabel>
                     <RadioGroup
                         row
                         value={selectedModel}
                         onChange={(e) => setSelectedModel(e.target.value)}
                     >
-                        <FormControlLabel value="parasAllSubstrates" control={<Radio />} label="PARAS All Substrates" />
-                        <FormControlLabel value="parasCommonSubstrates" control={<Radio />} label="PARAS Common Substrates" />
-                        <FormControlLabel value="parasect" control={<Radio />} label="PARASECT" />
+                        <FormControlLabel value='parasAllSubstrates' control={<Radio />} label='PARAS All Substrates' />
+                        <FormControlLabel value='parasCommonSubstrates' control={<Radio />} label='PARAS Common Substrates' />
+                        <FormControlLabel value='parasect' control={<Radio />} label='PARASECT' />
                     </RadioGroup>
                 </FormControl>
 
-                {/* structure-guided alignment switch */}
-                <FormControlLabel
-                    control={
-                        <Switch
-                            checked={useStructureGuidedAlignment}
-                            onChange={(e) => setUseStructureGuidedAlignment(e.target.checked)}
-                        />
-                    }
-                    label="Use structure-guided profile alignment (watch out: slow!)"
-                />
+                {/* Settings Button */}
+                <Box mt={2}>
+                    <Button
+                        variant="contained"
+                        startIcon={<SettingsIcon />}
+                        onClick={handleOpenSettingsModal}
+                    >
+                        Settings
+                    </Button>
+                </Box>
 
-                {/* SMILES file upload for PARASECT */}
-                {selectedModel === "parasect" && (
-                    <Box width="100%" margin="normal">
-                        <Typography variant="body1" gutterBottom>
-                            Upload your list of substrates (SMILES format, one per line):
+                {/* Submit and Refresh Buttons */}
+                <Box mt={4} display='flex' justifyContent='space-between' width='100%'>
+                    <Button variant='outlined' color='secondary' onClick={handleRefresh}>
+                        Refresh
+                    </Button>
+                    <Button
+                        variant='contained'
+                        color='primary'
+                        onClick={handleSubmit}
+                        disabled={isLoading || !selectedInput}
+                    >
+                        {isLoading ? <CircularProgress size={24} /> : 'Submit'}
+                    </Button>
+                </Box>
+
+                {/* Settings Modal */}
+                <Modal open={openSettingsModal} onClose={handleCloseSettingsModal}>
+                    <Box
+                        width={400}
+                        bgcolor="white"
+                        p={4}
+                        mx="auto"
+                        my={10}
+                        borderRadius={4}
+                        boxShadow={3}
+                    >
+                        <Typography variant="h6" gutterBottom>
+                            Settings
                         </Typography>
-                        <Input
-                            type="file"
-                            inputProps={{ accept: ".txt" }} // accept only text files for SMILES
-                            onChange={handleSmilesFileUpload}
+
+                        {/* structure-guided alignment switch */}
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={useStructureGuidedAlignment}
+                                    onChange={(e) => setUseStructureGuidedAlignment(e.target.checked)}
+                                />
+                            }
+                            label='Use structure-guided profile alignment (watch out: slow!)'
                         />
+
+                        {/* SMILES file upload for PARASECT */}
+                        <Box width='100%' margin='normal'>
+                            <Typography 
+                                variant='body1' 
+                                gutterBottom
+                                style={{
+                                    color: selectedModel !== 'parasect' ? 'rgba(0, 0, 0, 0.26)' : 'rgba(0, 0, 0, 0.87)'
+                                }}
+                            >
+                                Upload your list of substrates (SMILES format, one per line):
+                            </Typography>
+                            <Input
+                                type='file'
+                                inputProps={{ accept: '.txt' }}
+                                onChange={handleSmilesFileUpload}
+                                disabled={selectedModel !== 'parasect'}
+                            />
+                        </Box>
 
                         {/* option to use only uploaded substrates */}
                         <FormControlLabel
@@ -225,25 +273,17 @@ const Submit = () => {
                                     disabled={!smilesFileContent}
                                 />
                             }
-                            label="Use only uploaded substrates"
+                            label='Use only uploaded substrates'
                         />
-                    </Box>
-                )}
 
-                {/* Submit and Refresh Buttons */}
-                <Box mt={4} display="flex" justifyContent="space-between" width="100%">
-                    <Button variant="outlined" color="secondary" onClick={handleRefresh}>
-                        Refresh
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleSubmit}
-                        disabled={isLoading || !selectedInput}
-                    >
-                        {isLoading ? <CircularProgress size={24} /> : "Submit"}
-                    </Button>
-                </Box>
+                        <Box mt={2}>
+                            <Button variant="contained" color="primary" onClick={handleCloseSettingsModal}>
+                                Close
+                            </Button>
+                        </Box>
+                    </Box>
+                </Modal>
+
             </Box>
         </>
     );
