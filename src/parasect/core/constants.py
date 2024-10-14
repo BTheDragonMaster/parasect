@@ -6,7 +6,7 @@ import os
 from typing import Dict, List, Union
 
 import parasect.data
-from parasect.core.parsing import Tabular
+from parasect.core.tabular import Tabular
 
 
 def _parse_amino_acid_properties_file(path_in: str) -> Dict[Union[int, float, str], List[float]]:
@@ -24,7 +24,7 @@ def _parse_amino_acid_properties_file(path_in: str) -> Dict[Union[int, float, st
         raise FileNotFoundError(f"amino acid properties file not found: {path_in}")
 
     # read the tabular file
-    data = Tabular(path_in)
+    data = Tabular(path_in=path_in, separator="\t")
 
     # parse the amino acid properties from the file
     amino_acid_properties = {}
@@ -86,6 +86,7 @@ A_POSITION_FILE = get_path("stachelhaus.txt")
 A_POSITION_FILE_34 = get_path("active_site.txt")
 A_POSITION_FILE_HMM2 = get_path("stachelhaus_hmm2.txt")
 A_POSITION_FILE_34_HMM2 = get_path("active_site_hmm2.txt")
+SMILES_FILE = get_path("smiles.tsv")
 
 FINGERPRINTS_FILE = os.path.join(DATA_DIR, "fingerprints.txt")
 INCLUDED_SUBSTRATES_FILE = os.path.join(DATA_DIR, "included_substrates.txt")

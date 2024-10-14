@@ -5,116 +5,13 @@
 import itertools
 import logging
 import os
-from collections import OrderedDict
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple
 
 from Bio import SeqIO
 
+from parasect.core.tabular import Tabular
 from parasect.core.chem import smiles_to_fingerprint
-
-
-class Tabular:
-    """Class for reading and storing tabular data files."""
-
-    def __init__(self, path_in: str, separator: str = "\t") -> None:
-        """Initialize the Tabular class.
-
-        :param path_in: Path to tabular file.
-        :type path_in: str
-        :param separator: Separator used in the tabular file (default is tab).
-        :type separator: str
-        :raises FileNotFoundError: If the file at the specified path does not exist.
-        :raises ValueError: If the number of columns in a row does not match the
-            length of the number of columns in the header.
-        :raises ValueError: If there is a duplicate row ID in the data.
-        """
-        self.index_of_column_with_id = 0  # default index of column with ID
-        self.column_names = []
-        self.rows: OrderedDict = OrderedDict()
-
-        # check if the file exists
-        if not os.path.exists(path_in):
-            raise FileNotFoundError(f"file not found: {path_in}")
-
-        # read the tabular file
-        with open(path_in, "r") as fo:
-            self.column_names = [n.strip() for n in fo.readline().strip().split(separator)]
-
-            for line_idx, line in enumerate(fo):
-                # split the line into a list of values
-                row = [v.strip() for v in line.strip().split(separator)]
-
-                # check if the row has the same number of columns as the header
-                if len(row) != len(self.column_names):
-                    msg = f"row {line_idx + 2} has a different number of columns than the header"  # noqa: E501
-                    raise ValueError(msg)
-
-                # parse out the row ID
-                row_id = row[self.index_of_column_with_id]
-
-                # check for duplicate row IDs
-                if row_id in self.rows:
-                    msg = f"duplicate row ID when reading {path_in}: {row_id}"
-                    raise ValueError(msg)
-
-                # if the row ID is unique, add the row to the data dictionary
-                self.rows[row_id] = OrderedDict()
-
-                for value_idx, value in enumerate(row):
-                    column_name = self.column_names[value_idx]
-                    self.rows[row_id][column_name] = value
-
-    def get_column_values(self, column_name: str) -> List[Union[int, float, str]]:
-        """Return a list of values from a specified column.
-
-        :param column_name: Name of the column.
-        :type column_name: str
-        :return: List of values from the specified column.
-        :rtype: List[Union[int, float, str]]
-        :raises KeyError: If the specified column name is not found in the data.
-        """
-        # check if the column name is in the column names
-        if column_name not in self.column_names:
-            raise KeyError(f"cannot find category {column_name} in data")
-
-        # get the values from the specified column
-        column_values = []
-        for row_id in self.rows:
-            column_values.append(self.get_row_value(row_id, column_name))
-
-        return column_values
-
-    def get_row_values(self, row_id: str) -> List[Union[int, float, str]]:
-        """Return a row of values from the data.
-
-        :param row_id: ID of the row.
-        :type row_id: str
-        :return: Row of values from the data.
-        :rtype: List[Union[int, float, str]]
-        :raises KeyError: If the specified row ID is not found in the data.
-        """
-        # check if the row ID is in the data
-        if row_id not in self.rows:
-            raise KeyError(f"cannot find data ID {row_id} in data")
-
-        # get the values from the specified row
-        row_values = []
-        for category in self.column_names:
-            row_values.append(self.get_row_value(row_id, category))
-
-        return row_values
-
-    def get_row_value(self, row_id: str, column_name: str) -> Union[int, float, str]:
-        """Return a value from a specified row and column.
-
-        :param row_id: ID of the row.
-        :type row_id: str
-        :param column_name: Name of the column.
-        :type column_name: str
-        :return: Value from the specified row and column.
-        :rtype: Union[int, float, str]
-        """
-        return self.rows[row_id][column_name]
+from parasect.core.constants import FINGERPRINTS_FILE
 
 
 def parse_substrate_list(path_in: str) -> List[str]:
@@ -143,35 +40,6 @@ def parse_substrate_list(path_in: str) -> List[str]:
                 substrate_names.append(substrate_name)
 
     return substrate_names
-
-
-def parse_morgan_fingerprint_file(path_in: str) -> Dict[str, List[int]]:
-    """Parse a dictionary of molecule name to Morgan fingerprint from a file.
-
-    :param path_in: Path to input file.
-    :type path_in: str
-    :return: Dictionary of molecule name to Morgan fingerprint.
-    :rtype: Dict[str, List[int]]
-    :raises FileNotFoundError: If the file at the specified path does not exist.
-    """
-    # check if the file exists
-    if not os.path.exists(path_in):
-        raise FileNotFoundError(f"morgan fingerprint file not found: {path_in}")
-
-    # read the tabular file
-    data = Tabular(path_in)
-
-    # parse the Morgan fingerprints from the file
-    amino_acid_fingerprints = OrderedDict()
-    for row_id in data.rows:
-        # skip the molecule name and SMILESMILES
-        fingerprint = [int(v) for v in data.get_row_values(row_id)[2:]]
-
-        # the row_id is the molecule name
-        amino_acid_fingerprints[row_id] = fingerprint
-
-    # print(amino_acid_fingerprints)
-    return amino_acid_fingerprints
 
 
 def parse_fasta_file(path_in: str) -> Dict[str, str]:
@@ -286,45 +154,50 @@ def parse_genbank_file(path_in: str, path_out: str) -> None:
     write_fasta_file(fasta_dict=fasta_dict, path_out=path_out)
 
 
-def bitvectors_from_substrate_names(
+def data_from_substrate_names(
     substrate_names: List[str],
-    path_in_fingerprint_file: str,
-) -> Tuple[List[str], List[List[int]]]:
+) -> Tuple[List[str], List[str], List[List[int]]]:
     """Return substrate names and fingerprints for all substrate names for which a fingerprint could be found.
 
     :param substrate_names: Substrate names. If the
         substrate name is not in the fingerprint file, a warning will be logged.
     :type substrate_names: List[str]
-    :param path_in_fingerprint_file: Path to file containing precomputed fingerprints,
-        with one substrate per row and one substructure per column.
-    :type path_in_fingerprint_file: str
-    :return: Substrate names and fingerprints.
-    :rtype: Tuple[List[str], List[List[int]]]
+    :return: Substrate names, SMILES strings, and fingerprints.
+    :rtype: Tuple[List[str], List[str], List[List[int]]]
 
     .. note:: The index of each fingerprint matches the index of the corresponding
         substrate name in substrates.
     """
     logger = logging.getLogger(__name__)
 
-    substrate_to_fingerprint = parse_morgan_fingerprint_file(path_in_fingerprint_file)
+    data = Tabular(path_in=FINGERPRINTS_FILE, separator="\t")
 
     ordered_substrate_names = []
+    ordered_substrate_smiles = []
     ordered_fingerprints = []
 
-    for substrate_name in substrate_names:
+    for name in substrate_names:
 
-        if substrate_name in substrate_to_fingerprint:
-            ordered_substrate_names.append(substrate_name)
-            ordered_fingerprints.append(substrate_to_fingerprint[substrate_name])
+        if name in data.rows:
+            # get the SMILES string and fingerprint for the substrate
+            row_values = data.get_row_values(name)
+            smiles = row_values[1]
+            fingerprint = [int(v) for v in row_values[2:]]
+            
+            # add the substrate name, SMILES string, and fingerprint to the lists
+            ordered_substrate_names.append(name)
+            ordered_substrate_smiles.append(smiles)
+            ordered_fingerprints.append(fingerprint)
 
         else:
-            msg = (
-                f"Could not find a fingerprint for substrate name "
-                f"{substrate_name}. Excluded from analysis."
-            )
+            msg = f"could not find structure information for substrate name {name}"
             logger.info(msg)
 
-    return ordered_substrate_names, ordered_fingerprints
+    return (
+        ordered_substrate_names, 
+        ordered_substrate_smiles, 
+        ordered_fingerprints,
+    )
 
 
 def bitvector_from_smiles(smiles: str, path_in_bitvector_file: str) -> List[int]:

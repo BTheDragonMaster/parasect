@@ -9,7 +9,7 @@ from typing import Dict, List, Tuple
 from Bio import SearchIO
 from Bio.SearchIO._model import HSP
 
-from parasect.core.abstractions import AdenylationDomain
+from parasect.core.domain import AdenylationDomain
 from parasect.core.parsing import parse_fasta_file
 
 
