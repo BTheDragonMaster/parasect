@@ -20,7 +20,7 @@ const NotFound = () => {
                 mb={2}
             >
                 <Typography variant='h4' component='div' fontWeight='bold' gutterBottom>
-                    404 Not Found
+                    The page you are looking for does not exist.
                 </Typography>
                 <Box
                     component='img'
@@ -30,7 +30,9 @@ const NotFound = () => {
                 />
             </Box>
             <Button component={Link} to='/' variant='contained' color='primary'>
-                Go back to the home page
+                <Typography sx={{ color: 'white.main' }}>
+                    Go back to the home page
+                </Typography>
             </Button>
         </Box>
     );

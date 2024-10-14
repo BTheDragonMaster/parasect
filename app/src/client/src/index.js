@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { AppBar, Toolbar, IconButton, Typography, Menu, MenuItem } from '@mui/material';
+import { MdMenu } from 'react-icons/md';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
 import UploadIcon from '@mui/icons-material/Upload';
@@ -17,7 +18,26 @@ import Submit from './pages/submit';
 import Results from './pages/results';
 import NotFound from './pages/not_found';
 
-const theme = createTheme({});
+const theme = createTheme({
+    palette: {
+        white: {
+            main: '#ffffff',
+        },
+        black: {
+            main: '#000000',
+        },
+        gray: {
+            main: '#f5f5f5',
+        },
+    },
+    typography: {
+        fontFamily: [
+            'Arial',
+            'Roboto',
+            'sans-serif',
+        ].join(','),
+    },
+});
 
 const CustomToolbar = () => {
     // handle navigation
@@ -58,16 +78,11 @@ const CustomToolbar = () => {
     };
 
     return (
-        <AppBar position='static'>
+        <AppBar position='static' sx={{ backgroundColor: 'primary.main' }}>
             <Toolbar>
                 {/* hamburger Menu Icon */}
-                <IconButton 
-                    edge='start' 
-                    color='inherit' 
-                    aria-label='menu' 
-                    onClick={handleMenuOpen}
-                >
-                    <MenuIcon />
+                <IconButton onClick={handleMenuOpen} sx={{ mr: 2}}>
+                    <MdMenu fill='white' />
                 </IconButton>
 
                 {/* menu that opens when hamburger icon is clicked */}
@@ -77,22 +92,27 @@ const CustomToolbar = () => {
                     onClose={handleMenuClose}
                 >
                     <MenuItem onClick={() => handleMenuItemClick('/')}>
-                        <HomeIcon style={{ marginRight: '10px' }} />
+                        <HomeIcon sx={{ marginRight: '10px' }} />
                         Home
                     </MenuItem>
                     <MenuItem onClick={() => handleMenuItemClick('/submit')}>
-                        <UploadIcon style={{ marginRight: '10px' }} />
+                        <UploadIcon sx={{ marginRight: '10px' }} />
                         Submit
                     </MenuItem>
                     <MenuItem onClick={() => handleExternalLinkClick('https://github.com/BTheDragonMaster/parasect/issues')}>
-                        <GitHubIcon style={{ marginRight: '10px' }} />
+                        <GitHubIcon sx={{ marginRight: '10px' }} />
                         Report an issue
                     </MenuItem>
                 </Menu>
 
                 {/* display name and version next to hamburger */}
-                <Typography variant='h6' style={{ marginLeft: '16px' }}>
-                    PARAS {version}
+                <Typography 
+                    variant='h6' 
+                    sx={{ marginLeft: '16px' }}
+                >
+                    <Typography sx={{ color: 'white.main' }}>
+                        PARAS {version}
+                    </Typography>
                 </Typography>
             </Toolbar>
         </AppBar>
