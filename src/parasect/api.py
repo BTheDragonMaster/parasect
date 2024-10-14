@@ -100,6 +100,7 @@ def run_paras(
     :return: Results.
     :rtype: List[Result]
     :raises Exception: If no feature vectors are found.
+    :raises KeyError: If smiles not found for substrate.
     """
     # write selected_input to file in temp folder
     file_name = "input.fasta" if selected_input_type == "fasta" else "input.gbk"
@@ -133,13 +134,11 @@ def run_paras(
     smiles_data = Tabular(path_in=SMILES_FILE, separator="\t")
     for name in domain_prediction_labels:
 
-        # get smiles, if available
+        # get smiles, should be available
         try:
             smiles = smiles_data.get_row_value(row_id=name, column_name="smiles")
         except KeyError:
-            # if smiles is not available, set to None to make sure that the order 
-            # and length of the prediction labels and smiles match
-            smiles = None
+            raise KeyError(f"smiles not found for substrate {name}")
 
         domain_prediction_smiles.append(smiles)
 

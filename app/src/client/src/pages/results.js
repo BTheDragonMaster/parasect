@@ -23,7 +23,7 @@ const Results = () => {
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    setResults(data);
+                    setResults(data['payload']['results']);
                     setIsLoading(false);
                     clearInterval(intervalId);
                 } else if (data.status === 'failure') {

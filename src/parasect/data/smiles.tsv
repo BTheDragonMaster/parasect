@@ -254,6 +254,7 @@ trans-2-crotylglycine	C/C=C/C[C@@H](C(=O)O)N
 tryptophan	C1=CC=C2C(=C1)C(=CN2)C[C@@H](C(=O)O)N
 tyrosine	C1=CC(=CC=C1C[C@@H](C(=O)O)N)O
 valine	CC(C)[C@@H](C(=O)O)N
+2,3-diaminobutyric acid	NC(C)[C@@H](C(=O)O)N
 2S,3S-diaminobutyric acid	C[C@@H]([C@@H](C(=O)O)N)N
 2S-amino-8-oxodecanoic acid	CCC(=O)CCCCC[C@@H](C(=O)O)N
 2S-aminodecanoic acid	CCCCCCCC[C@H](N)C(=O)O
@@ -270,6 +271,7 @@ valine	CC(C)[C@@H](C(=O)O)N
 4S,5-dihydroxy-2S-aminopentanoic acid	O[C@@H](C[C@@H](C(=O)O)N)CO
 6-chloro-4-hydroxyindole-3-carboxylic acid	c1(Cl)cc2c(c(c1)O)c(c[nH]2)C(=O)O
 6-hydroxy-tetrahydro-isoquinoline-3-carboxylic acid	C1C(NCC2=CC=CC=C21)C(=O)O
+N5-acetyl-hydroxyornithine	CC(=O)N(CCC[C@@H](C(=O)O)N)O
 D-aspartic acid branched	C([C@H](C(=O)O)N)C(=O)O
 D-glutamic acid branched	C(CC(=O)O)[C@H](C(=O)O)N
 D-lysergic acid	CN1C[C@@H](C=C2C1CC3=CNC4=CC=CC2=C34)C(=O)O
