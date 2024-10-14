@@ -40,7 +40,7 @@ const Home = () => {
                     color='primary'
                     size='large'
                     href='/submit'
-                    sx={{ marginBottom: 2 }}
+                    sx={{ marginBottom: 3 }}
                 >
                     <Typography sx={{ color: 'white.main' }}>
                         Start predicting

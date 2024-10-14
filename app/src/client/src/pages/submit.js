@@ -148,7 +148,7 @@ const Submit = () => {
                         value={inputMethod}
                         onChange={(e) => setInputMethod(e.target.value)}
                     >
-                        <FormControlLabel value='paste' control={<Radio />} label='Paste sequence' />
+                        <FormControlLabel value='paste' control={<Radio />} label='Paste data' />
                         <FormControlLabel value='upload' control={<Radio />} label='Upload file' />
                     </RadioGroup>
                 </FormControl>
@@ -238,18 +238,14 @@ const Submit = () => {
                         startIcon={<MdSettings size={20} style={{ fill: 'white' }}/>}
                         onClick={handleOpenSettingsModal}
                     >
-                        <Typography sx={{ color: 'white.main' }}>
-                            Settings
-                        </Typography>
+                        Settings
                     </Button>
                     <Button 
                         variant='contained' 
                         color='primary' 
                         onClick={handleRefresh}
                     >
-                        <Typography sx={{ color: 'white.main' }}>
-                            Refresh
-                        </Typography>
+                        Refresh
                     </Button>
                     <Button
                         variant='contained'
@@ -257,9 +253,7 @@ const Submit = () => {
                         onClick={handleSubmit}
                         disabled={isLoading || !selectedInput}
                     >
-                        <Typography sx={{ color: 'white.main' }}>
-                            {isLoading ? <CircularProgress size={24} /> : 'Submit'}
-                        </Typography>
+                        {isLoading ? <CircularProgress size={24} /> : 'Submit'}
                     </Button>
                 </Box>
             </Box>
@@ -337,9 +331,7 @@ const Submit = () => {
                             onClick={handleCloseSettingsModal}
                             sx={{ mt: 2 }}
                         >
-                            <Typography sx={{ color: 'white.main' }}>
-                                Close
-                            </Typography>
+                            Close
                         </Button>
                     </Box>
                 </Box>
