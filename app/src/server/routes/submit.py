@@ -11,12 +11,6 @@ import joblib
 from flask import Blueprint, Response, request
 
 from parasect.api import run_paras, run_parasect
-from parasect.core.constants import FINGERPRINTS_FILE, INCLUDED_SUBSTRATES_FILE
-from parasect.core.parsing import (
-    bitvector_from_smiles,
-    bitvectors_from_substrate_names,
-    parse_substrate_list,
-)
 
 from .app import app
 from .common import ResponseData, Status
@@ -107,43 +101,18 @@ def run_prediction(job_id: str, data: Dict[str, str]) -> None:
                 )
 
             elif selected_model == "parasect":
-
-                # parse included substrates files
-                # return error if failed
-                try:
-                    included_substrates = parse_substrate_list(INCLUDED_SUBSTRATES_FILE)
-                    assert included_substrates
-                except Exception as e:
-                    msg = f"Failed to parse included substrates: {str(e)}"
-                    raise Exception(msg)
-
-                # parse fingerprints file
-                # return error if failed
-                try:
-                    if use_only_uploaded_substrates:
-                        # only use user-provided SMILES strings
-                        substrates, fingerprints = [], []
-                    else:
-                        # load included fingerprints from file
-                        substrates, fingerprints = bitvectors_from_substrate_names(
-                            substrate_names=included_substrates,
-                            path_in_fingerprint_file=FINGERPRINTS_FILE,
-                        )
-                except Exception as e:
-                    msg = f"Failed to parse fingerprints: {str(e)}"
-                    raise Exception(msg)
-
                 # parse user-provided SMILES strings (if provided in frontend)
                 # return error if failed
+                custom_substrate_names = []
+                custom_substrate_smiles = []
+                
                 try:
                     if len(smiles_file_content) > 0:
-                        smiles_input = smiles_file_content.strip().split("\n")
-                        for smiles_string in smiles_input:
-                            fingerprint = bitvector_from_smiles(
-                                smiles=smiles_string, path_in_bitvector_file=FINGERPRINTS_FILE
-                            )
-                            fingerprints.append(fingerprint)
-                            substrates.append(smiles_string)
+                        lines = smiles_file_content.strip().split("\n")
+                        for line in lines:
+                            smiles_name, smiles = line.strip().split("\t")
+                            custom_substrate_names.append(smiles_name)
+                            custom_substrate_smiles.append(smiles)                     
                 except Exception as e:
                     msg = f"failed to parse SMILES strings: {str(e)}"
                     raise Exception(msg)
@@ -154,8 +123,9 @@ def run_prediction(job_id: str, data: Dict[str, str]) -> None:
                     selected_input_type=selected_input_type,
                     path_temp_dir=TEMP_DIR,
                     model=model,
-                    substrate_names=substrates,
-                    substrate_fingerprints=fingerprints,
+                    custom_substrate_names=custom_substrate_names,
+                    custom_substrate_smiles=custom_substrate_smiles,
+                    only_custom=use_only_uploaded_substrates,
                     use_structure_guided_alignment=use_structure_guided_alignment,
                 )
 
