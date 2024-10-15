@@ -3,6 +3,7 @@
 """Constants used throughout the PARASECT package."""
 
 import os
+import importlib.resources as pkg_resources
 from typing import Dict, List, Union
 
 import parasect.data
@@ -67,9 +68,6 @@ def _read_positions(path_in: str, start_position: int) -> List[int]:
     return positions
 
 
-DATA_DIR = os.path.dirname(parasect.data.__file__)
-
-
 def get_path(file_name: str) -> str:
     """Return the path to a file in the data directory.
 
@@ -78,7 +76,7 @@ def get_path(file_name: str) -> str:
     :return: Path to the file.
     :rtype: str
     """
-    return os.path.join(DATA_DIR, file_name)
+    return pkg_resources.path(parasect.data, file_name).resolve()
 
 
 ALIGNMENT_FILE = get_path("structure_alignment.fasta")
@@ -88,8 +86,8 @@ A_POSITION_FILE_HMM2 = get_path("stachelhaus_hmm2.txt")
 A_POSITION_FILE_34_HMM2 = get_path("active_site_hmm2.txt")
 SMILES_FILE = get_path("smiles.tsv")
 
-FINGERPRINTS_FILE = os.path.join(DATA_DIR, "fingerprints.txt")
-INCLUDED_SUBSTRATES_FILE = os.path.join(DATA_DIR, "included_substrates.txt")
+FINGERPRINTS_FILE = get_path("fingerprints.txt")
+INCLUDED_SUBSTRATES_FILE = get_path("included_substrates.txt")
 
 HMM2_POSITIONS_SIGNATURE = _read_positions(A_POSITION_FILE_HMM2, 0)
 HMM2_POSITIONS_EXTENDED_SIGNATURE = _read_positions(A_POSITION_FILE_34_HMM2, 0)
