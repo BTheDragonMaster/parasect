@@ -76,7 +76,7 @@ def get_path(file_name: str) -> str:
     :return: Path to the file.
     :rtype: str
     """
-    return pkg_resources.path(parasect.data, file_name).resolve()
+    return pkg_resources.files(parasect.data).joinpath(file_name)
 
 
 ALIGNMENT_FILE = get_path("structure_alignment.fasta")
