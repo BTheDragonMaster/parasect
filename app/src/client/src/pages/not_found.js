@@ -2,6 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Box, Typography, Button } from '@mui/material';
 
+/**
+ * Component to display a 404 error page.
+ * 
+ * @returns {React.ReactElement} - The component showing the 404 error page.
+ */
 const NotFound = () => {
     return (
         <Box

@@ -1,5 +1,10 @@
 import { ToastContainer } from 'react-toastify';
 
+/**
+ * toast component that displays toast notifications at the bottom-right corner of the screen.
+ * 
+ * @returns {React.ReactElement} - The component showing the toast notifications.
+ */
 const Toast = () =>  {
     return (
         <ToastContainer

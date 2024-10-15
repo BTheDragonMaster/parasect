@@ -7,20 +7,16 @@ from typing import Dict, List, Optional, Union
 
 from sklearn.ensemble import RandomForestClassifier
 
-from parasect.core.constants import (
-    FINGERPRINTS_FILE, 
-    INCLUDED_SUBSTRATES_FILE,
-    SMILES_FILE,
-)
-from parasect.core.tabular import Tabular
+from parasect.core.constants import FINGERPRINTS_FILE, INCLUDED_SUBSTRATES_FILE, SMILES_FILE
 from parasect.core.domain import AdenylationDomain
+from parasect.core.featurisation import get_domain_features, get_domains
+from parasect.core.helpers import clear_temp_dir
 from parasect.core.parsing import (
-    bitvector_from_smiles, 
+    bitvector_from_smiles,
     data_from_substrate_names,
     parse_substrate_list,
 )
-from parasect.core.featurisation import get_domain_features, get_domains
-from parasect.core.helpers import clear_temp_dir
+from parasect.core.tabular import Tabular
 
 
 class Result:
@@ -64,14 +60,10 @@ class Result:
             domain_signature=self._domain.signature,
             domain_extended_signature=self._domain.extended_signature,
             predictions=[
-                dict(
-                    substrate_name=sub_name, 
-                    substrate_smiles=sub_smiles, 
-                    probability=prob
-                )
+                dict(substrate_name=sub_name, substrate_smiles=sub_smiles, probability=prob)
                 for sub_name, sub_smiles, prob in zip(
-                    self._prediction_labels, 
-                    self._prediction_smiles, 
+                    self._prediction_labels,
+                    self._prediction_smiles,
                     self._predictions,
                 )
             ],
@@ -136,7 +128,7 @@ def run_paras(
 
         # get smiles, should be available
         try:
-            smiles = smiles_data.get_row_value(row_id=name, column_name="smiles")
+            smiles = str(smiles_data.get_row_value(row_id=name, column_name="smiles"))
         except KeyError:
             raise KeyError(f"smiles not found for substrate {name}")
 
@@ -178,10 +170,10 @@ def run_parasect(
     :type path_temp_dir: str
     :param model: Random forest classifier model.
     :type model: RandomForestClassifier
-    :param substrate_names: Substrate names.
-    :type substrate_names: List[str]
-    :param substrate_smiles: Substrate SMILES.
-    :type substrate_smiles: List[str]
+    :param custom_substrate_names: Custom substrate names.
+    :type custom_substrate_names: Optional[List[str]]
+    :param custom_substrate_smiles: Custom substrate SMILES.
+    :type custom_substrate_smiles: Optional[List[str]]
     :param only_custom: Only use custom substrates.
     :type only_custom: bool
     :param use_structure_guided_alignment: Use structure guided alignment.

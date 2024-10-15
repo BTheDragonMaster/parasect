@@ -4,13 +4,11 @@ import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { AppBar, Toolbar, IconButton, Typography, Menu, MenuItem } from '@mui/material';
 import { MdMenu } from 'react-icons/md';
-import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
 import UploadIcon from '@mui/icons-material/Upload';
 import GitHubIcon from '@mui/icons-material/GitHub';
 
-import 'react-widgets/scss/styles.scss';
-import './style/main.scss';
+import './style/main.css';
 
 import Toast from './components/Toast';
 import Home from './pages/home';
@@ -18,8 +16,19 @@ import Submit from './pages/submit';
 import Results from './pages/results';
 import NotFound from './pages/not_found';
 
+/**
+ * Custom theme for the app.
+ * 
+ * @returns {Theme} - The custom theme for the app.
+ */
 const theme = createTheme({
     palette: {
+        primary: {
+            main: '#3d7dca',
+        },
+        secondary: {
+            main: '#ffcb05',
+        },
         white: {
             main: '#ffffff',
         },
@@ -39,6 +48,11 @@ const theme = createTheme({
     },
 });
 
+/**
+ * Custom toolbar for the app.
+ * 
+ * @returns {React.ReactElement} - The custom toolbar for the app.
+ */
 const CustomToolbar = () => {
     // handle navigation
     const navigate = useNavigate();
@@ -119,6 +133,11 @@ const CustomToolbar = () => {
     );
 };
 
+/**
+ * App routes for the app.
+ * 
+ * @returns {React.ReactElement} - The app routes for the app.
+ */
 function AppRoutes () {
     return (
         <div>
@@ -144,6 +163,11 @@ function AppRoutes () {
     );
 };
 
+/**
+ * Main app component.
+ * 
+ * @returns {React.ReactElement} - The main app component.
+ */
 function App () {
     return (
         <ThemeProvider theme={theme}>

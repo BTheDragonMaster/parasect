@@ -1,6 +1,11 @@
 import React from 'react';
 import { Box, Typography, Button, Link } from '@mui/material';
 
+/**
+ * Home component that displays the home page content.
+ * 
+ * @returns {React.ReactElement} - The component showing the home page content.
+ */
 const Home = () => {
     return (
         <Box

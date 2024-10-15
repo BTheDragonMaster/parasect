@@ -9,9 +9,9 @@ from typing import Dict, List, Tuple
 
 from Bio import SeqIO
 
-from parasect.core.tabular import Tabular
 from parasect.core.chem import smiles_to_fingerprint
 from parasect.core.constants import FINGERPRINTS_FILE
+from parasect.core.tabular import Tabular
 
 
 def parse_substrate_list(path_in: str) -> List[str]:
@@ -181,9 +181,9 @@ def data_from_substrate_names(
         if name in data.rows:
             # get the SMILES string and fingerprint for the substrate
             row_values = data.get_row_values(name)
-            smiles = row_values[1]
+            smiles = str(row_values[1])
             fingerprint = [int(v) for v in row_values[2:]]
-            
+
             # add the substrate name, SMILES string, and fingerprint to the lists
             ordered_substrate_names.append(name)
             ordered_substrate_smiles.append(smiles)
@@ -194,8 +194,8 @@ def data_from_substrate_names(
             logger.info(msg)
 
     return (
-        ordered_substrate_names, 
-        ordered_substrate_smiles, 
+        ordered_substrate_names,
+        ordered_substrate_smiles,
         ordered_fingerprints,
     )
 

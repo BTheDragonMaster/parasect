@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
-import { Box, Button, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Switch, CircularProgress, Typography, Input, Checkbox, Modal, IconButton } from '@mui/material';
+import { Box, Button, Divider, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, CircularProgress, Typography, Input } from '@mui/material';
 import { MdSettings } from 'react-icons/md';
+
+import SettingsModal from '../components/SettingsModal';
 
 const exampleFastaInput = '>dptA\nMDMQSQRLGVTAAQQSVWLAGQLADDHRLYHCAAYLSLTGSIDPRTLGTAVRRTLDETEALRTRFVPQDGELLQILEPGAGQLLLEADFSGDPDPERAAHDWMHAALAAPVRLDRAGTATHALLTLGPSRHLLYFGYHHIALDGYGALLHLRRLAHVYTALSNGDDPGPCPFGPLAGVLTEEAAYRDSDNHRRDGEFWTRSLAGADEAPGLSEREAGALAVPLRRTVELSGERTEKLAASAAATGARWSSLLVAATAAFVRRHAAADDTVIGLPVTARLTGPALRTPCMLANDVPLRLDARLDAPFAALLADTTRAVGTLARHQRFRGEELHRNLGGVGRTAGLARVTVNVLAYVDNIRFGDCRAVVHELSSGPVRDFHINSYGTPGTPDGVQLVFSGNPALYTATDLADHQERFLRFLDAVTADPDLPTGRHRLLSPGTRARLLDDSRGTERPVPRATLPELFAEQARRTPDAPAVQHDGTVLTYRDLHRSVERAAGRLAGLGLRTEDVVALALPKSAESVAILLGIQRAGAAYVPLDPTHPAERLARVLDDTRPRYLVTTGHIDGLSHPTPQLAAADLLREGGPEPAPGRPAPGNAAYIIQTSGSTGRPKGVVVTHEGLATLAADQIRRYRTGPDARVLQFISPGFDVFVSELSMTLLSGGCLVIPPDGLTGRHLADFLAAEAVTTTSLTPGALATMPATDLPHLRTLIVGGEVCPPEIFDQWGRGRDIVNAYGPTETTVEATAWHRDGATHGPVPLGRPTLNRRGYVLDPALEPVPDGTTGELYLAGEGLARGYVAAPGPTAERFVADPFGPPGSRMYRTGDLVRRRSGGMLEFVGRADGQVKLRGFRIELGEVQAALTALPGVRQAGVLIREDRPGDPRLVGYIVPAPGAEPDAGELRAALARTLPPHMVPWALVPLPALPLTSNGKLDRAALPVPAARAGGSGQRPVTPQEKTLCALFADVLGVTEVATDDVFFELGGHSLNGTRLLARIRTEFGTDLTLRDLFAFPTVAGLLPLLDDNGRQHTTPPLPPRPERLPLSHAQQRLWFLDQVEGPSPAYNIPTAVRLEGPLDIPALAVALQDVTNRHEPLRTLLAEDSEGPHQVILPPEAARPELTHSTVAPGDLAAALAEAARRPFDLAGEIPLKAHLFGCGPDDHTLLLLVHHTAGDGASVEVLVRDLAHAYGARRAGDAPHFEPLPLQYADHTLRRRHLLDDPSDSTQLDHWRDALAGLPEQLELPTDHTRPAVPTRRGEAIAFTVPEHTHHTLRAMAQAHGVTVFMVMQAALAALLSRHGAGHDIPLGTPVAGRSDDGTEDLVGFFVNTLVLRNDVSGDPTFAELVSRVRAANLDAYAYQDVPFERLVDVLKPERSLSWHPLFQIMIAYNGPATNDTADGSRFAGLTSRVHAVHTGMSKFDLSFFLTEHADGLGIDGALEFSTDLFTRITAERLVQRYLTVLEQAAGAPDRPISSYELLGDDERALLAQWNDTAHPTPPGTVLDLLESRAARTPDRPAVVENDHVLTYADLHTRANRLARHLITAHGVGPERLVAVALPRSAELLVALLAVLKTGAAYVPLDLTHPAERTAVVLDDCRPAVILTDAGAARELPRRDIPQLRLDEPEVHAAIAEQPGGPVTDRDRTCVTPVSGEHVAYVIYTSGSTGRPKGVAVEHRSLADFVRYSVTAYPGAFDVTLLHSPVTFDLTVTSLFPPLVVGGAIHVADLTEACPPSLAAAGGPTFVKATPSHLPLLTHEATWAASAKVLLVGGEQLLGRELDKWRAGSPEAVVFNDYGPTEATVNCVDFRIDPGQPIGAGPVAIGRPLRNTRVFVLDGGLRAVPVGVVGELHVAGEGLARGYLGQPGLTAERFVACPFGDAGERMYRTGDLVRWRADGMLEFVGRVDDQVKVRGFRIELGEVEAAVAACPGVDRSVVVVREDRPGDRRLVAYVTAAGDEAEGLAPLIVETAAGRLPGYMVPSAVVVLDEIPLTPNGKVDRAALPAPRVAPAAEFRVTGSPREEALCALFAEVLGVERVGVDDGFFDLGGDSILSIQLVARARRAGLEVSVRDVFEHRTVRALAGVVRESGGVAAAVVDSGVGAVERWPVVEWLAERGGGGLGGAVRAFNQSVVVATPAGITWDELRTVLDAVRERHDAWRLRVVDSGDGAWSLRVDAPAPGGEPDWITRHGMASADLEEQVNAVRAAAVEARSRLDPLTGRMVRAVWLDRGPDRRGVLVLVAHHLVVDGVSWRIVLGDLGEAWTQARAGGHVRLDTVGTSLRGWAAALAEQGRHGARATEANLWAQMVHGSDPLVGPRAVDPSVDVFGVVESVGSRASVGVSRALLTEVPSVLGVGVQEVLLAAFGLAVTRWRGRGGSVVVDVEGHGRNEDAVPGADLSRTVGWFTSIYPVRLPLEPAAWDEIRAGGPAVGRTVREIKECLRTLPDQGLGYGILRYLDPENGPALAQHPTPHFGFNYLGRVSVSADAASLDEGDAHADGLGGLVGGRAAADSDEEQWADWVPVSGPFAVGAGQDPVLPVAHAVEFNAITLDTPDGPRLSVTWSWPTTLLSESRIRELARFWDEALEGLVAHARRPDAGGLTPSDLPLVALDHAELEALQADVTGGVHDILPVSPLQEGLLFHSSFAADGVDVYVGQLTFDLTGPVDADHLHAVVESLVTRHDVLRTGYRQAQSGEWIAVVARQVHTPWQYIHTLDTDADTLTNDERWRPFDMTQGPLARFTLARINDTHFRFIVTYHHVILDGWSVAVLIRELFTTYRDTALGRRPEVPYSPPRRDFMAWLAERDQTAAGQAWRSALAGLAEPTVLALGTEGSGVIPEVLEEEISEELTSELVAWARGRGVTVASVVQAAWALVLGRLVGRDDVVFGLTVSGRPAEVAGVEDMVGLFVNTIPLRARMDPAESLGAFVERLQREQTELLEHQHVRLAEVQRWAGHKELFDVGMVFENYPMDSLLQDSLFHGSGLQIDGIQGADATHFALNLAVVPLPAMRFRLGYRPDVFDAGRVRELWGWIVRALECVVCERDVPVSGVDVLGAGERETLLGWGAGAEPGVRALPGAGAGAGAGLVGLFEERVRTDPDAVAVRGAGVEWSYAELNARANAVARWLIGRGVGPERGVGVVMDRGPDVVAMLLAVAKSGGFYLPVDPQWPTERIDWVLADAGIDLAVVGENLAAAVEAVRDCEVVDYAQIARETRLNEQAATDAGDVTDGERVSALLSGHPLYVIYTSGSTGLPKGVVVTHASVGAYLRRGRNAYRGAADGLGHVHSSLAFDLTVTVLFTPLVSGGCVTLGDLDDTANGLGATFLKATPSHLPLLGQLDRVLAPDATLLLGGEALTAGALHHWRTHHPHTTVINAYGPTELTVNCAEYRIPPGHCLPDGPVPIGRPFTGHHLFVLDPALRLTPPDTIGELYVAGDGLARGYLGRPDLTAERFVACPFRSPGERMYRTGDLARWRSDGTLEFIGRADDQVKIRGFRIELGEVEAAVAAHPHVARAIAVVREDRPGDQRLVAYVTGSDPSGLSSAVTDTVAGRLPAYMVPSAVVVLDQIPLTPNGKVDRAALPAPGTASGTTSRAPGTAREEILCTLFADVLGLDQVGVDEDFFDLGGHSLLATRLTSRIRSALGIDLGVRALFKAPTVGRLDQLLQQQTTSLRAPLVARERTGCEPLSFAQQRLWFLHQLEGPNAAYNIPMALRLTGRLDLTALEAALTDVIARHESLRTVIAQDDSGGVWQNILPTDDTRTHLTLDTMPVDAHTLQNRVDEAARHPFDLTTEIPLRATVFRVTDDEHVLLLVLHHIAGDGWSMAPLAHDLSAAYTVRLEHHAPQLPALAVQYADYAAWQRDVLGTENNTSSQLSTQLDYWYSKLEGLPAELTLPTSRVRPAVASHACDRVEFTVPHDVHQGLTALARTQGATVFMVVQAALAALLSRLGAGTDIPIGTPIAGRTDQAMENLIGLFVNTLVLRTDVSGDPTFAELLARVRTTALDAYAHQDIPFERLVEAINPERSLTRHPLFQVMLAFNNTDRRSALDALDAMPGLHARPADVLAVTSPYDLAFSFVETPGSTEMPGILDYATDLFDRSTAEAMTERLVRLLAEIARRPELSVGDIGILSADEVKALSPEAPPAAEELHTSTLPELFEEQVAARGHAVAVVCEGEELSYKELNARANRLARVLMERGAGPERFVGVALPRGLDLIVALLAVTKTGAAYVPLDPEYPTDRLAYMVTDANPTAVVTSTDVHIPLIAPRIELDDEAIRTELAAAPDTAPCVGSGPAHPAYVIYTSGSTGRPKGVVISHANVVRLFTACSDSFDFGPDHVWTLFHSYAFDFSVWEIWGALLHGGRLVVVPFEVTRSPAEFLALLAEQQVTLLSQTPSAFHQLTEAARQEPARCAGLALRHVVFGGEALDPSRLRDWFDLPLGSRPTLVNMYGITETTVHVTVLPLEDRATSLSGSPIGRPLADLQVYVLDERLRPVPPGTVGEMYVAGAGLARGYLGRPALTAERFVADPNSRSGGRLYRTGDLAKVRPDGGLEYVGRGDRQVKIRGFRIELGEIEAALVTHAGVVQAVVLVRDEQTDDQRLVAHVVPALPHRAPTLAELHEHLAATLPAYMVPSAYRTLDELPLTANGKLDRAALAGQWQGGTRTRRLPRTPQEEILCELFADVLRLPAAGADDDFFALGGHSLLATRLLSAVRGTLGVELGIRDLFAAPTPAGLATVLAASGTALPPVTRIDRRPERLPLSFAQRRLWFLSKLEGPSATYNIPVAVRLTGALDVPALRAALGDVTARHESLRTVFPDDGGEPRQLVLPHAEPPFLTHEVTVGEVAEQAASATGYAFDITSDTPLRATLLRVSPEEHVLVVVIHHIAGDGWSMGPLVRDLVTAYRARTRGDAPEYTPLPVQYADYALWQHAVAGDEDAPDGRTARRLGYWREMLAGLPEEHTLPADRPRPVRSSHRGGRVRFELPAGVHRSLLAVARDRRATLFMVVQAALAGLLSRLGAGDDIPIGTPVAGRGDEALDDVVGFFVNTLVLRTNLAGDPSFADLVDRVRTADLDAFAHQDVPFERLVEALAPRRSLARHPLFQIWYTLTNADQDITGQALNALPGLTGDEYPLGASAAKFDLSFTFTEHRTPDGDAAGLSVLLDYSSDLYDHGTAAALGHRLTGFFAALAADPTAPLGTVPLLTDDERDRILGDWGSGTHTPLPPRSVAEQIVRRAALDPDAVAVITAEEELSYRELERLSGETARLLADRGIGRESLVAVALPRTAGLVTTLLGVLRTGAAYLPLDTGYPAERLAHVLSDARPDLVLTHAGLAGRLPAGLAPTVLVDEPQPPAAAAPAVPTSPSGDHLAYVIHTSGSTGRPKGVAIAESSLRAFLADAVRRHDLTPHDRLLAVTTVGFDIAGLELFAPLLAGAAIVLADEDAVRDPASITSLCARHHVTVVQATPSWWRAMLDGAPADAAARLEHVRILVGGEPLPADLARVLTATGAAVTNVYGPTEATIWATAAPLTAGDDRTPGIGTPLDNWRVHILDAALGPVPPGVPGEIHIAGSGLARGYLRRPDLTAERFVANPFAPGERMYRTGDLGRFRPDGTLEHLGRVDDQVKVRGFRIELGDVEAALARHPDVGRAAAAVRPDHRGQGRLVAYVVPRPGTRGPDAGELRETVRELLPDYMVPSAQVTLTTLPHTPNGKLDRAALPAPVFGTPAGRAPATREEKILAGLFADILGLPDVGADSGFFDLGGDSVLSIQLVSRARREGLHITVRDVFEHGTVGALAAAALPAPADDADDTVPGTDVLPSISDDEFEEFELELGLEGEEEQW';
 
-
+/**
+ * Component to submit data to the server.
+ * 
+ * @param {Object} props - The props of the component.
+ * @param {string} props.imageSrc - The path to the image.
+ * @param {string} props.label - The label for the radio button.
+ * @returns {React.ReactElement} - The submit component.
+ */
 const RadioLabel = ({ imageSrc, label }) => (
     <Box display="flex" alignItems="center">
         <Box
@@ -19,6 +28,11 @@ const RadioLabel = ({ imageSrc, label }) => (
 );
 
 
+/**
+ * Component to submit data to the server.
+ * 
+ * @returns {React.ReactElement} - The submit component.
+ */
 const Submit = () => {
     // page state
     const [isLoading, setIsLoading] = useState(false);
@@ -58,7 +72,7 @@ const Submit = () => {
         window.location.reload();
     };
 
-    // Handle file upload
+    // handle file upload
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -69,19 +83,6 @@ const Submit = () => {
             };
             reader.readAsText(file);
         };
-    };
-
-    // handle SMILES file upload for PARASECT
-    const handleSmilesFileUpload = async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                const fileContent = event.target.result;
-                setSmilesFileContent(fileContent); // set the file content into smilesFileContent
-            };
-            reader.readAsText(file);
-        }
     };
 
     // handle form submission
@@ -133,15 +134,15 @@ const Submit = () => {
                 flexDirection='column' 
                 alignItems='left' 
                 padding={4} 
-                maxWidth={800} 
                 margin='auto'
             >
                 <Typography variant='h4' gutterBottom>
                     Submit your data
                 </Typography>
-
+                <Divider />
+                
                 {/* input method selection */}
-                <FormControl component='fieldset' margin='normal'>
+                <FormControl component='fieldset' sx={{ mt: 3 }}>
                     <FormLabel component='legend'>Input method</FormLabel>
                     <RadioGroup
                         row
@@ -165,72 +166,85 @@ const Submit = () => {
                         <FormControlLabel value='gbk' control={<Radio />} label='GBK' />
                     </RadioGroup>
                 </FormControl>
-
+                
                 {/* text field or file upload */}
-                {inputMethod === 'paste' ? (
-                    <TextField
-                        label='Input data'
-                        multiline
-                        rows={8}
-                        fullWidth
-                        variant='outlined'
-                        value={selectedInput}
-                        onChange={(e) => setSelectedInput(e.target.value)}
-                        margin='normal'
-                        placeholder='Paste your sequence here'
-                    />
-                ) : (
-                    <Box width='100%' sx={{ mt: 3, mb: 3 }}>
-                        <Typography variant='body1' gutterBottom>
-                            Upload your {selectedInputType.toUpperCase()} file:
-                        </Typography>
-                        <Input
-                            type='file'
-                            inputProps={{ accept: '.fasta,.fa,.gbk' }} // accept FASTA or GBK files
-                            onChange={handleFileUpload}
+                <Box width={800} margin={3} >
+                    {inputMethod === 'paste' ? (
+                        <TextField
+                            label='Input adenylation domain data (FASTA or GBK)'
+                            multiline
+                            rows={8}
+                            fullWidth
+                            variant='outlined'
+                            value={selectedInput}
+                            onChange={(e) => setSelectedInput(e.target.value)}
+                            margin='normal'
+                            placeholder='Paste your sequence here'
                         />
-                    </Box>
-                )}
+                    ) : (
+                        <Box width='100%' sx={{ mt: 3, mb: 3 }}>
+                            <Typography variant='body1' gutterBottom>
+                                Upload your {selectedInputType.toUpperCase()} file:
+                            </Typography>
+                            <Input
+                                type='file'
+                                inputProps={{ accept: '.fasta,.fa,.gbk' }} // accept FASTA or GBK files
+                                onChange={handleFileUpload}
+                            />
+                        </Box>
+                    )}
 
-                {/* load example button */}
-                {inputMethod === 'paste' && (
-                    <Button v
-                        ariant='text' 
-                        color='primary' 
-                        onClick={handleLoadExample}
-                        disabled={selectedInputType === 'gbk'}
-                    >
-                        Load example input
-                    </Button>
-                )}
+                    {/* load example button */}
+                    {inputMethod === 'paste' && (
+                        <Button
+                            ariant='text' 
+                            color='primary' 
+                            onClick={handleLoadExample}
+                            disabled={selectedInputType === 'gbk'}
+                        >
+                            Load example input
+                        </Button>
+                    )}
+                </Box>
 
                 {/* model selection */}
                 <FormControl component='fieldset' margin='normal'>
                     <FormLabel component='legend'>Select model</FormLabel>
                     <RadioGroup
-                        row
                         value={selectedModel}
                         onChange={(e) => setSelectedModel(e.target.value)}
                     >
                         <FormControlLabel 
                             value='parasAllSubstrates' 
                             control={<Radio />} 
-                            label={<RadioLabel imageSrc={'/paras.png'} label={'PARAS (all substrates)'} />} 
+                            label={
+                                <RadioLabel 
+                                    imageSrc={'/paras.png'} 
+                                    label={'PARAS (all substrates): predict adenylation domain substrate specificty for a pre-defined list of 223 substrates'}
+                                />} 
                         />
                         <FormControlLabel 
                             value='parasCommonSubstrates' 
                             control={<Radio />} 
-                            label={<RadioLabel imageSrc={'/paras.png'} label={'PARAS (common substrates)'} />}
+                            label={
+                                <RadioLabel 
+                                    imageSrc={'/paras.png'} 
+                                    label={'PARAS (common substrates): predict adenylation domain substrate specificty for a pre-defined list of 34 common substrates'}
+                                />}
                         />
                         <FormControlLabel 
                             value='parasect' 
                             control={<Radio />} 
-                            label={<RadioLabel imageSrc={'/parasect.png'} label={'PARASECT'} />}
+                            label={
+                                <RadioLabel 
+                                    imageSrc={'/parasect.png'} 
+                                    label={'PARASECT: predict if a list of pre-defined and/or user-supplied substrates interact with the adenylation domains'}
+                                />}
                         />
                     </RadioGroup>
                 </FormControl>
 
-                {/* Submit and Refresh Buttons */}
+                {/* settings, submit, and refresh buttons */}
                 <Box mt={4} display='flex' justifyContent='left' width='100%' gap={2}>
                     <Button
                         variant='contained'
@@ -258,84 +272,18 @@ const Submit = () => {
                 </Box>
             </Box>
 
-            {/* Settings Modal */}
-            <Modal open={openSettingsModal} onClose={handleCloseSettingsModal}>
-                <Box
-                    width={600}
-                    bgcolor='white.main'
-                    p={4}
-                    mx='auto'
-                    my={10}
-                    borderRadius={4}
-                    boxShadow={3}
-                >
-                    <Typography variant='h6' gutterBottom sx={{ mb: 2 }}>
-                        Settings
-                    </Typography>
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'left',
-                            gap: 3
-                        }}
-                    >
-                        {/* structure-guided alignment switch */}
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    checked={useStructureGuidedAlignment}
-                                    onChange={(e) => setUseStructureGuidedAlignment(e.target.checked)}
-                                />
-                            }
-                            label='Use structure-guided profile alignment'
-                        />
-
-                        {/* SMILES file upload for PARASECT */}
-                        <Box width='100%' margin='normal'>
-                            <Typography 
-                                variant='body1' 
-                                gutterBottom
-                                style={{
-                                    color: selectedModel !== 'parasect' ? 'rgba(0, 0, 0, 0.26)' : 'rgba(0, 0, 0, 0.87)'
-                                }}
-                            >
-                                Upload custom list of substrates (CSV format as 'name,SMILES' per line):
-                            </Typography>
-                            <Input
-                                type='file'
-                                inputProps={{ accept: '.tsv' }}
-                                onChange={handleSmilesFileUpload}
-                                disabled={selectedModel !== 'parasect'}
-                            />
-                        </Box>
-
-                        {/* option to use only uploaded substrates */}
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={useOnlyUploadedSubstrates}
-                                    onChange={(e) => setUseOnlyUploadedSubstrates(e.target.checked)}
-                                    disabled={!smilesFileContent}
-                                />
-                            }
-                            label='Use only uploaded custom substrates'
-                        />
-                    </Box>
-
-                    <Box mt={2}>
-                        <Button 
-                            variant='contained' 
-                            color='primary'
-                            onClick={handleCloseSettingsModal}
-                            sx={{ mt: 2 }}
-                        >
-                            Close
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
+            {/* settings modal */}
+            <SettingsModal
+                openSettingsModal={openSettingsModal}
+                handleCloseSettingsModal={handleCloseSettingsModal}
+                selectedModel={selectedModel}
+                useStructureGuidedAlignment={useStructureGuidedAlignment}
+                setUseStructureGuidedAlignment={setUseStructureGuidedAlignment}
+                smilesFileContent={smilesFileContent}
+                setSmilesFileContent={setSmilesFileContent}
+                useOnlyUploadedSubstrates={useOnlyUploadedSubstrates}
+                setUseOnlyUploadedSubstrates={setUseOnlyUploadedSubstrates}
+            />
         </>
     );
 };

@@ -9,7 +9,6 @@ from routes.submit import blueprint_submit_raw
 
 from parasect.version import get_version
 
-
 app.register_blueprint(blueprint_retrieve)
 app.register_blueprint(blueprint_submit_raw)
 

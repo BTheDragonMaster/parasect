@@ -3,8 +3,8 @@
 """Routes for making adenylation domain subtrate specificity predictions."""
 
 import os
-import uuid
 import threading
+import uuid
 from typing import Dict
 
 import joblib
@@ -105,14 +105,14 @@ def run_prediction(job_id: str, data: Dict[str, str]) -> None:
                 # return error if failed
                 custom_substrate_names = []
                 custom_substrate_smiles = []
-                
+
                 try:
                     if len(smiles_file_content) > 0:
                         lines = smiles_file_content.strip().split("\n")
                         for line in lines:
                             smiles_name, smiles = line.strip().split("\t")
                             custom_substrate_names.append(smiles_name)
-                            custom_substrate_smiles.append(smiles)                     
+                            custom_substrate_smiles.append(smiles)
                 except Exception as e:
                     msg = f"failed to parse SMILES strings: {str(e)}"
                     raise Exception(msg)
@@ -134,14 +134,14 @@ def run_prediction(job_id: str, data: Dict[str, str]) -> None:
         except Exception as e:
             msg = f"failed to make predictions: {str(e)}"
             raise Exception(msg)
-        
+
         # store results
         app.config["JOB_RESULTS"][job_id] = {
             "status": str(Status.Success).lower(),
             "message": "successfully ran predictions",
             "results": [r.to_json() for r in results],
         }
-        
+
     except Exception as e:
         app.config["JOB_RESULTS"][job_id] = {
             "status": str(Status.Failure).lower(),
@@ -159,7 +159,7 @@ def submit_raw() -> Response:
     """
     data = request.get_json()
 
-    # generate a uuid 
+    # generate a uuid
     job_id = str(uuid.uuid4())
 
     # initialize job with status as pending

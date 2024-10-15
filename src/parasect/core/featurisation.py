@@ -8,8 +8,8 @@ from typing import Dict, List, Tuple
 
 from Bio.SearchIO._model.hsp import HSP
 
-from parasect.core.domain import AdenylationDomain
 from parasect.core.constants import HMM2_FILE, PROPERTIES
+from parasect.core.domain import AdenylationDomain
 from parasect.core.hmmer import parse_hmm2_results, rename_sequences, reverse_renaming, run_hmmpfam2
 from parasect.core.parsing import parse_fasta_file, parse_genbank_file
 
