@@ -105,49 +105,94 @@ const ResultTile = ({ result }) => {
                 />
             </Box>
             
-            { /* copy SMILES to clipboard */}
-            <Box
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: '1px'
-                }}
-            >
-                <Button
-                    variant='contained'
-                    color='primary'
-                    onClick={() => {
-                        navigator.clipboard.writeText(selectedPrediction['substrate_smiles']);
-                        toast.success('Copied SMILES to clipboard!');
-                    }}
-                    sx={{ 
-                        flexGrow: 1, 
-                        width: '50%', 
-                        borderRadius: '0',
-                        borderBottomLeftRadius: '10px',
+            { /* copy domain information to clipboard */}
+            <Box>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: '1px'
                     }}
                 >
-                    <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
-                    SMILES
-                </Button>
-                <Button
-                    variant='contained'
-                    color='primary'
-                    onClick={() => {
-                        navigator.clipboard.writeText(result['domain_signature']);
-                        toast.success('Copied signature to clipboard!');
-                    }}
-                    sx={{ 
-                        flexGrow: 1, 
-                        width: '50%',
-                        borderRadius: '0',
-                        borderBottomRightRadius: '10px',
+                    <Button
+                        variant='contained'
+                        color='primary'
+                        onClick={() => {
+                            navigator.clipboard.writeText(selectedPrediction['substrate_smiles']);
+                            toast.success('Copied the substrate SMILES to clipboard!');
+                        }}
+                        sx={{ 
+                            flexGrow: 1, 
+                            width: '50%', 
+                            borderRadius: '0',
+                            borderBottom: '1px solid',
+                        }}
+                    >
+                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
+                        SMILES
+                    </Button>
+                    <Button
+                        variant='contained'
+                        color='primary'
+                        onClick={() => {
+                            navigator.clipboard.writeText(result['domain_sequence']);
+                            toast.success('Copied the domain amino acid sequence to clipboard!');
+                        }}
+                        sx={{ 
+                            flexGrow: 1, 
+                            width: '50%',
+                            borderRadius: '0',
+                            borderBottom: '1px solid',
+                        }}
+                    >
+                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
+                        Sequence
+                    </Button>
+                </Box>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: '1px'
                     }}
                 >
-                    <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
-                    Signature
-                </Button>
+                    <Button
+                        variant='contained'
+                        color='primary'
+                        onClick={() => {
+                            navigator.clipboard.writeText(result['domain_signature']);
+                            toast.success('Copied the domain signature to clipboard!');
+                        }}
+                        sx={{ 
+                            flexGrow: 1, 
+                            width: '50%', 
+                            borderRadius: '0',
+                            borderBottomLeftRadius: '10px',
+                        }}
+                    >
+                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
+                        Signature
+                    </Button>
+                    <Button
+                        variant='contained'
+                        color='primary'
+                        onClick={() => {
+                            navigator.clipboard.writeText(result['domain_extended_signature']);
+                            toast.success('Copied the domain extended signature to clipboard!');
+                        }}
+                        sx={{ 
+                            flexGrow: 1, 
+                            width: '50%',
+                            borderRadius: '0',
+                            borderBottomRightRadius: '10px',
+                        }}
+                    >
+                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
+                        Ext. signature
+                    </Button>
+                </Box>
             </Box>
 
         </Box>
