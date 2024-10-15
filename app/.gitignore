@@ -1,1 +1,5 @@
 .DS_Store
+
+# any file inside the src/server/temp directory, apart from .gitkeep
+src/server/temp/*
+!src/server/temp/.gitkeep

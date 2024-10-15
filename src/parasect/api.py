@@ -10,7 +10,6 @@ from sklearn.ensemble import RandomForestClassifier
 from parasect.core.constants import FINGERPRINTS_FILE, INCLUDED_SUBSTRATES_FILE, SMILES_FILE
 from parasect.core.domain import AdenylationDomain
 from parasect.core.featurisation import get_domain_features, get_domains
-from parasect.core.helpers import clear_temp_dir
 from parasect.core.parsing import (
     bitvector_from_smiles,
     data_from_substrate_names,
@@ -136,7 +135,6 @@ def run_paras(
 
     # clean up
     model = None
-    clear_temp_dir(path_temp_dir, keep=[".gitkeep"])
 
     # parse and return results
     return [
@@ -266,7 +264,6 @@ def run_parasect(
 
     # clean up
     model = None
-    clear_temp_dir(path_temp_dir, keep=[".gitkeep"])
 
     # parse and return results
     return results
