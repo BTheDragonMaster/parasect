@@ -296,10 +296,8 @@ class AdenylationDomain:
         for position in aligned_positions_signature:
             signature.append(aligned_domain[position])
         self.signature = "".join(signature)
-        print(self.signature)
 
         extended_signature = []
         for position in aligned_positions_extended_signature:
             extended_signature.append(aligned_domain[position])
         self.extended_signature = "".join(extended_signature)
-        print(self.extended_signature)
