@@ -133,9 +133,6 @@ def run_paras(
 
         domain_prediction_smiles.append(smiles)
 
-    # clean up
-    model = None
-
     # parse and return results
     return [
         Result(
@@ -261,9 +258,6 @@ def run_parasect(
         )
 
         results.append(result)
-
-    # clean up
-    model = None
 
     # parse and return results
     return results

@@ -8,6 +8,12 @@ services:
     image: paras-server
     restart: always
     container_name: paras-server
+    volumes:
+      - ./models:/app/models
+    environment:
+      - MODEL_DIR=/app/models
+    networks:
+      - paras-network
 
   paras-client:
     build: 
@@ -18,6 +24,8 @@ services:
       - "4010:80"
     restart: always
     container_name: paras-client
+    networks:
+      - paras-network
 
 networks:
   paras-network:

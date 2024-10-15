@@ -4,6 +4,9 @@
 
 ### Server 
 
+First make sure all three PARAS and PARASECT models are present in the `app/models` folder.
+You can download the models from [Zenodo](https://zenodo.org/records/13165500).
+
 Create a local environment with conda and install server side dependencies with pip from `src/server/requirements.txt`:
 
 ```bash

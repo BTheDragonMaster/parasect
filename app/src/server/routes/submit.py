@@ -129,6 +129,9 @@ def run_prediction(job_id: str, data: Dict[str, str]) -> None:
                     use_structure_guided_alignment=use_structure_guided_alignment,
                 )
 
+                # clean up, remove loaded model
+                del model
+
             else:
                 raise Exception(f"invalid model {selected_model}")
         except Exception as e:
