@@ -76,7 +76,7 @@ def run_paras(
     model: RandomForestClassifier,
     use_structure_guided_alignment: bool = False,
 ) -> List[Result]:
-    """Predict adenylation domain substrate specificity with PARAS.
+    """Predict adenylation domain substrate specificity with PARAS on raw input.
 
     :param selected_input: Selected input.
     :type selected_input: str
@@ -155,7 +155,7 @@ def run_parasect(
     only_custom: bool = False,
     use_structure_guided_alignment: bool = False,
 ) -> List[Result]:
-    """Run the PARASECT model.
+    """Predict adenylation domain substrate specificity with PARASECT on raw input.
 
     :param selected_input: Selected input source.
     :type selected_input: str
@@ -261,3 +261,55 @@ def run_parasect(
 
     # parse and return results
     return results
+
+
+def run_paras_for_signatures(
+    domains: List[AdenylationDomain], model: RandomForestClassifier
+) -> List[Result]:
+    """Predict adenylation domain substrate specificity with PARAS on domains.
+
+    :param domains: List of adenylation domains.
+    :type domains: List[AdenylationDomain]
+    :param model: Random forest classifier model.
+    :type model: RandomForestClassifier
+    :return: Results.
+    :rtype: List[Result]
+    :raises ValueError: If no adenylation domains are supplied.
+    :raises KeyError: If smiles not found for substrate.
+    """
+    # check if list of domains is empty
+    if not domains:
+        raise ValueError("no adenylation domains supplied")
+
+    # turn signatures into features
+    domain_features = [get_domain_features(s.extended_signature) for s in domains]
+
+    # run model and retrieve class predictions
+    domain_predictions = model.predict_proba(domain_features)
+
+    # get prediction classes
+    domain_prediction_labels = model.classes_.tolist()
+
+    # find smiles for the labels
+    domain_prediction_smiles = []
+    smiles_data = Tabular(path_in=SMILES_FILE, separator="\t")
+    for name in domain_prediction_labels:
+
+        # get smiles, should be available
+        try:
+            smiles = str(smiles_data.get_row_value(row_id=name, column_name="smiles"))
+        except KeyError:
+            raise KeyError(f"smiles not found for substrate {name}")
+
+        domain_prediction_smiles.append(smiles)
+
+    # parse and return results
+    return [
+        Result(
+            domain=domain,
+            predictions=domain_predictions[domain_idx].tolist(),
+            prediction_labels=domain_prediction_labels,
+            prediction_smiles=domain_prediction_smiles,
+        )
+        for domain_idx, domain in enumerate(domains)
+    ]

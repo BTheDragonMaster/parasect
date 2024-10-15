@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Routes for making adenylation domain subtrate specificity predictions."""
+"""Routes for making adenylation domain subtrate specificity predictions on raw input."""
 
 import os
 import threading
@@ -19,8 +19,8 @@ from .constants import MODEL_DIR, TEMP_DIR
 blueprint_submit_raw = Blueprint("submit_raw", __name__)
 
 
-def run_prediction(job_id: str, data: Dict[str, str]) -> None:
-    """Run prediction with PARAS or PARASECT.
+def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
+    """Run prediction with PARAS or PARASECT on raw data.
 
     :param job_id: Job ID.
     :type job_id: str
@@ -129,14 +129,15 @@ def run_prediction(job_id: str, data: Dict[str, str]) -> None:
                     use_structure_guided_alignment=use_structure_guided_alignment,
                 )
 
-                # clean up, remove loaded model
-                del model
-
             else:
                 raise Exception(f"invalid model {selected_model}")
+
         except Exception as e:
             msg = f"failed to make predictions: {str(e)}"
             raise Exception(msg)
+
+        # clean up, remove loaded model
+        del model
 
         # store results
         app.config["JOB_RESULTS"][job_id] = {
@@ -173,7 +174,7 @@ def submit_raw() -> Response:
     }
 
     # run prediction in a separate thread
-    threading.Thread(target=run_prediction, args=(job_id, data)).start()
+    threading.Thread(target=run_prediction_raw, args=(job_id, data)).start()
 
     # immediately return job_id
     return ResponseData(Status.Success, payload={"jobId": job_id}).to_dict()

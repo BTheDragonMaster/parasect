@@ -38,7 +38,7 @@ const Submit = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     // input method and type
-    const [inputMethod, setInputMethod] = useState('paste'); // 'paste' or 'upload'
+    const [inputMethod, setInputMethod] = useState('upload'); // 'paste' or 'upload'
     const [selectedInputType, setSelectedInputType] = useState('fasta'); // fasta or gbk
     const [selectedInput, setSelectedInput] = useState('');
 
