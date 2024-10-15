@@ -3,7 +3,6 @@
 """Constants used throughout the PARASECT package."""
 
 import os
-import importlib.resources as pkg_resources
 from typing import Dict, List, Union
 
 import parasect.data
@@ -76,7 +75,7 @@ def get_path(file_name: str) -> str:
     :return: Path to the file.
     :rtype: str
     """
-    return pkg_resources.files(parasect.data).joinpath(file_name)
+    return os.path.join(parasect.data.__path__[0], file_name)
 
 
 ALIGNMENT_FILE = get_path("structure_alignment.fasta")
