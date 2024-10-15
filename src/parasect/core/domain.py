@@ -29,18 +29,18 @@ def _get_reference_positions(positions: List[int], aligned_reference: str) -> Li
     :rtype: List[int]
     """
     # adjust position of interest to account for gaps in the ref sequence alignment
-    positions = []
+    new_positions = []
     position = 0
 
     # iterate over the aligned reference sequence
     for amino_acid_idx, amino_acid_id in enumerate(aligned_reference):
         if amino_acid_id != "-":
             if position in positions:
-                positions.append(amino_acid_idx)
+                new_positions.append(amino_acid_idx)
 
             position += 1
 
-    return positions
+    return new_positions
 
 
 def _get_reference_positions_hmm(
@@ -296,8 +296,10 @@ class AdenylationDomain:
         for position in aligned_positions_signature:
             signature.append(aligned_domain[position])
         self.signature = "".join(signature)
+        print(self.signature)
 
         extended_signature = []
         for position in aligned_positions_extended_signature:
             extended_signature.append(aligned_domain[position])
         self.extended_signature = "".join(extended_signature)
+        print(self.extended_signature)
