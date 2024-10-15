@@ -122,7 +122,7 @@ const SettingsModal = ({
                             PARASECT predicts if a given substrate has an interaction
                             with the adenylation domain. There is a standard list of 
                             of substrates that PARASECT uses, but you can also upload
-                            a custom list of substrates in CSV format.
+                            a custom list of substrates in TSV format.
                         </Typography>
 
                         {/* SMILES file upload for PARASECT */}
@@ -134,7 +134,7 @@ const SettingsModal = ({
                                     color: selectedModel !== 'parasect' ? 'rgba(0, 0, 0, 0.26)' : 'rgba(0, 0, 0, 0.87)'
                                 }}
                             >
-                                Upload custom list of substrates (CSV format as 'name,SMILES' per line):
+                                Upload custom list of substrates (TSV format as 'name\tSMILES' per line):
                             </Typography>
                             <Input
                                 type='file'
