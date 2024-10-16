@@ -149,8 +149,8 @@ const Submit = () => {
                         value={inputMethod}
                         onChange={(e) => setInputMethod(e.target.value)}
                     >
-                        <FormControlLabel value='paste' control={<Radio />} label='Paste data' />
                         <FormControlLabel value='upload' control={<Radio />} label='Upload file' />
+                        <FormControlLabel value='paste' control={<Radio />} label='Paste data' />
                     </RadioGroup>
                 </FormControl>
 
@@ -168,7 +168,7 @@ const Submit = () => {
                 </FormControl>
                 
                 {/* text field or file upload */}
-                <Box width={800} margin={3} >
+                <Box margin={1} >
                     {inputMethod === 'paste' ? (
                         <TextField
                             label='Input adenylation domain data (FASTA or GBK)'

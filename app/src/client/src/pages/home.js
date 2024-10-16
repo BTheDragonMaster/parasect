@@ -21,13 +21,13 @@ const Home = () => {
                     component='img'
                     src='/paras.png'
                     alt='PARAS logo'
-                    sx={{ width: 300 }}
+                    sx={{ maxWidth: 300 }}
                 />
                 <Box
                     component='img'
                     src='/parasect.png'
                     alt='PARASECT logo'
-                    sx={{ width: 300 }}
+                    sx={{ maxWidth: 300 }}
                 />
             </Box>
 
