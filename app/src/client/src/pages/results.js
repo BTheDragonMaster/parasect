@@ -119,7 +119,6 @@ const Results = () => {
                 flexDirection='column' 
                 alignItems='left' 
                 margin={4} 
-                width='100%'
             >
 
                 {/* header with job ID and download button */}
