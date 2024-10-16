@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Box, IconButton, Divider, Typography } from '@mui/material';
-import { FaDownload } from 'react-icons/fa';
+import { FaDownload, FaCopy } from 'react-icons/fa';
 
 import Loading from '../components/Loading';
 import ResultTile from '../components/ResultTile';
@@ -146,23 +146,55 @@ const Results = () => {
                     </Box>
                 </Box>
                 <Typography variant='body1' gutterBottom>
+                    <IconButton
+                        onClick={() => {
+                            navigator.clipboard.writeText(jobId);
+                            toast.success('Copied the job ID to clipboard!');
+                        }}
+                    >
+                        <FaCopy size={15} style={{ paddingBottom: '3px' }} />
+                    </IconButton>
                     {`Job ID: ${jobId}`}
                 </Typography>
                 <Divider />
+
+                <Box sx={{ mt: 4 }}>
+                    <Typography variant='body1' gutterBottom>
+                        In total, {results.length} prediction(s) were made. The tiles below show the predictions for each domain. You can scroll horizontally to view all predictions.
+                    </Typography>
+                    <Typography variant='body1' gutterBottom>
+                        You can download the results as a JSON file using the download button above next to the header.
+                    </Typography>
+                    <Typography variant='body1' gutterBottom>
+                        You can use the job ID to retrieve the results at a later time. All jobs are automatically deleted after 7 days.
+                    </Typography>
+                </Box>
             </Box>
+
+            
             
             {/* display results in a row, one item per domain with prediction */}
             <Box
                 sx={{
                     overflowY: 'auto',
                     overflowX: 'auto',
-                    flex: '1 1 50%',
                     backgroundColor: 'white.main',
                     display: 'flex',
                     gap: '20px',
-                    paddingLeft: '20px',
-                    paddingRight: '20px',
+                    paddingLeft: '30px',
+                    paddingRight: '30px',
                     paddingBottom: '20px',
+
+                    // always show scrollbar
+                    '&::-webkit-scrollbar': {
+                        display: 'block',
+                    },
+
+                    // scrollbar style
+                    '&::-webkit-scrollbar-thumb': {
+                        backgroundColor: '#ceccca',
+                        borderRadius: '10px',
+                    },
                 }}
             >
                 {results.map((result, index) => (
