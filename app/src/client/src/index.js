@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -7,11 +7,13 @@ import { MdMenu } from 'react-icons/md';
 import HomeIcon from '@mui/icons-material/Home';
 import UploadIcon from '@mui/icons-material/Upload';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import RetrieveIcon from '@mui/icons-material/GetApp';
 
 import './style/main.css';
 
 import Toast from './components/Toast';
 import Home from './pages/home';
+import Retrieve from './pages/retrieve';
 import Submit from './pages/submit';
 import Results from './pages/results';
 import NotFound from './pages/not_found';
@@ -61,9 +63,11 @@ const CustomToolbar = () => {
     const [version, setVersion] = useState('');
 
     // fetch version from server
-    fetch('/api/version')
-        .then((response) => response.json())
-        .then((data) => setVersion(`v${data.version}`));
+    useEffect(() => {
+        fetch('/api/version')
+            .then((response) => response.json())
+            .then((data) => setVersion(`v${data.version}`));
+    }, []);  // empty array means only run once
 
     // state to handle menu
     const [anchorEl, setAnchorEl] = useState(null);
@@ -113,6 +117,10 @@ const CustomToolbar = () => {
                         <UploadIcon sx={{ marginRight: '10px' }} />
                         Submit
                     </MenuItem>
+                    <MenuItem onClick={() => handleMenuItemClick('/retrieve')}>
+                        <RetrieveIcon sx={{ marginRight: '10px' }} />
+                        Retrieve
+                    </MenuItem>
                     <MenuItem onClick={() => handleExternalLinkClick('https://github.com/BTheDragonMaster/parasect/issues')}>
                         <GitHubIcon sx={{ marginRight: '10px' }} />
                         Report an issue
@@ -149,6 +157,10 @@ function AppRoutes () {
                 <Route 
                     path='/submit' 
                     element={<Submit />}
+                />
+                <Route 
+                    path='/retrieve' 
+                    element={<Retrieve />}
                 />
                 <Route 
                     path='/results/:jobId' 
