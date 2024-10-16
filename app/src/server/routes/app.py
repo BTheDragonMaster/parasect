@@ -5,10 +5,9 @@
 import atexit
 import time
 
-from flask import Flask
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
-
+from flask import Flask
 
 app = Flask(__name__)
 app.config["JOB_RESULTS"] = dict()
@@ -42,5 +41,3 @@ scheduler.add_job(
 
 # shut down the scheduler when exiting the app
 atexit.register(lambda: scheduler.shutdown())
-
-
