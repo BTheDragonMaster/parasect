@@ -39,7 +39,16 @@ const Home = () => {
                 Discover our adenylation domain substrate specificity prediction models.
             </Typography>
 
-            <Box mt={4} mb={2} textAlign='center'>
+            <Box
+                sx={{
+                    mt: 4,
+                    mb: 2,
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    gap: 2
+                }}
+            >
                 <Button
                     variant='contained'
                     color='primary'
@@ -49,6 +58,17 @@ const Home = () => {
                 >
                     <Typography sx={{ color: 'white.main' }}>
                         Start predicting
+                    </Typography>
+                </Button>
+                <Button
+                    variant='contained'
+                    color='primary'
+                    size='large'
+                    href='/retrieve'
+                    sx={{ marginBottom: 3 }}
+                >
+                    <Typography sx={{ color: 'white.main' }}>
+                        Retrieve results
                     </Typography>
                 </Button>
             </Box>
