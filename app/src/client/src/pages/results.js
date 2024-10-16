@@ -49,9 +49,6 @@ const Results = () => {
                             prediction['probability'] = prediction['probability'].toFixed(3);
                         });
                     });
-
-                    // pre-select the highest prediciton per domain for the user
-                    const selectedResults = results.map(result => result['predictions'][0]);
                     
                     // set states
                     setResults(results);
