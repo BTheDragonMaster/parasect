@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-"""PARASECT package."""
+"""Package for adenylation domain substrate specificity prediction with PARAS and PARASECT."""
