@@ -1,4 +1,5 @@
 flask
 gunicorn
 joblib
+apscheduler
 git+https://github.com/BTheDragonMaster/parasect@webapp
