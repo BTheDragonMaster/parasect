@@ -4,6 +4,7 @@
 
 import os
 import threading
+import time
 import uuid
 from typing import Dict
 
@@ -135,18 +136,23 @@ def run_prediction_signature(job_id: str, data: Dict[str, str]) -> None:
         del model
 
         # store results
-        app.config["JOB_RESULTS"][job_id] = {
-            "status": str(Status.Success).lower(),
-            "message": "successfully ran predictions",
-            "results": [r.to_json() for r in results],
-        }
+        new_status = str(Status.Success).lower()
+        new_message = "Successfully ran predictions!"
+        new_results = [r.to_json() for r in results]
+
+        app.config["JOB_RESULTS"][job_id]["status"] = new_status
+        app.config["JOB_RESULTS"][job_id]["message"] = new_message
+        app.config["JOB_RESULTS"][job_id]["results"] = new_results
 
     except Exception as e:
-        app.config["JOB_RESULTS"][job_id] = {
-            "status": str(Status.Failure).lower(),
-            "message": str(e),
-            "results": [],
-        }
+        # store results
+        new_status = str(Status.Failure).lower()
+        new_message = str(e)
+        new_results = []
+
+        app.config["JOB_RESULTS"][job_id]["status"] = new_status
+        app.config["JOB_RESULTS"][job_id]["message"] = new_message
+        app.config["JOB_RESULTS"][job_id]["results"] = new_results
 
 
 @blueprint_submit_signature.route("/api/submit_signature", methods=["POST"])
@@ -161,11 +167,15 @@ def submit_signature() -> Response:
     # generate job id
     job_id = str(uuid.uuid4())
 
+    # get current time in seconds since Unix epoch
+    current_time = int(time.time())
+
     # initialize job  with status as pending
     app.config["JOB_RESULTS"][job_id] = {
         "status": str(Status.Pending).lower(),
-        "message": "job is pending",
+        "message": "Job is pending!",
         "results": [],
+        "timestamp": current_time,
     }
 
     # run prediction in a separate thread
