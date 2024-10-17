@@ -57,14 +57,13 @@ def run_prediction_signature(job_id: str, data: Dict[str, str]) -> None:
                     "protein_name",
                     "domain_start",
                     "domain_end",
-                    "signature",
                     "extended_signature",
                 ]
             ):
                 raise Exception(
                     (
                         "each domain must have keys 'protein_name', 'domain_start', "
-                        "'domain_end', 'signature', and 'extended_signature'"
+                        "'domain_end', and 'extended_signature'"
                     )
                 )
 
@@ -79,10 +78,6 @@ def run_prediction_signature(job_id: str, data: Dict[str, str]) -> None:
         # check that every domain_end is an integer
         if not all(isinstance(s["domain_end"], int) for s in submissions):
             raise Exception("domain_end must be an integer")
-
-        # check that every signature is a string
-        if not all(isinstance(s["signature"], str) for s in submissions):
-            raise Exception("signature must be a string")
 
         # check that every extended_signature is a string
         if not all(isinstance(s["extended_signature"], str) for s in submissions):
@@ -108,7 +103,6 @@ def run_prediction_signature(job_id: str, data: Dict[str, str]) -> None:
                     domain_start=s["domain_start"],
                     domain_end=s["domain_end"],
                 )
-                domain.signature = s["signature"]
                 domain.extended_signature = s["extended_signature"]
                 domains.append(domain)
 
