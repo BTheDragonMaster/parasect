@@ -160,6 +160,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
-# do not push anythin in the training/out folder apart from .gitkeep
-training/out/*
-!training/out/.gitkeep
+# do not push anythin in the condensed/out folder apart from .gitkeep
+condensed/out/*
+!condensed/out/.gitkeep
