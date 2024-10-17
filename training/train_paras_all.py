@@ -2,7 +2,7 @@
 
 """Script for training the PARAS model for predicting all substrate specificities."""
 
-import argparse 
+import argparse
 import logging
 
 
@@ -51,7 +51,7 @@ def cli() -> argparse.Namespace:
 def main() -> None:
     """Run the training script."""
     args = cli()
-    
+
     logging.basicConfig(level=args.logger_level)
     logger = logging.getLogger(__name__)
 
