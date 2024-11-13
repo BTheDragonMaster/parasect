@@ -3,6 +3,7 @@
 """Module for defining the Flask app."""
 
 import atexit
+import os
 import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -11,6 +12,20 @@ from flask import Flask
 
 app = Flask(__name__)
 app.config["JOB_RESULTS"] = dict()
+
+
+app.config["ENV"] = os.getenv("FLASK_ENV", "production")  # defaults to "production"
+app.config["DEBUG"] = app.config["ENV"] == "development"
+print("starting app in environment:", app.config["ENV"])
+print("Debug mode is:", app.debug)
+
+
+if app.config["ENV"] == "production":
+    print("production environment detected")
+elif app.config["ENV"] == "development":
+    print("development environment detected")
+else:
+    print(f"unknown environment: {app.config['ENV']}")
 
 
 def clear_job_results() -> None:

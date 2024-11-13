@@ -28,11 +28,3 @@ def index() -> Response:
 @app.route("/api/version")
 def version() -> Response:
     return {"version": get_version()}
-
-
-def main() -> None:
-    app.run(host="localhost", port=4000, debug=True)
-
-
-if __name__ == "__main__":
-    main()

@@ -9,9 +9,10 @@ import uuid
 from typing import Dict
 
 import joblib
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response, request, redirect
 
-from parasect.api import run_paras, run_parasect
+from parasect.api import run_paras, run_parasect, run_paras_for_signatures
+from parasect.core.domain import AdenylationDomain
 
 from .app import app
 from .common import ResponseData, Status
@@ -19,6 +20,15 @@ from .constants import MODEL_DIR, TEMP_DIR
 
 blueprint_submit_raw = Blueprint("submit_raw", __name__)
 blueprint_submit_quick = Blueprint("submit_quick", __name__)
+
+
+########################################################################################################################
+########################################################################################################################
+#
+# Submit settings with JSON parameters
+#
+########################################################################################################################
+########################################################################################################################
 
 
 def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
@@ -191,12 +201,221 @@ def submit_raw() -> Response:
     return ResponseData(Status.Success, payload={"jobId": job_id}).to_dict()
 
 
-@blueprint_submit_quick.route("/api/submit_quick", methods=["POST"])
-def submit_quick() -> Response:
-    """Submit settings for predicting adenylation domain substrate specificities.
-    
-    :return: Response.
-    :rtype: Response
+########################################################################################################################
+########################################################################################################################
+#
+# Submit settings with signature parameters directly in URL
+#
+########################################################################################################################
+########################################################################################################################
+
+
+def run_prediction_signature(job_id: str, data: Dict[str, str]) -> None:
+    """Run prediction with PARAS or PARASECT on signatures.
+
+    :param job_id: Job ID.
+    :type job_id: str
+    :param data: Data.
+    :type data: Dict[str, str]
     """
-    # TODO: implement
-    pass
+    try:
+        # read settings
+        # is everything present? return with message if not
+        try:
+            data = data["data"]
+            submissions = data["submissions"]
+        except Exception as e:
+            msg = f"failed to read settings: {str(e)}"
+            raise Exception(msg)
+
+        # sanity checks
+        if not isinstance(submissions, list):
+            raise Exception("domains must be a list")
+
+        if len(submissions) == 0:
+            raise Exception("no domains provided")
+
+        # check that every submission is a dictionary that has at least the keys
+        # 'protein_name', 'domain_start', 'domain_end', and 'extended_signature'
+        for s in submissions:
+            if not isinstance(s, dict):
+                raise Exception("each submissions must be a dictionary")
+            if not all(
+                k in s
+                for k in [
+                    "protein_name",
+                    "domain_start",
+                    "domain_end",
+                    "extended_signature",
+                ]
+            ):
+                raise Exception(
+                    (
+                        "each domain must have keys 'protein_name', 'domain_start', "
+                        "'domain_end', and 'extended_signature'"
+                    )
+                )
+
+        # check that every protein_name is a string
+        if not all(isinstance(s["protein_name"], str) for s in submissions):
+            raise Exception("protein_name must be a string")
+
+        # check that every domain_start is an integer
+        if not all(isinstance(s["domain_start"], int) for s in submissions):
+            raise Exception("domain_start must be an integer")
+
+        # check that every domain_end is an integer
+        if not all(isinstance(s["domain_end"], int) for s in submissions):
+            raise Exception("domain_end must be an integer")
+
+        # check that every extended_signature is a string
+        if not all(isinstance(s["extended_signature"], str) for s in submissions):
+            raise Exception("extended_signature must be a string")
+
+        # load model
+        # return error if not successful
+        try:
+            model = joblib.load(os.path.join(MODEL_DIR, "model.paras"))
+            model.set_params(n_jobs=1)
+            assert model is not None
+        except Exception as e:
+            msg = f"failed to load model: {str(e)}"
+            raise Exception(msg)
+
+        # make predictions
+        try:
+            # create AdenylationDomain objects
+            domains = []
+            for s in submissions:
+                domain = AdenylationDomain(
+                    protein_name=s["protein_name"],
+                    domain_start=s["domain_start"],
+                    domain_end=s["domain_end"],
+                )
+                domain.extended_signature = s["extended_signature"]
+                domains.append(domain)
+
+            # sort domains by protein_name and domain_start
+            domains = sorted(domains, key=lambda d: (d.protein_name, d.start))
+
+            # asign domain_nr to each domain, count per protein_name
+            domain_nr = 0
+            protein_name = None
+            for domain in domains:
+                if domain.protein_name != protein_name:
+                    domain_nr = 0
+                    protein_name = domain.protein_name
+                domain_nr += 1
+                domain.set_domain_number(domain_nr)
+
+            # run predictions
+            results = run_paras_for_signatures(domains=domains, model=model)
+
+        except Exception as e:
+            msg = f"failed to make predictions: {str(e)}"
+            raise Exception(msg)
+
+        # clean up, remove loaded model
+        del model
+
+        # store results
+        new_status = str(Status.Success).lower()
+        new_message = "Successfully ran predictions!"
+        new_results = [r.to_json() for r in results]
+
+        app.config["JOB_RESULTS"][job_id]["status"] = new_status
+        app.config["JOB_RESULTS"][job_id]["message"] = new_message
+        app.config["JOB_RESULTS"][job_id]["results"] = new_results
+
+    except Exception as e:
+        # store results
+        new_status = str(Status.Failure).lower()
+        new_message = str(e)
+        new_results = []
+
+        app.config["JOB_RESULTS"][job_id]["status"] = new_status
+        app.config["JOB_RESULTS"][job_id]["message"] = new_message
+        app.config["JOB_RESULTS"][job_id]["results"] = new_results
+
+
+@blueprint_submit_quick.route("/api/submit_quick", methods=["GET"])
+def submit_quick() -> Response:
+    """Submit settings with signature parameters directly in URL and redirect to results page.
+    
+    Example URL for localhost, if backend is running on port 5000:
+    http://localhost:5000/api/submit_quick?signature1=LDQIFDVFVSEMSLIVGGEVNAYGPTETTVEATA&name1=NameA&start1=10&end1=50
+
+    Example URL for production:
+    https://paras.bioinformatics.nl/api/submit_quick?signature1=LDQIFDVFVSEMSLIVGGEVNAYGPTETTVEATA&name1=NameA&start1=10&end1=50
+    """        
+    job_id = str(uuid.uuid4())
+
+    try:
+        signature_keys = [key for key in request.args.keys() if key.startswith("signature")]
+
+        # parse submissions from URL parameters
+        data = {"data": {"submissions": []}}
+        for signature_key in signature_keys:
+            # extract accession from the signature key
+            accession = signature_key.replace("signature", "")
+
+            # retrieve actual signature value
+            signature = request.args.get(signature_key, None)
+
+            if signature is None:
+                return f"no signature provided for {accession}", 400
+
+            # retrieve optional attributes based on accession
+            name = request.args.get(f"name{accession}", f"Signature {accession}")
+            start = request.args.get(f"start{accession}", 0, type=int)
+            end = request.args.get(f"end{accession}", 0, type=int)
+            submission = {
+                "protein_name": name,
+                "domain_start": start,
+                "domain_end": end,
+                "extended_signature": signature,
+            }
+            data["data"]["submissions"].append(submission)
+
+        # sort submissions first by domain start, then by protein name
+        data["data"]["submissions"] = sorted(
+            data["data"]["submissions"], 
+            key=lambda x: (x["domain_start"], x["protein_name"])
+        )
+
+        if len(data["data"]["submissions"]) == 0:
+            app.config["JOB_RESULTS"][job_id] = {
+                "status": str(Status.Failure).lower(),
+                "message": "No valid signatures provided.",
+                "results": [],
+                "timestamp": int(time.time()),
+            }
+
+        else:
+            # Initialize job with pending status
+            app.config["JOB_RESULTS"][job_id] = {
+                "status": str(Status.Pending).lower(),
+                "message": "Job is pending!",
+                "results": [],
+                "timestamp": int(time.time()),
+            }
+
+            threading.Thread(target=run_prediction_signature, args=(job_id, data)).start()
+    
+    except Exception as e:
+        app.config["JOB_RESULTS"][job_id] = {
+            "status": str(Status.Failure).lower(),
+            "message": str(e),
+            "results": [],
+            "timestamp": int(time.time()),
+        }
+
+    if app.config["ENV"] == "production":
+        results_url = f"https://paras.bioinformatics.nl/results/{job_id}"
+    else:
+        # frontend is running on localhost port 3000
+        results_url = f"http://localhost:3000/results/{job_id}"
+
+    return redirect(results_url)
+
+        
