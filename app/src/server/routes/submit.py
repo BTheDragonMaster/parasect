@@ -18,6 +18,7 @@ from .common import ResponseData, Status
 from .constants import MODEL_DIR, TEMP_DIR
 
 blueprint_submit_raw = Blueprint("submit_raw", __name__)
+blueprint_submit_quick = Blueprint("submit_quick", __name__)
 
 
 def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
@@ -188,3 +189,14 @@ def submit_raw() -> Response:
 
     # immediately return job_id
     return ResponseData(Status.Success, payload={"jobId": job_id}).to_dict()
+
+
+@blueprint_submit_quick.route("/api/submit_quick", methods=["POST"])
+def submit_quick() -> Response:
+    """Submit settings for predicting adenylation domain substrate specificities.
+    
+    :return: Response.
+    :rtype: Response
+    """
+    # TODO: implement
+    pass

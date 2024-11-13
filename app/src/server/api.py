@@ -5,12 +5,13 @@
 from flask import Response
 from routes.app import app
 from routes.retrieval import blueprint_retrieve
-from routes.submit_raw import blueprint_submit_raw
+from routes.submit import blueprint_submit_raw, blueprint_submit_quick
 
 from parasect.version import get_version
 
 app.register_blueprint(blueprint_retrieve)
 app.register_blueprint(blueprint_submit_raw)
+app.register_blueprint(blueprint_submit_quick)
 
 
 @app.errorhandler(404)
