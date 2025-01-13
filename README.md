@@ -2,6 +2,8 @@
 
 Welcome to PARASECT: Predictive Algorithm for Resolving A-domain Specificity featurising Enzyme and Compound in Tandem. Detect NRPS AMP-binding domains from an amino acid sequence and predict their substrate specificity profile.
 
+You can find our preprint on [bioRxiv](https://www.biorxiv.org/content/10.1101/2025.01.08.631717v1).
+
 ## Information on branches
 
 The current `master` branch contains all code that is needed to reproduce our findings in the manuscript.
