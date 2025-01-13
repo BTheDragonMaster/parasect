@@ -35,7 +35,7 @@ npm install
 Run the server in one terminal:
 
 ```bash
-python3 ./app/server/api.py
+bash run_server.sh
 ```
 
 Run the client in another terminal:
