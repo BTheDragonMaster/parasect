@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Typography, Button, Link } from '@mui/material';
+import { Box, Typography, Button, Link, Tooltip, Stack } from '@mui/material';
+import ExitIcon from '@mui/icons-material/ExitToApp';
 
 /**
  * Home component that displays the home page content.
@@ -74,26 +75,60 @@ const Home = () => {
             </Box>
 
             <Typography variant='body1' align='center' color='textSecondary' gutterBottom>
-                Want to learn more about the research behind PARAS and PARASECT?
-                <Link 
-                    href='/publication' 
-                    underline='hover' 
-                    sx={{ marginLeft: 1, fontWeight: 'bold' }}
-                >
-                    Read our publication.
-                </Link>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    Want to learn more about the research behind PARAS and PARASECT?
+                    <Tooltip title='Opens new tab to bioRxiv.' arrow>
+                        <Link 
+                            href='https://www.biorxiv.org/content/10.1101/2025.01.08.631717v1'
+                            underline='hover' 
+                            target='_blank'
+                            sx={{ marginLeft: 1, fontWeight: 'bold' }}
+                        >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                Read our publication 
+                                <ExitIcon fontSize='small' />
+                            </Box>
+                        </Link>
+                    </Tooltip>
+                </Box>
+            </Typography>
+
+            <Typography variant='body1' align='center' color='textSecondary' gutterBottom>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    Did you find PARAS or PARASECT useful?
+                    <Tooltip title='Opens new tab to bioRxiv.' arrow>
+                        <Link 
+                            href='https://www.biorxiv.org/content/10.1101/2025.01.08.631717v1'
+                            underline='hover' 
+                            target='_blank'
+                            sx={{ marginLeft: 1, fontWeight: 'bold' }}
+                        >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                Please cite our publication
+                                <ExitIcon fontSize='small' />
+                            </Box>
+                        </Link>
+                    </Tooltip>
+                </Box>
             </Typography>
 
             <Typography variant='body1' align='center' color='textSecondary'>
-                Have something to contribute?
-                <Link 
-                    href='https://github.com/bthedragonmaster/parasect'
-                    target='_blank'
-                    underline='hover'
-                    sx={{ marginLeft: 1, fontWeight: 'bold' }}
-                >
-                    Visit our GitHub page.
-                </Link>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    Have something to contribute?
+                    <Tooltip title='Opens new tab to GitHub.' arrow>
+                        <Link 
+                            href='https://github.com/bthedragonmaster/parasect'
+                            target='_blank'
+                            underline='hover'
+                            sx={{ marginLeft: 1, fontWeight: 'bold' }}
+                        >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                Visit our GitHub page
+                                <ExitIcon fontSize='small' />
+                            </Box>
+                        </Link>
+                    </Tooltip>
+                </Box>
             </Typography>
         </Box>
     );
