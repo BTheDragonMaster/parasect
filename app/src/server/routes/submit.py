@@ -143,6 +143,11 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
                 except Exception as e:
                     msg = f"failed to parse SMILES strings: {str(e)}"
                     raise Exception(msg)
+                
+                # if no custom substrates were provided, and also the option to use only uploaded substrates is selected
+                # return with error message that at least one custom substrate must be provided in that case
+                if len(custom_substrate_names) == 0 and use_only_uploaded_substrates:
+                    raise Exception("at least one custom substrate must be provided if 'Use only uploaded substrates' is selected.")
 
                 # run PARASECT
                 results = run_parasect(
