@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Button, Link, Tooltip, Stack } from '@mui/material';
+import { Box, Typography, Button, Link, Tooltip } from '@mui/material';
 import ExitIcon from '@mui/icons-material/ExitToApp';
 
 /**
