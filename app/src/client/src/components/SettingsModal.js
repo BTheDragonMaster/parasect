@@ -32,6 +32,8 @@ const SettingsModal = ({
     setSmilesFileContent,
     useOnlyUploadedSubstrates,
     setUseOnlyUploadedSubstrates,
+    uploadedSubstratesFileContentHasHeader,
+    setUploadedSubstratesFileContentHasHeader,
 }) => {
 
     // handle SMILES file upload for PARASECT
@@ -143,18 +145,49 @@ const SettingsModal = ({
                                 disabled={selectedModel !== 'parasect'}
                             />
                         </Box>
+                        
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 0,
+                                marginTop: 2,
+                            }}
+                        >
+                            {/* option to use only uploaded substrates */}
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={useOnlyUploadedSubstrates}
+                                        onChange={(e) => setUseOnlyUploadedSubstrates(e.target.checked)}
+                                        disabled={!smilesFileContent}
+                                    />
+                                }
+                                label='Use only uploaded custom substrates'
+                            />
 
-                        {/* option to use only uploaded substrates */}
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={useOnlyUploadedSubstrates}
-                                    onChange={(e) => setUseOnlyUploadedSubstrates(e.target.checked)}
-                                    disabled={!smilesFileContent}
+                            {/* option to specify if the uploaded substrates file has a header */}
+                            <Box
+                            // as row
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'left',
+                                    alignItems: 'center',
+                                    gap: 1,
+                                }}
+                            >
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={uploadedSubstratesFileContentHasHeader}
+                                            onChange={(e) => setUploadedSubstratesFileContentHasHeader(e.target.checked)}
+                                            disabled={!smilesFileContent}
+                                        />
+                                    }
+                                    label='Uploaded custom substrates file has a header line with column names'
                                 />
-                            }
-                            label='Use only uploaded custom substrates'
-                        />
+                            </Box>
+                        </Box>
                     </Box>
                 </Box>
             </Box>
