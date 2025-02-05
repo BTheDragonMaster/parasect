@@ -135,7 +135,7 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
                             try:
                                 _ = read_smiles(smiles)
                             except Exception as e:
-                                msg = f"failed to parse SMILES string from custom substrates on line {line_index + 1} with name {smiles_name}: {str(e)}"
+                                msg = f"failed to parse SMILES string from custom substrates on line {line_index + 1} with name '{smiles_name}'. Error: {str(e)}"
                                 raise Exception(msg)
 
                             custom_substrate_names.append(smiles_name)

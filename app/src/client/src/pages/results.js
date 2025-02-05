@@ -58,7 +58,13 @@ const Results = () => {
                     throw new Error(data.message);
                 }; // else keep polling
             } catch (error) {
-                toast.error(error.message);
+                toast.error(
+                    <>
+                      {error.message}<br /><br />
+                      If you feel this is an error, or if you need assistance, please contact the developers in GitHub issues by selecting 'Report an issue' in the app bar at the top left of this page and posting your issue or question.
+                    </>,
+                    { autoClose: false }
+                );
                 setIsLoading(false);
                 clearInterval(intervalId);
             };
