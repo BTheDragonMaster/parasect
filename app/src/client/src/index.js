@@ -60,7 +60,7 @@ const CustomToolbar = () => {
     const navigate = useNavigate();
 
     // version of the app
-    const [version, setVersion] = useState('');
+    const [version, setVersion] = useState('UNKNOWN');
 
     // fetch version from server
     useEffect(() => {
@@ -133,7 +133,7 @@ const CustomToolbar = () => {
                     sx={{ marginLeft: '16px' }}
                 >
                     <Typography sx={{ color: 'white.main' }}>
-                        PARAS {version}
+                        PARAS {version} (web app: v{process.env.REACT_APP_VERSION ? process.env.REACT_APP_VERSION : 'UNKNOWN'})
                     </Typography>
                 </Typography>
             </Toolbar>

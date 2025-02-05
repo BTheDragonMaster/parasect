@@ -13,6 +13,7 @@ from flask import Blueprint, Response, request, redirect
 
 from parasect.api import run_paras, run_parasect, run_paras_for_signatures
 from parasect.core.domain import AdenylationDomain
+from pikachu.general import read_smiles
 
 from .app import app
 from .common import ResponseData, Status
@@ -52,6 +53,7 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
             use_structure_guided_alignment = data["useStructureGuidedAlignment"]
             smiles_file_content = data["smilesFileContent"]
             use_only_uploaded_substrates = data["useOnlyUploadedSubstrates"]
+            uploaded_substrates_file_has_header = data["uploadedSubstratesFileContentHasHeader"]
         except Exception as e:
             msg = f"failed to read settings: {str(e)}"
             raise Exception(msg)
@@ -121,13 +123,31 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
                 try:
                     if len(smiles_file_content) > 0:
                         lines = smiles_file_content.strip().split("\n")
-                        for line in lines:
+                        for line_index, line in enumerate(lines):
+                            
+                            # skip header line if present
+                            if uploaded_substrates_file_has_header and line_index == 0:
+                                continue
+
                             smiles_name, smiles = line.strip().split("\t")
+
+                            # check if SMILES string is valid
+                            try:
+                                _ = read_smiles(smiles)
+                            except Exception as e:
+                                msg = f"failed to parse SMILES string from custom substrates on line {line_index + 1} with name '{smiles_name}'. Error: {str(e)}"
+                                raise Exception(msg)
+
                             custom_substrate_names.append(smiles_name)
                             custom_substrate_smiles.append(smiles)
                 except Exception as e:
                     msg = f"failed to parse SMILES strings: {str(e)}"
                     raise Exception(msg)
+                
+                # if no custom substrates were provided, and also the option to use only uploaded substrates is selected
+                # return with error message that at least one custom substrate must be provided in that case
+                if len(custom_substrate_names) == 0 and use_only_uploaded_substrates:
+                    raise Exception("at least one custom substrate must be provided if 'Use only uploaded substrates' is selected.")
 
                 # run PARASECT
                 results = run_parasect(

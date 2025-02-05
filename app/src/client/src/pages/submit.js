@@ -49,6 +49,7 @@ const Submit = () => {
     // SMILES file state (for PARASECT model)
     const [smilesFileContent, setSmilesFileContent] = useState(''); // Stores content of uploaded SMILES file
     const [useOnlyUploadedSubstrates, setUseOnlyUploadedSubstrates] = useState(false); // Checkbox state
+    const [uploadedSubstratesFileContentHasHeader, setUploadedSubstratesFileContentHasHeader] = useState(true); // Checkbox state
 
     // modal state
     const [openSettingsModal, setOpenSettingsModal] = useState(false);
@@ -96,6 +97,7 @@ const Submit = () => {
             useStructureGuidedAlignment: useStructureGuidedAlignment,
             smilesFileContent: smilesFileContent,
             useOnlyUploadedSubstrates: useOnlyUploadedSubstrates,
+            uploadedSubstratesFileContentHasHeader: uploadedSubstratesFileContentHasHeader,
         };
 
         try {
@@ -283,6 +285,8 @@ const Submit = () => {
                 setSmilesFileContent={setSmilesFileContent}
                 useOnlyUploadedSubstrates={useOnlyUploadedSubstrates}
                 setUseOnlyUploadedSubstrates={setUseOnlyUploadedSubstrates}
+                uploadedSubstratesFileContentHasHeader={uploadedSubstratesFileContentHasHeader}
+                setUploadedSubstratesFileContentHasHeader={setUploadedSubstratesFileContentHasHeader}
             />
         </>
     );
