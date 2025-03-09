@@ -1,0 +1,14 @@
+sequence_id	substrate_1	confidence_score_1	substrate_2	confidence_score_2	substrate_3	confidence_score_3
+dptA|domain_1|611-944	tryptophan	0.84	phenylalanine	0.59	tyrosine	0.55
+dptA|domain_2|1665-2004	asparagine	0.91	aspartic acid	0.80	cysteine	0.47
+dptA|domain_3|3246-3579	aspartic acid	0.91	asparagine	0.74	cysteine	0.49
+dptA|domain_4|4300-4651	threonine	1.00	valine	0.42	isoleucine	0.34
+dptA|domain_5|5371-5713	glycine	0.97	alanine	0.35	beta-alanine	0.32
+dptBC|domain_1|619-961	ornithine	0.90	lysine	0.89	arginine	0.75
+dptBC|domain_2|1699-2032	aspartic acid	0.97	asparagine	0.79	cysteine	0.45
+dptBC|domain_3|2748-3082	alanine	0.87	glycine	0.45	beta-alanine	0.39
+dptBC|domain_4|4290-4625	aspartic acid	0.97	asparagine	0.79	cysteine	0.45
+dptBC|domain_5|5348-5685	glycine	0.98	alanine	0.36	beta-alanine	0.22
+dptBC|domain_6|6402-6745	serine	1.00	alanine	0.47	cysteine	0.12
+dptD|domain_1|622-961	glutamic acid	0.73	aspartic acid	0.60	glutamine	0.56
+dptD|domain_2|1695-2030	phenylalanine	0.76	tryptophan	0.71	tyrosine	0.64

@@ -1,0 +1,14 @@
+sequence_id	substrate_1	confidence_score_1
+dptA|domain_1|611-944	C1=CC(=CC=C1[C@@H](C(=O)O)N)F	0.31
+dptA|domain_2|1665-2004	C1=CC(=CC=C1[C@@H](C(=O)O)N)F	0.15
+dptA|domain_3|3246-3579	C1=CC(=CC=C1[C@@H](C(=O)O)N)F	0.24
+dptA|domain_4|4300-4651	C1=CC(=CC=C1[C@@H](C(=O)O)N)F	0.04
+dptA|domain_5|5371-5713	C1=CC(=CC=C1[C@@H](C(=O)O)N)F	0.12
+dptBC|domain_1|619-961	C1=CC(=CC=C1[C@@H](C(=O)O)N)F	0.15
+dptBC|domain_2|1699-2032	C1=CC(=CC=C1[C@@H](C(=O)O)N)F	0.19
+dptBC|domain_3|2748-3082	C1=CC(=CC=C1[C@@H](C(=O)O)N)F	0.21
+dptBC|domain_4|4290-4625	C1=CC(=CC=C1[C@@H](C(=O)O)N)F	0.19
+dptBC|domain_5|5348-5685	C1=CC(=CC=C1[C@@H](C(=O)O)N)F	0.11
+dptBC|domain_6|6402-6745	C1=CC(=CC=C1[C@@H](C(=O)O)N)F	0.05
+dptD|domain_1|622-961	C1=CC(=CC=C1[C@@H](C(=O)O)N)F	0.18
+dptD|domain_2|1695-2030	C1=CC(=CC=C1[C@@H](C(=O)O)N)F	0.29

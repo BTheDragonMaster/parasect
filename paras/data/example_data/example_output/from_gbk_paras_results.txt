@@ -1,0 +1,15 @@
+sequence_id	substrate_1	confidence_score_1	substrate_2	confidence_score_2	substrate_3	confidence_score_3
+AAX31555.1|domain_1|185-341	alanine	0.18	leucine	0.09	tryptophan	0.07
+AAX31557.1|domain_1|613-946	tryptophan	0.81	arginine	0.07	tyrosine	0.01
+AAX31557.1|domain_2|1667-2006	asparagine	0.79	aspartic acid	0.16	glutamic acid	0.02
+AAX31557.1|domain_3|3248-3581	aspartic acid	0.95	alanine	0.01	valine	0.01
+AAX31557.1|domain_4|4302-4653	threonine	1.00	valine	0.00	tyrosine	0.00
+AAX31557.1|domain_5|5373-5715	glycine	0.95	beta-alanine	0.01	alanine	0.01
+AAX31558.1|domain_1|621-963	ornithine	0.83	lysine	0.13	arginine	0.02
+AAX31558.1|domain_2|1701-2034	aspartic acid	0.99	glutamic acid	0.01	asparagine	0.00
+AAX31558.1|domain_3|2750-3084	alanine	0.91	glycine	0.04	beta-alanine	0.01
+AAX31558.1|domain_4|4292-4627	aspartic acid	0.99	glutamic acid	0.01	asparagine	0.00
+AAX31558.1|domain_5|5350-5687	glycine	0.99	alanine	0.00	leucine	0.00
+AAX31558.1|domain_6|6404-6747	serine	1.00	valine	0.00	tyrosine	0.00
+AAX31559.1|domain_1|624-963	glutamic acid	0.72	aspartic acid	0.20	asparagine	0.02
+AAX31559.1|domain_2|1697-2032	tryptophan	0.46	phenylalanine	0.12	2,4-diaminobutyric acid	0.08
