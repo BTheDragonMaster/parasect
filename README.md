@@ -1,6 +1,6 @@
-# PARASECT
+# PARAS and PARASECT
 
-Welcome to PARASECT: Predictive Algorithm for Resolving A-domain Specificity featurising Enzyme and Compound in Tandem. Detect NRPS AMP-binding domains from an amino acid sequence and predict their substrate specificity profile.
+Welcome to PARAS and PARASECT: Predictive Algorithm for Resolving A-domain Specificity (featurising Enzyme and Compound in Tandem). Detect NRPS AMP-binding domains from an amino acid sequence and predict their substrate specificity profile.
 
 You can find our preprint on [bioRxiv](https://www.biorxiv.org/content/10.1101/2025.01.08.631717v1).
 
