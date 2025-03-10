@@ -16,6 +16,8 @@ You can find a live version of the web application [here](https://paras.bioinfor
 
 The trained models for PARAS and PARASECT can be found on Zenodo [here](https://zenodo.org/records/13165500).
 
+## Summary
+
 PARAS and PARASECT are adenylation domain (A-domain) selectivity predictors that can be used to predict the peptide scaffold of NRPS systems. From a .gbk or .fasta file, they first detect all adenylation domains, extract their active site signatures, and use these signatures to predict which substrate is selected by each A-domain. Both PARAS and PARASECT are random forest models, implemented in scikit-learn.
 
 ### PARAS
