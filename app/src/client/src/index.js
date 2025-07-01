@@ -8,6 +8,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import UploadIcon from '@mui/icons-material/Upload';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import RetrieveIcon from '@mui/icons-material/GetApp';
+import DatasetIcon from '@mui/icons-material/Dataset'
 
 import './style/main.css';
 
@@ -17,6 +18,8 @@ import Retrieve from './pages/retrieve';
 import Submit from './pages/submit';
 import Results from './pages/results';
 import NotFound from './pages/not_found';
+import DataAnnotation from './pages/data_annotation'
+import AnnotationEditor from './pages/annotation_editor'
 
 /**
  * Custom theme for the app.
@@ -121,6 +124,10 @@ const CustomToolbar = () => {
                         <RetrieveIcon sx={{ marginRight: '10px' }} />
                         Retrieve
                     </MenuItem>
+                    <MenuItem onClick={() => handleMenuItemClick('/data_annotation')}>
+                        <DatasetIcon sx={{ marginRight: '10px' }} />
+                        Data Annotation
+                    </MenuItem>
                     <MenuItem onClick={() => handleExternalLinkClick('https://github.com/BTheDragonMaster/parasect/issues')}>
                         <GitHubIcon sx={{ marginRight: '10px' }} />
                         Report an issue
@@ -165,6 +172,14 @@ function AppRoutes () {
                 <Route 
                     path='/results/:jobId' 
                     element={<Results />}
+                />
+                <Route
+                    path='/annotation_editor/:jobId'
+                    element={<AnnotationEditor />}
+                />
+                <Route
+                    path='/data_annotation'
+                    element={<DataAnnotation />}
                 />
                 <Route 
                     path='*' 

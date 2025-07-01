@@ -13,6 +13,22 @@ from parasect.core.domain import AdenylationDomain
 from parasect.core.parsing import parse_fasta_file
 
 
+def run_hmmscan(hmm_dir, fasta_file, hmm_out):
+    """
+    Run hmmscan from command line
+
+    Input:
+    hmm_dir: str, dir of .hmm file containing the HMMs to be used in the scan
+    fasta_dir: str, dir of .fasta file containing the sequences to be scanned
+    out_dir: str, file location containing results of hmmscan
+
+    """
+
+    with open(hmm_out, 'w') as out:
+        command = ['hmmscan', hmm_dir, fasta_file]
+        subprocess.call(command, stdout=out)
+
+
 def run_hmmpfam2(hmm_dir: str, fasta_file: str, hmm_out: str) -> None:
     """Run hmmpfam2 on the given HMM database and fasta file.
 
