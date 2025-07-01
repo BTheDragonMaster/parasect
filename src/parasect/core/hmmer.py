@@ -24,7 +24,7 @@ def run_hmmpfam2(hmm_dir: str, fasta_file: str, hmm_out: str) -> None:
     :type hmm_out: str
     """
     with open(hmm_out, "w") as out:
-        command = ["hmm2pfam", hmm_dir, fasta_file]
+        command = ["hmmpfam2", hmm_dir, fasta_file]
         subprocess.call(command, stdout=out)
 
 
