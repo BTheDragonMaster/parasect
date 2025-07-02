@@ -11,7 +11,7 @@ from typing import Dict
 import joblib
 from flask import Blueprint, Response, request, redirect
 
-from parasect.api import run_paras
+from parasect.api import run_paras, sort_results
 
 from .app import app
 from .common import ResponseData, Status
@@ -78,6 +78,9 @@ def run_prediction_protein(job_id: str, data: Dict[str, str]) -> None:
                 model=model,
                 use_structure_guided_alignment=False,
             )
+            for result in results:
+                result.sort()
+            sorted_results = sort_results(results)
 
         except Exception as e:
             msg = f"failed to make predictions: {str(e)}"
@@ -89,7 +92,7 @@ def run_prediction_protein(job_id: str, data: Dict[str, str]) -> None:
         # store results
         new_status = str(Status.Success).lower()
         new_message = "Successfully ran predictions!"
-        new_results = [r.to_json() for r in results]
+        new_results = [r.to_json() for r in sorted_results]
 
         app.config["JOB_RESULTS"][job_id]["status"] = new_status
         app.config["JOB_RESULTS"][job_id]["message"] = new_message

@@ -18,6 +18,49 @@ from parasect.core.parsing import (
 from parasect.core.tabular import Tabular
 
 
+def sort_results(results: List["Result"]) -> List["ProteinResult"]:
+    protein_name_to_results: Dict[str, List[Result]] = {}
+    for result in results:
+        if result._domain.protein_name not in protein_name_to_results:
+            protein_name_to_results[result._domain.protein_name] = []
+        protein_name_to_results[result._domain.protein_name].append(result)
+
+    protein_results = []
+    for protein_name, results in protein_name_to_results.items():
+        protein_results.append(ProteinResult(protein_name, results))
+
+    return protein_results
+
+
+class ProteinResult:
+    """Protein result class."""
+
+    def __init__(
+            self,
+            protein_name: str,
+            results: List["Result"]
+
+    ) -> None:
+        """Initialise the Protein Result class.
+
+        :param protein_name: str, name of the protein
+        :param results: List of results for that protein.
+        """
+        self._protein_name = protein_name
+        self._results = results
+
+    def to_json(self) -> Dict[str, Union[str, int, List[Dict[str, Union[str, float]]]]]:
+        """Return the Result as a JSON serialisable dictionary.
+
+        :return: JSON serialisable dictionary.
+        :rtype: Dict[str, Union[str, List[(float, str)]]
+        """
+        return dict(
+            protein_name=self._protein_name,
+            results=[result.to_json() for result in self._results]
+        )
+
+
 class Result:
     """Result class."""
 
@@ -43,6 +86,13 @@ class Result:
         self._predictions = predictions
         self._prediction_labels = prediction_labels
         self._prediction_smiles = prediction_smiles
+
+    def sort(self):
+        pred_label_smiles = list(zip(self._predictions, self._prediction_labels, self._prediction_smiles))
+        pred_label_smiles.sort(key=lambda x: x[0], reverse=True)
+        self._predictions = [data[0] for data in pred_label_smiles]
+        self._prediction_labels = [data[1] for data in pred_label_smiles]
+        self._prediction_smiles = [data[2] for data in pred_label_smiles]
 
     def to_json(self) -> Dict[str, Union[str, int, List[Dict[str, Union[str, float]]]]]:
         """Return the Result as a JSON serialisable dictionary.

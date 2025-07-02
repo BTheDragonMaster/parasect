@@ -13,7 +13,6 @@ from flask import Flask
 app = Flask(__name__)
 app.config["JOB_RESULTS"] = dict()
 
-
 app.config["ENV"] = os.getenv("FLASK_ENV", "production")  # defaults to "production"
 app.config["DEBUG"] = app.config["ENV"] == "development"
 print("starting app in environment:", app.config["ENV"])

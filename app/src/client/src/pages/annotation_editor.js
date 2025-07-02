@@ -5,7 +5,7 @@ import { Box, IconButton, Divider, Typography } from '@mui/material';
 import { FaDownload, FaCopy } from 'react-icons/fa';
 
 import Loading from '../components/Loading';
-import ResultTile from '../components/ResultTile';
+import ProteinTile from '../components/ProteinTile';
 
 /**
  * Component to display the results of the prediction.
@@ -37,18 +37,6 @@ const AnnotationEditor = () => {
 
                 if (data.status === 'success') {
                     const results = data['payload']['results']
-
-                    // sort all predictions by probability
-                    results.forEach(result => {
-                        result['predictions'].sort((a, b) => b['probability'] - a['probability']);
-                    });
-
-                    // round all probabilities to 2 decimal places
-                    results.forEach(result => {
-                        result['predictions'].forEach(prediction => {
-                            prediction['probability'] = prediction['probability'].toFixed(3);
-                        });
-                    });
 
                     // set states
                     setResults(results);
@@ -94,7 +82,7 @@ const AnnotationEditor = () => {
                     frame1='paras_loading_1.png'
                     frame2='paras_loading_2.png'
                 />
-                <p>Making predictions...</p>
+                <p>Extracting A-domains and making PARAS predictions...</p>
             </Box>
         );
     };
@@ -130,25 +118,9 @@ const AnnotationEditor = () => {
                 {/* header with job ID and download button */}
                 <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
                     <Typography variant='h4' gutterBottom>
-                        Results
+                        Extracted adenylation domains
                     </Typography>
-                    <Box>
 
-                        {/* download button */}
-                        <IconButton
-                            onClick={() => {
-                                const blob = new Blob([JSON.stringify(results)], { type: 'application/json' });
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = 'results.json';
-                                a.click();
-                            }
-                        }>
-                            <FaDownload />
-                        </IconButton>
-
-                    </Box>
                 </Box>
                 <Typography variant='body1' gutterBottom>
                     <IconButton
@@ -204,7 +176,7 @@ const AnnotationEditor = () => {
                 }}
             >
                 {results.map((result, index) => (
-                    <ResultTile key={index} result={result} />
+                    <ProteinTile key={index} proteinResult={result} />
                 ))}
             </Box>
         </Box>
