@@ -7,6 +7,8 @@ from typing import Dict, List, Optional, Union
 
 from sklearn.ensemble import RandomForestClassifier
 
+from ncbi_acc_download.errors import DownloadError
+
 from parasect.core.constants import FINGERPRINTS_FILE, INCLUDED_SUBSTRATES_FILE, SMILES_FILE
 from parasect.core.domain import AdenylationDomain
 from parasect.core.featurisation import get_domain_features, get_domains
@@ -15,6 +17,7 @@ from parasect.core.parsing import (
     data_from_substrate_names,
     parse_substrate_list,
 )
+from parasect.core.fetch_from_genbank import fetch_from_genbank
 from parasect.core.tabular import Tabular
 
 
@@ -144,10 +147,23 @@ def run_paras(
     :raises KeyError: If smiles not found for substrate.
     """
     # write selected_input to file in temp folder
-    file_name = "input.fasta" if selected_input_type == "fasta" else "input.gbk"
+    if selected_input_type == "fasta":
+        file_name = "input.fasta"
+    elif selected_input_type == 'gbk':
+        file_name = "input.gbk"
+    elif selected_input_type == 'accession':
+        file_name = "input.fasta"
+    else:
+        raise ValueError(f"Unrecognised input type: {selected_input_type}")
+
     input_file = os.path.join(path_temp_dir, file_name)
-    with open(input_file, "w") as fo:
-        fo.write(selected_input)
+    if selected_input_type == 'accession':
+        accessions = selected_input.split(';')
+        fetch_from_genbank(accessions, input_file)
+
+    else:
+        with open(input_file, "w") as fo:
+            fo.write(selected_input)
 
     # get domains
     domains = get_domains(

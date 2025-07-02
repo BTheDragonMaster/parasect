@@ -33,7 +33,7 @@ def run_prediction_protein(job_id: str, data: Dict[str, str]) -> None:
         # is everything present? return with message if not
         try:
             data = data["data"]
-            selected_input_type = data["selectedInputType"]  # fasta or gbk
+            selected_input_type = data["selectedInputType"]  # fasta, gbk, or accession
             selected_input = data["selectedInput"]  # fasta src or gbk src
 
         except Exception as e:
@@ -43,7 +43,7 @@ def run_prediction_protein(job_id: str, data: Dict[str, str]) -> None:
         # sanity check selected input type
         # return with message if invalid
         selected_input_type = selected_input_type.strip().lower()
-        if selected_input_type not in ["fasta", "gbk"]:
+        if selected_input_type not in ["fasta", "gbk", "accession"]:
             msg = f"invalid input type: {selected_input_type}."
             raise Exception(msg)
 

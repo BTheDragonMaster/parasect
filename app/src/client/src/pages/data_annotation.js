@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { Box, Button, Divider, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, CircularProgress, Typography, Input } from '@mui/material';
 import { MdSettings } from 'react-icons/md';
@@ -36,9 +36,15 @@ const DataAnnotation = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     // input method and type
-    const [inputMethod, setInputMethod] = useState('paste'); // 'paste' or 'upload'
-    const [selectedInputType, setSelectedInputType] = useState('fasta'); // fasta or gbk
+    const [inputMethod, setInputMethod] = useState('paste'); // 'paste', 'upload', or 'ncbi'
+    const [selectedInputType, setSelectedInputType] = useState('fasta'); // fasta, gbk, or accession
     const [selectedInput, setSelectedInput] = useState('');
+
+    useEffect(() => {
+                      if (inputMethod === 'ncbi') {
+                        setSelectedInputType('accession');
+                      }
+                    }, [inputMethod]);
 
     // load example input
     function handleLoadExample() {
@@ -130,48 +136,65 @@ const DataAnnotation = () => {
                     >
                         <FormControlLabel value='paste' control={<Radio />} label='Paste data' />
                         <FormControlLabel value='upload' control={<Radio />} label='Upload file' />
+                        <FormControlLabel value='ncbi' control={<Radio />} label='NCBI accession' />
 
                     </RadioGroup>
                 </FormControl>
 
                 {/* input type selection */}
-                <FormControl component='fieldset' margin='normal'>
-                    <FormLabel component='legend'>Input type</FormLabel>
-                    <RadioGroup
-                        row
-                        value={selectedInputType}
-                        onChange={(e) => setSelectedInputType(e.target.value)}
-                    >
-                        <FormControlLabel value='fasta' control={<Radio />} label='FASTA' />
-                        <FormControlLabel value='gbk' control={<Radio />} label='GBK' />
-                    </RadioGroup>
-                </FormControl>
+                {(inputMethod === 'paste' || inputMethod === 'upload') && (
+                    <FormControl component='fieldset' margin='normal'>
+                        <FormLabel component='legend'>Input type</FormLabel>
+                        <RadioGroup
+                            row
+                            value={selectedInputType}
+                            onChange={(e) => setSelectedInputType(e.target.value)}
+                        >
+                            <FormControlLabel value='fasta' control={<Radio />} label='FASTA' />
+                            <FormControlLabel value='gbk' control={<Radio />} label='GBK' />
+                        </RadioGroup>
+                    </FormControl>
+                )}
 
                 {/* text field or file upload */}
                 <Box margin={1} >
-                    {inputMethod === 'paste' ? (
-                        <TextField
-                            label='Input protein sequence (FASTA or GBK)'
-                            multiline
-                            rows={8}
-                            fullWidth
-                            variant='outlined'
-                            value={selectedInput}
-                            onChange={(e) => setSelectedInput(e.target.value)}
-                            margin='normal'
-                            placeholder='Paste your sequence here'
+                    {inputMethod === 'paste' && (
+                      <TextField
+                        label="Input protein sequence (FASTA or GBK)"
+                        multiline
+                        rows={8}
+                        fullWidth
+                        variant="outlined"
+                        value={selectedInput}
+                        onChange={(e) => setSelectedInput(e.target.value)}
+                        margin="normal"
+                        placeholder="Paste your sequence here"
+                      />
+                    )}
+
+                    {inputMethod === 'ncbi' && (
+                      <TextField
+                        label="Input accessions, separated by ;"
+                        fullWidth
+                        variant="outlined"
+                        value={selectedInput}
+                        onChange={(e) => setSelectedInput(e.target.value)}
+                        margin="normal"
+                        placeholder="Paste your NCBI protein accessions here"
+                      />
+                    )}
+
+                    {inputMethod === 'upload' && (
+                      <Box width="100%" sx={{ mt: 3, mb: 3 }}>
+                        <Typography variant="body1" gutterBottom>
+                          Upload your {selectedInputType.toUpperCase()} file:
+                        </Typography>
+                        <Input
+                          type="file"
+                          inputProps={{ accept: '.fasta,.fa,.gbk' }} // accept FASTA or GBK files
+                          onChange={handleFileUpload}
                         />
-                    ) : (
-                        <Box width='100%' sx={{ mt: 3, mb: 3 }}>
-                            <Typography variant='body1' gutterBottom>
-                                Upload your {selectedInputType.toUpperCase()} file:
-                            </Typography>
-                            <Input
-                                type='file'
-                                inputProps={{ accept: '.fasta,.fa,.gbk' }} // accept FASTA or GBK files
-                                onChange={handleFileUpload}
-                            />
-                        </Box>
+                      </Box>
                     )}
 
                     {/* load example button */}

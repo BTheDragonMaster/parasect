@@ -8,6 +8,8 @@ import {
     FormControl,
     Autocomplete,
     TextField,
+    FormControlLabel,
+    Checkbox,
     Popper,
 } from '@mui/material';
 import { FaFingerprint, FaCopy } from 'react-icons/fa';
@@ -24,6 +26,10 @@ import SmileDrawerContainer from './SmilesDrawer';
 const DomainTile = ({ result }) => {
     const [selectedPrediction] = useState(result['predictions'][0]);
     const [selectedSubstrate, setSelectedSubstrate] = useState(null);
+
+    const [useCustomSmiles, setUseCustomSmiles] = useState(false);
+    const [customSmiles, setCustomSmiles] = useState('');
+    const [newSubstrateName, setNewSubstrateName] = useState(null)
 
     return (
         <Box
@@ -131,11 +137,65 @@ const DomainTile = ({ result }) => {
                                 )}
                             />
                         </Box>
+
+                        <Box>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={useCustomSmiles}
+                                        onChange={(e) => {
+                                            setUseCustomSmiles(e.target.checked);
+                                            setCustomSmiles('');
+                                        }}
+                                    />
+                                }
+                                label="New substrate"
+                            />
+                            {useCustomSmiles && (
+                                <Box sx={{ mt: 1 }}>
+                                    <TextField
+                                        label="Enter substrate name"
+                                        fullWidth
+                                        value={newSubstrateName}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setNewSubstrateName(value);
+
+                                        }}
+
+                                    />
+                                </Box>
+                            )}
+
+                            {useCustomSmiles && (
+                                <Box sx={{ mt: 1 }}>
+                                    <TextField
+                                        label="Enter SMILES"
+                                        fullWidth
+                                        value={customSmiles}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setCustomSmiles(value);
+
+                                        }}
+
+                                    />
+                                </Box>
+                            )}
+
+                        </Box>
                     </Box>
                 </Box>
 
-                {/* SMILES visualizer */}
-                {selectedSubstrate ? (
+                {/* substrate visualizer */}
+                {useCustomSmiles && customSmiles ? (
+                    <SmileDrawerContainer
+                        identifier={`${result['domain_name']}-${result['domain_nr']}`}
+                        smilesStr={customSmiles}
+                        height={200}
+                        width={200}
+                    />
+                ) : selectedSubstrate ? (
                     <SmileDrawerContainer
                         identifier={`${result['domain_name']}-${result['domain_nr']}`}
                         smilesStr={selectedSubstrate['substrate_smiles']}
