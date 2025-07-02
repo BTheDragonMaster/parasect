@@ -124,7 +124,7 @@ const DomainTile = ({ result }) => {
                                     <Popper {...props}
                                             placement="bottom-start"
                                             modifiers={[{
-                                                name: 'flip', 
+                                                name: 'flip',
                                                 enabled: false
                                             }]}
                                     />
