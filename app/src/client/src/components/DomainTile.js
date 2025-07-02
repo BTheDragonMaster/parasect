@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import {
     Box,
@@ -30,6 +30,53 @@ const DomainTile = ({ result }) => {
     const [useCustomSmiles, setUseCustomSmiles] = useState(false);
     const [customSmiles, setCustomSmiles] = useState('');
     const [newSubstrateName, setNewSubstrateName] = useState(null)
+
+    const [smilesOptions, setSmilesOptions] = useState([]);
+
+    {/* Load SMILES for substrate assignment */}
+    useEffect(() => {
+        fetch('/smiles.tsv')
+            .then((res) => res.text())
+            .then((text) => {
+                const lines = text.trim().split('\n');
+                const [headerLine, ...dataLines] = lines;
+                const headers = ["substrate_name", "substrate_smiles"]
+
+                const data = dataLines.map(line => {
+                    const values = line.split('\t');
+                    return headers.reduce((obj, key, i) => {
+                        obj[key] = values[i];
+                        return obj;
+                    }, {});
+                });
+
+                setSmilesOptions(data); // [{ substrate, smiles }, ...]
+            })
+
+            .catch((err) => {
+                console.error('Failed to load smiles.tsv:', err);
+            });
+
+    }, []);
+
+    // Sort the smilesOptions by PARAS prediction; stick all SMILES not in the model at the end:
+    const [sortedOptions, setSortedOptions] = useState([]);
+
+    useEffect(() => {
+          if (!smilesOptions.length || !result["predictions"]) return;
+
+          const preferredOrder = result["predictions"].map(p => p["substrate_name"]);
+          const orderMap = new Map(preferredOrder.map((name, i) => [name, i]));
+
+          const sorted = [...smilesOptions].sort((a, b) => {
+            const aIndex = orderMap.has(a["substrate_name"]) ? orderMap.get(a["substrate_name"]) : Infinity;
+            const bIndex = orderMap.has(b["substrate_name"]) ? orderMap.get(b["substrate_name"]) : Infinity;
+            if (aIndex !== bIndex) return aIndex - bIndex;
+            return a["substrate_name"].localeCompare(b["substrate_name"]);
+          });
+
+          setSortedOptions(sorted);
+        }, [smilesOptions, result["predictions"]]);
 
     return (
         <Box
@@ -106,13 +153,13 @@ const DomainTile = ({ result }) => {
                             </Box>
                         </Box>
 
-                        {/* True substrate */}
+                        {/* Substrate */}
                         <Box>
                             <Box sx={{ fontWeight: 500, marginBottom: 0.5 }}>
-                                True substrate
+                                Substrate 1
                             </Box>
                             <Autocomplete
-                                options={[...result['predictions']]}
+                                options={sortedOptions}
                                 getOptionLabel={(option) => option['substrate_name']}
                                 renderInput={(params) => (
                                     <TextField {...params} variant="outlined" />
