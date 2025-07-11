@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Box, IconButton, Divider, Typography } from '@mui/material';
-import { FaDownload, FaCopy } from 'react-icons/fa';
+import { Box, IconButton, Divider, Typography, Button } from '@mui/material';
+import { FaCopy } from 'react-icons/fa';
 
 import Loading from '../components/Loading';
 import ProteinTile from '../components/ProteinTile';
@@ -12,6 +12,7 @@ import ProteinTile from '../components/ProteinTile';
  *
  * @returns {React.ReactElement} - The results component.
  */
+
 const AnnotationEditor = () => {
     // get job ID from URL
     const { jobId } = useParams();
@@ -22,6 +23,53 @@ const AnnotationEditor = () => {
     // state to keep track of loading state
     const [isLoading, setIsLoading] = useState(true);
 
+    const [proteinAnnotations, setProteinAnnotations] = useState({});
+
+    {/* For collecting protein annotations */}
+
+    const handleProteinAnnotationChange = (proteinId, data) => {
+    setProteinAnnotations((prev) => {
+        const updated = { ...prev };
+
+        // Check if domains object exists and has keys
+        const hasDomainAnnotations = data.domains && Object.keys(data.domains).length > 0;
+
+        if (data && hasDomainAnnotations) {
+            updated[proteinId] = data;
+        } else {
+            // Remove if no domain annotations (ignore synonym)
+            delete updated[proteinId];
+        }
+
+        return updated;
+    });
+};
+    {/* Submit updated protein data */}
+
+    const handleSubmit = async () => {
+    // Placeholder: validations can go here later
+    // For example:
+    // for (const [domainId, annotation] of Object.entries(domainAnnotations)) {
+    //     ... perform checks ...
+    // }
+
+    // Submit to backend to create PR
+
+        console.log("Submitting annotations:", proteinAnnotations);
+    const res = await fetch("/api/submit_annotations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ annotations: proteinAnnotations }),
+    });
+
+    const json = await res.json();
+    if (res.ok) {
+        alert(`Pull request created: ${json.pr_url}`);
+    } else {
+        alert(`Error: ${json.error}`);
+    }
+};
+
     // fetch results from local storage
     useEffect(() => {
         let intervalId;
@@ -31,7 +79,7 @@ const AnnotationEditor = () => {
                 const response = await fetch(`/api/retrieve/${jobId}`);
                 if (!response.ok) {
                     throw new Error('failed to fetch results');
-                };
+                }
 
                 const data = await response.json();
 
@@ -44,7 +92,7 @@ const AnnotationEditor = () => {
                     clearInterval(intervalId);
                 } else if (data.status === 'failure') {
                     throw new Error(data.message);
-                }; // else keep polling
+                } // else keep polling
             } catch (error) {
                 toast.error(
                     <>
@@ -55,13 +103,13 @@ const AnnotationEditor = () => {
                 );
                 setIsLoading(false);
                 clearInterval(intervalId);
-            };
+            }
         };
 
         if (jobId) {
             // poll every second (1000 milliseconds)
             intervalId = setInterval(fetchResult, 1000);
-        };
+        }
 
         // clear interval when component unmounts
         return () => clearInterval(intervalId);
@@ -85,7 +133,7 @@ const AnnotationEditor = () => {
                 <p>Extracting A-domains and making PARAS predictions...</p>
             </Box>
         );
-    };
+    }
 
     // render message if no results are found
     if (!results) {
@@ -99,7 +147,7 @@ const AnnotationEditor = () => {
                 <p>No results found for job ID {jobId}</p>
             </Box>
         );
-    };
+    }
 
     // render results if available
     return (
@@ -137,26 +185,37 @@ const AnnotationEditor = () => {
 
                 <Box sx={{ mt: 4 }}>
                     <Typography variant='body1' gutterBottom>
-                        In total, {results.length} prediction(s) were made. The tiles below show the predictions for each domain. You can scroll horizontally to view all predictions.
+                        In total, {results.length} of the submitted proteins contain adenylation domains. The tiles below show the domains for each protein. You can scroll horizontally to view all proteins.
                     </Typography>
+
                     <Typography variant='body1' gutterBottom>
-                        You can download the results as a JSON file using the download button above next to the header.
+                        Domains which already exist in the PARAS/PARASECT dataset are displayed in grey. New domains are displayed in yellow.
                     </Typography>
+
+                    <Typography variant='body1' gutterBottom>
+
+                    </Typography>
+
                     <Typography variant='body1' gutterBottom>
                         You can use the job ID to retrieve the results at a later time. All jobs are automatically deleted after 7 days.
                     </Typography>
+                    <Box sx={{ mt: 4 }}>
+                    <Button variant="contained" color="primary" onClick={handleSubmit}>
+                        Submit Annotations
+                    </Button>
+            </Box>
                 </Box>
             </Box>
 
 
 
-            {/* display results in a row, one item per domain with prediction */}
+            {/* display results in a row, one item per protein */}
             <Box
                 sx={{
                     overflowY: 'auto',
                     overflowX: 'auto',
                     backgroundColor: 'white.main',
-                    flexDirection: 'column',
+                    flexDirection: 'row',
                     display: 'flex',
                     gap: '20px',
                     paddingLeft: '30px',
@@ -176,7 +235,10 @@ const AnnotationEditor = () => {
                 }}
             >
                 {results.map((result, index) => (
-                    <ProteinTile key={index} proteinResult={result} />
+                    <ProteinTile
+                        key={index}
+                        proteinResult={result}
+                        onUpdateAnnotation={handleProteinAnnotationChange} />
                 ))}
             </Box>
         </Box>

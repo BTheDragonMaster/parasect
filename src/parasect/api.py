@@ -3,14 +3,13 @@
 """API for PARASECT."""
 
 import os
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any
 
 from sklearn.ensemble import RandomForestClassifier
 
-from ncbi_acc_download.errors import DownloadError
-
 from parasect.core.constants import FINGERPRINTS_FILE, INCLUDED_SUBSTRATES_FILE, SMILES_FILE
 from parasect.core.domain import AdenylationDomain
+from parasect.database.build_database import AdenylationDomain as ADomain
 from parasect.core.featurisation import get_domain_features, get_domains
 from parasect.core.parsing import (
     bitvector_from_smiles,
@@ -21,12 +20,12 @@ from parasect.core.fetch_from_genbank import fetch_from_genbank
 from parasect.core.tabular import Tabular
 
 
-def sort_results(results: List["Result"]) -> List["ProteinResult"]:
-    protein_name_to_results: Dict[str, List[Result]] = {}
+def sort_results(results: List["AnnotationResult"]) -> List["ProteinResult"]:
+    protein_name_to_results: Dict[str, List[AnnotationResult]] = {}
     for result in results:
-        if result._domain.protein_name not in protein_name_to_results:
-            protein_name_to_results[result._domain.protein_name] = []
-        protein_name_to_results[result._domain.protein_name].append(result)
+        if result.paras_result.domain.protein_name not in protein_name_to_results:
+            protein_name_to_results[result.paras_result.domain.protein_name] = []
+        protein_name_to_results[result.paras_result.domain.protein_name].append(result)
 
     protein_results = []
     for protein_name, results in protein_name_to_results.items():
@@ -41,8 +40,7 @@ class ProteinResult:
     def __init__(
             self,
             protein_name: str,
-            results: List["Result"]
-
+            results: List["AnnotationResult"]
     ) -> None:
         """Initialise the Protein Result class.
 
@@ -50,7 +48,7 @@ class ProteinResult:
         :param results: List of results for that protein.
         """
         self._protein_name = protein_name
-        self._results = results
+        self.results = results
 
     def to_json(self) -> Dict[str, Union[str, int, List[Dict[str, Union[str, float]]]]]:
         """Return the Result as a JSON serialisable dictionary.
@@ -60,7 +58,25 @@ class ProteinResult:
         """
         return dict(
             protein_name=self._protein_name,
-            results=[result.to_json() for result in self._results]
+            results=[result.to_json() for result in self.results]
+        )
+
+
+class AnnotationResult:
+
+    def __init__(self,
+                 paras_result: "Result",
+                 sequence_matches: List[ADomain],
+                 synonym_matches: List[ADomain]):
+        self.paras_result = paras_result
+        self.sequence_matches: List[dict[str, Any]] = [x.to_json() for x in sequence_matches]
+        self.synonym_matches: List[dict[str, Any]] = [y.to_json() for y in synonym_matches]
+
+    def to_json(self):
+        return dict(
+            paras_result=self.paras_result.to_json(),
+            sequence_matches=self.sequence_matches,
+            synonym_matches=self.synonym_matches
         )
 
 
@@ -85,7 +101,7 @@ class Result:
         :param prediction_smiles: Prediction SMILES.
         :type prediction_smiles: List[str]
         """
-        self._domain = domain
+        self.domain = domain
         self._predictions = predictions
         self._prediction_labels = prediction_labels
         self._prediction_smiles = prediction_smiles
@@ -104,13 +120,13 @@ class Result:
         :rtype: Dict[str, Union[str, List[(float, str)]]
         """
         return dict(
-            domain_name=self._domain.protein_name,
-            domain_nr=self._domain.domain_nr,
-            domain_start=self._domain.start,
-            domain_end=self._domain.end,
-            domain_sequence=self._domain.sequence,
-            domain_signature=self._domain.signature,
-            domain_extended_signature=self._domain.extended_signature,
+            domain_name=self.domain.protein_name,
+            domain_nr=self.domain.domain_nr,
+            domain_start=self.domain.start,
+            domain_end=self.domain.end,
+            domain_sequence=self.domain.sequence,
+            domain_signature=self.domain.signature,
+            domain_extended_signature=self.domain.extended_signature,
             predictions=[
                 dict(substrate_name=sub_name, substrate_smiles=sub_smiles, probability=prob)
                 for sub_name, sub_smiles, prob in zip(

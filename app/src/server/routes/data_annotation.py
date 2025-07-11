@@ -9,13 +9,16 @@ import uuid
 from typing import Dict
 
 import joblib
-from flask import Blueprint, Response, request, redirect
+from flask import Blueprint, Response, request, jsonify
 
-from parasect.api import run_paras, sort_results
+from parasect.api import run_paras, sort_results, AnnotationResult
+from parasect.database.query_database import get_domains_from_sequence, get_domains_from_synonym
 
 from .app import app
 from .common import ResponseData, Status
 from .constants import MODEL_DIR, TEMP_DIR
+from .database import get_db
+
 
 blueprint_annotate_data = Blueprint("annotate_data", __name__)
 
@@ -78,9 +81,28 @@ def run_prediction_protein(job_id: str, data: Dict[str, str]) -> None:
                 model=model,
                 use_structure_guided_alignment=False,
             )
+
             for result in results:
                 result.sort()
-            sorted_results = sort_results(results)
+
+            annotation_results = []
+
+            session_generator = get_db()
+            session = next(session_generator)
+
+            try:
+                for domain_hit in results:
+                    sequence_matches = get_domains_from_sequence(session, domain_hit.domain.sequence)
+                    name_matches = get_domains_from_synonym(session, domain_hit.domain.protein_name,
+                                                            domain_hit.domain.domain_nr)
+                    annotation_result = AnnotationResult(paras_result=domain_hit,
+                                                         sequence_matches=sequence_matches,
+                                                         synonym_matches=name_matches)
+                    annotation_results.append(annotation_result)
+            finally:
+                session_generator.close()
+
+            sorted_results = sort_results(annotation_results)
 
         except Exception as e:
             msg = f"failed to make predictions: {str(e)}"
@@ -136,4 +158,5 @@ def annotate_data() -> Response:
     threading.Thread(target=run_prediction_protein, args=(job_id, data)).start()
 
     # immediately return job_id
-    return ResponseData(Status.Success, payload={"jobId": job_id}).to_dict()
+    return jsonify(ResponseData(Status.Success, payload={"jobId": job_id}).to_dict())
+

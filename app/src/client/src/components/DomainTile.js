@@ -1,20 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import {
+    ExpandMore,
+    ExpandLess
+} from '@mui/icons-material';
+
 import {
     Box,
     Button,
-    MenuItem,
-    Select,
-    FormControl,
     Autocomplete,
     TextField,
     FormControlLabel,
     Checkbox,
     Popper,
+    Collapse,
+    IconButton,
+    Typography,
 } from '@mui/material';
-import { FaFingerprint, FaCopy } from 'react-icons/fa';
+import { FaFingerprint } from 'react-icons/fa';
 
 import SmileDrawerContainer from './SmilesDrawer';
+import SmilesChecker from './SmilesChecker';
 
 /**
  * Component to display the results of the prediction.
@@ -23,343 +28,570 @@ import SmileDrawerContainer from './SmilesDrawer';
  * @param {Object} props.result - The result object.
  * @returns {React.ReactElement} - The result tile component.
  */
-const DomainTile = ({ result }) => {
-    const [selectedPrediction] = useState(result['predictions'][0]);
-    const [selectedSubstrate, setSelectedSubstrate] = useState(null);
+const DomainTile = ({ result , onAnnotationChange}) => {
+    const [expanded, setExpanded] = useState(false);  // Start expanded
+    const toggleExpanded = () => setExpanded(prev => !prev);
+    const [nameWarnings, setNameWarnings] = useState({});
+    const [nameValidity, setNameValidity] = useState({});
 
-    const [useCustomSmiles, setUseCustomSmiles] = useState(false);
-    const [customSmiles, setCustomSmiles] = useState('');
-    const [newSubstrateName, setNewSubstrateName] = useState(null)
+    const parasResult = result["paras_result"]
+    const sequenceMatches = result["sequence_matches"];
+    const hasSequenceMatch = sequenceMatches && sequenceMatches.length > 0;
+    const firstSequenceMatch = hasSequenceMatch ? sequenceMatches[0] : null;
+    const matchSynonym = hasSequenceMatch ? firstSequenceMatch["synonyms"][0]["synonym"] : null;
+    const matchedSubstrates = hasSequenceMatch ? firstSequenceMatch["substrates"] : null;
+    const [overrideSubstrates, setOverrideSubstrates] = useState(false);
+
+    {/* Initialize with one substrate entry, default to no selection & no custom smiles */
+    }
+    const [substrates, setSubstrates] = useState([
+        {
+            selectedSubstrate: null,
+            useCustomSmiles: false,
+            customSmiles: '',
+            newSubstrateName: '',
+            substrateName: '',
+            substrateSmiles: '',
+            annotationType: null},
+    ]);
 
     const [smilesOptions, setSmilesOptions] = useState([]);
 
-    {/* Load SMILES for substrate assignment */}
+    // Helper to compare known vs selected (dropdown-based) substrates
+    const matchedNames = new Set((matchedSubstrates || []).map(s => s.name));
+
+    const selectedDropdownNames = new Set(
+        substrates
+            .filter(sub => !sub.useCustomSmiles && sub.selectedSubstrate)
+            .map(sub => sub.selectedSubstrate.name)
+    );
+
+    const allSelectedAreMatched = selectedDropdownNames.size === matchedNames.size &&
+        [...selectedDropdownNames].every(name => matchedNames.has(name));
+
+    const showNoUpdateMessage = hasSequenceMatch && allSelectedAreMatched;
+
+    const recalculateAnnotationTypes = (substrates) => {
+        const matchedNames = new Set((matchedSubstrates || []).map(s => s.name));
+        const selectedDropdownNames = new Set(
+            substrates
+                .filter(sub => !sub.useCustomSmiles && sub.selectedSubstrate)
+                .map(sub => sub.selectedSubstrate.name)
+        );
+        const allMatch =
+            selectedDropdownNames.size === matchedNames.size &&
+            [...selectedDropdownNames].every(name => matchedNames.has(name));
+
+    return substrates.map((sub) => {
+        let annotationType = null;
+
+        if (!sub.useCustomSmiles && sub.selectedSubstrate) {
+            if (hasSequenceMatch && allMatch) {
+                annotationType = 'no_update';
+            } else if (hasSequenceMatch) {
+                annotationType = 'correction';
+            } else {
+                annotationType = 'new_entry';
+            }
+        } else if (sub.useCustomSmiles) {
+            annotationType = hasSequenceMatch ? 'correction' : 'new_entry';
+        }
+
+        return { ...sub, annotationType };
+    });
+};
+
+    {/* Load SMILES for substrate assignment */
+    }
     useEffect(() => {
-        fetch('/smiles.tsv')
-            .then((res) => res.text())
-            .then((text) => {
-                const lines = text.trim().split('\n');
-                const [headerLine, ...dataLines] = lines;
-                const headers = ["substrate_name", "substrate_smiles"]
-
-                const data = dataLines.map(line => {
-                    const values = line.split('\t');
-                    return headers.reduce((obj, key, i) => {
-                        obj[key] = values[i];
-                        return obj;
-                    }, {});
-                });
-
-                setSmilesOptions(data); // [{ substrate, smiles }, ...]
+          fetch('/api/get_substrates')
+            .then(res => res.json())
+            .then(data => {
+              setSmilesOptions(data);
             })
-
-            .catch((err) => {
-                console.error('Failed to load smiles.tsv:', err);
+            .catch(err => {
+              console.error('Failed to load smiles data from API:', err);
             });
+        }, []);
 
-    }, []);
-
-    // Sort the smilesOptions by PARAS prediction; stick all SMILES not in the model at the end:
+    {/* Sort smilesOptions by PARAS predictions order */
+    }
     const [sortedOptions, setSortedOptions] = useState([]);
 
     useEffect(() => {
-          if (!smilesOptions.length || !result["predictions"]) return;
+        if (!smilesOptions.length || !parasResult["predictions"]) return;
 
-          const preferredOrder = result["predictions"].map(p => p["substrate_name"]);
-          const orderMap = new Map(preferredOrder.map((name, i) => [name, i]));
+        const preferredOrder = parasResult["predictions"].map(p => p["substrate_name"]);
+        const orderMap = new Map(preferredOrder.map((name, i) => [name, i]));
 
-          const sorted = [...smilesOptions].sort((a, b) => {
-            const aIndex = orderMap.has(a["substrate_name"]) ? orderMap.get(a["substrate_name"]) : Infinity;
-            const bIndex = orderMap.has(b["substrate_name"]) ? orderMap.get(b["substrate_name"]) : Infinity;
+        const sorted = [...smilesOptions].sort((a, b) => {
+            const aIndex = orderMap.has(a["name"]) ? orderMap.get(a["name"]) : Infinity;
+            const bIndex = orderMap.has(b["name"]) ? orderMap.get(b["name"]) : Infinity;
             if (aIndex !== bIndex) return aIndex - bIndex;
-            return a["substrate_name"].localeCompare(b["substrate_name"]);
-          });
+            return a["name"].localeCompare(b["name"]);
+        });
 
-          setSortedOptions(sorted);
-        }, [smilesOptions, result["predictions"]]);
+        setSortedOptions(sorted);
+    }, [smilesOptions, parasResult["predictions"]]);
+
+    {/* The first prediction for showing */
+    }
+    const selectedPrediction = parasResult['predictions'][0];
+
+    {/* Handlers to update substrate entries */
+    }
+    const updateSubstrateField = (index, field, value) => {
+    setSubstrates((prev) => {
+        const newSubs = [...prev];
+        const updated = { ...newSubs[index], [field]: value };
+
+        if (field === 'useCustomSmiles') {
+            if (value === true) {
+                updated.selectedSubstrate = null;
+                updated.substrateName = '';
+                updated.substrateSmiles = '';
+            } else {
+
+                updated.customSmiles = '';
+                updated.newSubstrateName = '';
+                updated.substrateName = '';
+                updated.substrateSmiles = '';
+            }
+        }
+
+        if (field === 'selectedSubstrate' && value !== null) {
+            updated.useCustomSmiles = false;
+            updated.customSmiles = '';
+            updated.newSubstrateName = '';
+            updated.substrateName = value.name;
+            updated.substrateSmiles = value.smiles;
+        }
+
+        newSubs[index] = updated;
+
+        const finalSubs = recalculateAnnotationTypes(newSubs);
+        onAnnotationChange?.(finalSubs);
+        return finalSubs;
+    });
+};
+    useEffect(() => {
+    substrates.forEach((sub, i) => {
+        const name = sub.newSubstrateName?.trim();
+        const smiles = sub.customSmiles?.trim();
+
+        if (sub.useCustomSmiles && name) {
+            fetch('/api/check_substrate_name', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ substrate_name: name }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    const duplicate = Array.isArray(data) && data.length > 0;
+
+                    setNameWarnings((prev) => ({
+                        ...prev,
+                        [i]: duplicate
+                            ? 'Substrate name already exists in the dataset.'
+                            : null,
+                    }));
+
+                    setNameValidity((prev) => ({
+                        ...prev,
+                        [i]: !duplicate,
+                    }));
+
+                    setSubstrates((prev) => {
+                        const updated = [...prev];
+                        const item = { ...updated[i] };
+
+                        if (!duplicate && name && smiles) {
+                            item.substrateName = name;
+                            item.substrateSmiles = smiles;
+                        } else {
+                            item.substrateName = '';
+                            item.substrateSmiles = '';
+                        }
+
+                        updated[i] = item;
+                        onAnnotationChange?.(updated);
+                        return updated;
+                    });
+                })
+                .catch((err) => {
+                    console.error('Failed to check substrate name:', err);
+                    setNameWarnings((prev) => ({
+                        ...prev,
+                        [i]: 'Error checking substrate name.',
+                    }));
+                });
+        }
+    });
+}, [substrates.map((s) => `${s.newSubstrateName}|${s.customSmiles}`).join('|')]);
+
+    useEffect(() => {
+    substrates.forEach((sub, i) => {
+        const name = sub.newSubstrateName?.trim();
+        if (sub.useCustomSmiles && name) {
+            fetch('/api/check_substrate_name', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ substrate_name: name }),
+                })
+                .then((res) => res.json())
+                .then((data) => {
+                    const isDuplicate = Array.isArray(data) && data.length > 0;
+                    setNameWarnings((prev) => ({
+                        ...prev,
+                        [i]: isDuplicate ? `Substrate name already exists in the dataset.` : null,
+                    }));
+                    setNameValidity((prev) => ({
+                        ...prev,
+                        [i]: !isDuplicate,
+                    }));
+                })
+                .catch((err) => {
+                    console.error('Failed to check substrate name:', err);
+                    setNameWarnings((prev) => ({
+                        ...prev,
+                        [i]: 'Error checking substrate name.',
+                    }));
+                    setNameValidity((prev) => ({
+                        ...prev,
+                        [i]: false,
+                    }));
+                });
+        } else {
+            setNameWarnings((prev) => ({
+                ...prev,
+                [i]: null,
+            }));
+            setNameValidity((prev) => ({ ...prev, [i]: true }));
+        }
+    });
+}, [substrates.map((s) => s.newSubstrateName).join('|')]);
 
     return (
         <Box
             sx={{
-                minWidth: '500px',
-                maxWidth: '500px',
+                flexGrow: 1,
                 borderRadius: '11px',
                 boxShadow: '0px 4px 10px rgba(100, 84, 31, 0.5)',
+                display: 'flex',
+                flexDirection: 'column',
+                backgroundColor: hasSequenceMatch ? '#e0e0e0' : 'white',
             }}
         >
-            {/* header */}
+            {/* Header with collapse toggle */}
             <Box
                 sx={{
-                    backgroundColor: 'secondary.main',
+                    backgroundColor: hasSequenceMatch ? '#c0c0c0' : 'secondary.main',
                     color: 'black.main',
                     padding: '14px 8px',
                     display: 'flex',
-                    marginBottom: 1,
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
                     borderTopLeftRadius: '10px',
                     borderTopRightRadius: '10px',
-                    justifyContent: 'center',
                 }}
             >
-                {`Domain ${result['domain_nr']} (${result['domain_start']}-${result['domain_end']})`}
+                <Typography>
+                    {`Domain ${parasResult['domain_nr']} (${parasResult['domain_start']}-${parasResult['domain_end']})`}
+                    {hasSequenceMatch && (
+                        <span style={{marginLeft: '10px', fontSize: '0.9em', color: 'black'}}>
+                            Sequence already found in dataset ({matchSynonym})
+                        </span>
+                    )}
+                </Typography>
+                <IconButton onClick={toggleExpanded} size="small">
+                    {expanded ? <ExpandLess/> : <ExpandMore/>}
+                </IconButton>
             </Box>
 
-            {/* domain signature */}
-            {result['domain_signature'].length > 0 && (
-                <Box
-                    sx={{
-                        padding: 1,
-                        display: 'flex',
-                        justifyContent: 'left',
+            {/* Collapsible content */}
+            <Collapse in={expanded}>
+                <Box sx={{padding: 2}}>
+
+                    {/* domain signature */}
+                    {parasResult['domain_signature'].length > 0 && (
+                        <Box
+                            sx={{
+                                padding: 1,
+                                display: 'flex',
+                                justifyContent: 'left',
+                            }}
+                        >
+                            <FaFingerprint size="1.5em" style={{marginRight: '5px'}}/>
+                            {parasResult['domain_signature']}
+                        </Box>
+                    )}
+
+                    {/* spacing */}
+                    <Box sx={{height: 16}}/>
+
+                    {/* prediction + substrate selectors + visualizer */}
+<Box sx={{ display: 'flex', alignItems: 'flex-start', paddingX: 1, gap: 2, flexDirection: 'column' }}>
+    {/* Show known substrates if there's a match */}
+    {hasSequenceMatch && (
+        <>
+            <Typography sx={{ fontWeight: 500 }}>Known substrates</Typography>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                {matchedSubstrates.map((substrate, idx) => (
+                    <Box key={idx} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <SmileDrawerContainer
+                            identifier={`${parasResult['domain_name']}-${parasResult['domain_nr']}-match-${idx}`}
+                            smilesStr={substrate.smiles}
+                            height={200}
+                            width={200}
+                        />
+                        <Typography variant="caption" sx={{ mt: 1 }}>{substrate.name}</Typography>
+                    </Box>
+                ))}
+            </Box>
+
+            {/* Override checkbox */}
+            <FormControlLabel
+    control={
+        <Checkbox
+            checked={overrideSubstrates}
+            onChange={(e) => {
+                const checked = e.target.checked;
+                setOverrideSubstrates(checked);
+                if (!checked) {
+                    setSubstrates([]);
+                    onAnnotationChange?.([]);
+                }
+            }}
+        />
+    }
+    label="Make substrate correction"
+    sx={{ mt: 2 }}
+/>
+        </>
+    )}
+
+    {/* Render override UI if checked or no match */}
+    {(!hasSequenceMatch || overrideSubstrates) && (
+        <>
+
+
+            {/* Render all substrate selector blocks with visualizer */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {/* Show PARAS prediction only if no sequence match */}
+            {!hasSequenceMatch && selectedPrediction && (
+                <Box>
+                    <Box
+                        sx={{
+                            fontWeight: 500,
+                            marginBottom: 0.5
                     }}
-                >
-                    <FaFingerprint size="1.5em" style={{ marginRight: '5px' }} />
-                    {result['domain_signature']}
+                        >
+                        Domain name
+                    </Box>
+
+                    <Box sx={{ fontWeight: 500, marginBottom: 0.5 }}>
+                        PARAS prediction
+                    </Box>
+                    <Box
+                        sx={{
+                            border: '1px solid #ccc',
+                            borderRadius: '4px',
+                            padding: '8px',
+                            minHeight: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-start',
+                            textAlign: 'left',
+                        }}
+                    >
+                        {`${selectedPrediction['substrate_name']} (${selectedPrediction['probability'].toFixed(2)})`}
+                    </Box>
                 </Box>
             )}
-
-            {/* spacing */}
-            <Box sx={{ height: 16 }} />
-
-            {/* prediction + substrate selector + visualizer */}
-            <Box
-                sx={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    paddingX: 1,
-                    gap: 2,
-                }}
-            >
-                <Box sx={{ flex: 1 }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {/* PARAS prediction */}
-                        <Box>
-                            <Box sx={{ fontWeight: 500, marginBottom: 0.5 }}>
-                                PARAS prediction
+                <Typography sx={{ fontWeight: 500 }}>Substrate assignments</Typography>
+                {substrates.map((sub, i) => (
+                    <Box
+                        key={i}
+                        sx={{
+                            display: 'flex',
+                            gap: 2,
+                            alignItems: 'flex-start',
+                            border: '1px solid #ccc',
+                            borderRadius: 1,
+                            p: 1,
+                            minWidth: 500,
+                            position: 'relative',
+                        }}
+                    >
+                        {/* Substrate selector box */}
+                        <Box sx={{ flex: '1 1 300px' }}>
+                            <Box sx={{ fontWeight: 500, marginBottom: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <span>
+                                    {sub.substrateName?.trim()
+                                        ? `Substrate ${i + 1}: ${sub.substrateName}`
+                                        : `Substrate ${i + 1}`}
+                                </span>
+                                {i > 0 && (
+                                    <Button
+                                        variant="outlined"
+                                        color="error"
+                                        size="small"
+                                        onClick={() =>
+    setSubstrates((prev) => {
+        const updated = prev.filter((_, idx) => idx !== i);
+        const finalSubs = recalculateAnnotationTypes(updated);
+        onAnnotationChange?.(finalSubs);
+        return finalSubs;
+    })
+}
+                                        sx={{ ml: 1, minWidth: 'auto', padding: '2px 8px' }}
+                                    >
+                                        Remove
+                                    </Button>
+                                )}
                             </Box>
-                            <Box
-                                sx={{
-                                    border: '1px solid #ccc',
-                                    borderRadius: '4px',
-                                    padding: '8px',
-                                    minHeight: '40px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'flex-start',
-                                    textAlign: 'left',
-                                }}
-                            >
-                                {selectedPrediction['substrate_name']} (
-                                {selectedPrediction['probability'].toFixed(2)})
-                            </Box>
-                        </Box>
 
-                        {/* Substrate */}
-                        <Box>
-                            <Box sx={{ fontWeight: 500, marginBottom: 0.5 }}>
-                                Substrate 1
-                            </Box>
                             <Autocomplete
-                                options={sortedOptions}
-                                getOptionLabel={(option) => option['substrate_name']}
-                                renderInput={(params) => (
-                                    <TextField {...params} variant="outlined" />
-                                )}
-                                value={selectedSubstrate || null}
-                                onChange={(event, newValue) => {
-                                    setSelectedSubstrate(newValue);
-                                }}
-                                isOptionEqualToValue={(option, value) =>
-                                    option['substrate_name'] === value['substrate_name']
-                                }
-                                clearOnEscape
-                                sx={{ borderRadius: '0' }}
-                                PopperComponent={(props) => (
-                                    <Popper {...props}
-                                            placement="bottom-start"
-                                            modifiers={[{
-                                                name: 'flip',
-                                                enabled: false
-                                            }]}
-                                    />
-                                )}
-                            />
-                        </Box>
+                                  options={sortedOptions}
+                                  getOptionLabel={(option) => option['name']}
+                                  renderInput={(params) => <TextField {...params} variant="outlined" />}
+                                  value={sub.selectedSubstrate || null}
+                                  onChange={(event, newValue) => updateSubstrateField(i, 'selectedSubstrate', newValue)}
+                                  isOptionEqualToValue={(option, value) => option['name'] === value['name']}
+                                  clearOnEscape
+                                  disabled={sub.useCustomSmiles}
+                                  getOptionDisabled={(option) => {
+                                    // Disable if this substrate name is already selected in other entries (not counting current index)
+                                    return substrates.some((s, idx) =>
+                                      idx !== i &&
+                                      !s.useCustomSmiles &&
+                                      s.selectedSubstrate?.name === option.name
+                                    );
+                                  }}
+                                  PopperComponent={(props) => (
+                                      <Popper
+                                          {...props}
+                                          placement="bottom-start"
+                                          modifiers={[{ name: 'flip', enabled: false }]}
+                                      />
+                                  )}
+                                />
 
-                        <Box>
                             <FormControlLabel
                                 control={
                                     <Checkbox
-                                        checked={useCustomSmiles}
-                                        onChange={(e) => {
-                                            setUseCustomSmiles(e.target.checked);
-                                            setCustomSmiles('');
-                                        }}
+                                        checked={sub.useCustomSmiles}
+                                        onChange={(e) => updateSubstrateField(i, 'useCustomSmiles', e.target.checked)}
                                     />
                                 }
                                 label="New substrate"
                             />
-                            {useCustomSmiles && (
-                                <Box sx={{ mt: 1 }}>
-                                    <TextField
-                                        label="Enter substrate name"
-                                        fullWidth
-                                        value={newSubstrateName}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            setNewSubstrateName(value);
 
-                                        }}
+                            {sub.useCustomSmiles && (
+                                <>
+                                    <Box sx={{ mt: 1 }}>
+                                        <TextField
+                                            label="Enter substrate name"
+                                            fullWidth
+                                            value={sub.newSubstrateName}
+                                            onChange={(e) => updateSubstrateField(i, 'newSubstrateName', e.target.value)}
+                                            error={Boolean(nameWarnings[i])}
+                                            helperText={nameWarnings[i] || ''}
+                                        />
+                                    </Box>
+                                    <Box sx={{ mt: 1 }}>
+                                        <SmilesChecker
+                                            key={i}
+                                            i={i}
+                                            customSmiles={sub.customSmiles}
+                                            updateSubstrateField={updateSubstrateField}
+                                          />
+                                    </Box>
+                                </>
+                            )}
+                        </Box>
 
-                                    />
+                        {/* Visualise the substrate */}
+                        <Box sx={{ width: 200, height: 200, flexShrink: 0 }}>
+                            {/* Prioritize custom SMILES, then selected substrate */}
+                            {sub.useCustomSmiles && sub.customSmiles ? (
+                                <SmileDrawerContainer
+                                    identifier={`${parasResult['domain_name']}-${parasResult['domain_nr']}-custom-${i}`}
+                                    smilesStr={sub.customSmiles}
+                                    height={200}
+                                    width={200}
+                                />
+
+                            ) : sub.selectedSubstrate ? (
+                                <SmileDrawerContainer
+                                    identifier={`${parasResult['domain_name']}-${parasResult['domain_nr']}-sel-${i}`}
+                                    smilesStr={sub.selectedSubstrate['smiles']}
+                                    height={200}
+                                    width={200}
+                                />
+                            ) : (
+                                <Box
+                                    sx={{
+                                        height: 200,
+                                        width: 200,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'gray',
+                                        fontStyle: 'italic',
+                                        border: '1px dashed #ccc',
+                                    }}
+                                >
+                                    No substrate selected
                                 </Box>
                             )}
-
-                            {useCustomSmiles && (
-                                <Box sx={{ mt: 1 }}>
-                                    <TextField
-                                        label="Enter SMILES"
-                                        fullWidth
-                                        value={customSmiles}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            setCustomSmiles(value);
-
-                                        }}
-
-                                    />
-                                </Box>
-                            )}
-
                         </Box>
                     </Box>
-                </Box>
+                ))}
 
-                {/* substrate visualizer */}
-                {useCustomSmiles && customSmiles ? (
-                    <SmileDrawerContainer
-                        identifier={`${result['domain_name']}-${result['domain_nr']}`}
-                        smilesStr={customSmiles}
-                        height={200}
-                        width={200}
-                    />
-                ) : selectedSubstrate ? (
-                    <SmileDrawerContainer
-                        identifier={`${result['domain_name']}-${result['domain_nr']}`}
-                        smilesStr={selectedSubstrate['substrate_smiles']}
-                        height={200}
-                        width={200}
-                    />
-                ) : (
+                {/* If the chosen substrates exactly match the given substrates, show message */}
+
+                {showNoUpdateMessage && (
                     <Box
                         sx={{
-                            height: 200,
-                            width: 200,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'gray',
-                            fontStyle: 'italic',
+                            border: '1px solid #aaa',
+                            backgroundColor: '#f0f0f0',
+                            borderRadius: 1,
+                            padding: 2,
+                            mb: 2,
                         }}
                     >
-                        No substrate selected
+                        <Typography sx={{ fontWeight: 500, color: 'green' }}>
+                            Selected substrates match known substrates exactly. No update will be made.
+                        </Typography>
                     </Box>
                 )}
-            </Box>
 
-            {/* Copy buttons section */}
-            <Box>
-                <Box
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        gap: '1px',
-                    }}
+                {/* Add substrate button */}
+                <Button
+                    variant="outlined"
+                    onClick={() =>
+                        setSubstrates((prev) => [
+                            ...prev,
+                            {
+                                selectedSubstrate: null,
+                                useCustomSmiles: false,
+                                customSmiles: '',
+                                newSubstrateName: ''
+                            },
+                        ])
+                    }
+                    sx={{ alignSelf: 'flex-start', mb: 2 }}
                 >
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                            navigator.clipboard.writeText(result['domain_sequence']);
-                            toast.success('Copied the domain amino acid sequence to clipboard!');
-                        }}
-                        sx={{
-                            flexGrow: 1,
-                            width: '50%',
-                            borderRadius: '0',
-                            borderBottom: '1px solid white',
-                        }}
-                        disabled={result['domain_sequence'].length === 0}
-                    >
-                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
-                        Sequence
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                            navigator.clipboard.writeText(result['domain_signature']);
-                            toast.success('Copied the domain signature to clipboard!');
-                        }}
-                        sx={{
-                            flexGrow: 1,
-                            width: '50%',
-                            borderRadius: '0',
-                            borderBottom: '1px solid white',
-                        }}
-                        disabled={result['domain_signature'].length === 0}
-                    >
-                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
-                        Signature
-                    </Button>
-                </Box>
-
-                <Box
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        gap: '1px',
-                    }}
-                >
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                            navigator.clipboard.writeText(selectedPrediction['substrate_smiles']);
-                            toast.success('Copied the substrate SMILES to clipboard!');
-                        }}
-                        sx={{
-                            flexGrow: 1,
-                            width: '50%',
-                            borderRadius: '0',
-                            borderBottomLeftRadius: '10px',
-                        }}
-                        disabled={selectedPrediction['substrate_smiles'].length === 0}
-                    >
-                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
-                        SMILES
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                            navigator.clipboard.writeText(result['domain_extended_signature']);
-                            toast.success('Copied the domain extended signature to clipboard!');
-                        }}
-                        sx={{
-                            flexGrow: 1,
-                            width: '50%',
-                            borderRadius: '0',
-                            borderBottomRightRadius: '10px',
-                        }}
-                        disabled={result['domain_extended_signature'].length === 0}
-                    >
-                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
-                        Ext. signature
-                    </Button>
-                </Box>
+                    Add another substrate
+                </Button>
             </Box>
+        </>
+    )}
+</Box>
+
+                </Box>
+            </Collapse>
         </Box>
     );
 };

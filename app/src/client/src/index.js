@@ -67,10 +67,21 @@ const CustomToolbar = () => {
 
     // fetch version from server
     useEffect(() => {
-        fetch('/api/version')
-            .then((response) => response.json())
-            .then((data) => setVersion(`v${data.version}`));
-    }, []);  // empty array means only run once
+    fetch('/api/version')
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            setVersion(`v${data.version}`);
+        })
+        .catch((error) => {
+            console.error('Failed to fetch version:', error);
+            setVersion('v?');  // Fallback version if fetch fails
+        });
+}, []);
 
     // state to handle menu
     const [anchorEl, setAnchorEl] = useState(null);
