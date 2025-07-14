@@ -3,19 +3,81 @@
 """API for PARASECT."""
 
 import os
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any
 
 from sklearn.ensemble import RandomForestClassifier
 
 from parasect.core.constants import FINGERPRINTS_FILE, INCLUDED_SUBSTRATES_FILE, SMILES_FILE
 from parasect.core.domain import AdenylationDomain
+from parasect.database.build_database import AdenylationDomain as ADomain
 from parasect.core.featurisation import get_domain_features, get_domains
 from parasect.core.parsing import (
     bitvector_from_smiles,
     data_from_substrate_names,
     parse_substrate_list,
 )
+from parasect.core.fetch_from_genbank import fetch_from_genbank
 from parasect.core.tabular import Tabular
+
+
+def sort_results(results: List["AnnotationResult"]) -> List["ProteinResult"]:
+    protein_name_to_results: Dict[str, List[AnnotationResult]] = {}
+    for result in results:
+        if result.paras_result.domain.protein_name not in protein_name_to_results:
+            protein_name_to_results[result.paras_result.domain.protein_name] = []
+        protein_name_to_results[result.paras_result.domain.protein_name].append(result)
+
+    protein_results = []
+    for protein_name, results in protein_name_to_results.items():
+        protein_results.append(ProteinResult(protein_name, results))
+
+    return protein_results
+
+
+class ProteinResult:
+    """Protein result class."""
+
+    def __init__(
+            self,
+            protein_name: str,
+            results: List["AnnotationResult"]
+    ) -> None:
+        """Initialise the Protein Result class.
+
+        :param protein_name: str, name of the protein
+        :param results: List of results for that protein.
+        """
+        self._protein_name = protein_name
+        self.results = results
+
+    def to_json(self) -> Dict[str, Union[str, int, List[Dict[str, Union[str, float]]]]]:
+        """Return the Result as a JSON serialisable dictionary.
+
+        :return: JSON serialisable dictionary.
+        :rtype: Dict[str, Union[str, List[(float, str)]]
+        """
+        return dict(
+            protein_name=self._protein_name,
+            results=[result.to_json() for result in self.results]
+        )
+
+
+class AnnotationResult:
+
+    def __init__(self,
+                 paras_result: "Result",
+                 sequence_matches: List[ADomain],
+                 synonym_matches: List[ADomain]):
+        self.paras_result = paras_result
+        self.sequence_matches: List[dict[str, Any]] = [x.to_json() for x in sequence_matches]
+        self.synonym_matches: List[dict[str, Any]] = [y.to_json() for y in synonym_matches]
+
+    def to_json(self):
+        return dict(
+            paras_result=self.paras_result.to_json(),
+            sequence_matches=self.sequence_matches,
+            synonym_matches=self.synonym_matches
+        )
 
 
 class Result:
@@ -39,10 +101,17 @@ class Result:
         :param prediction_smiles: Prediction SMILES.
         :type prediction_smiles: List[str]
         """
-        self._domain = domain
+        self.domain = domain
         self._predictions = predictions
         self._prediction_labels = prediction_labels
         self._prediction_smiles = prediction_smiles
+
+    def sort(self):
+        pred_label_smiles = list(zip(self._predictions, self._prediction_labels, self._prediction_smiles))
+        pred_label_smiles.sort(key=lambda x: x[0], reverse=True)
+        self._predictions = [data[0] for data in pred_label_smiles]
+        self._prediction_labels = [data[1] for data in pred_label_smiles]
+        self._prediction_smiles = [data[2] for data in pred_label_smiles]
 
     def to_json(self) -> Dict[str, Union[str, int, List[Dict[str, Union[str, float]]]]]:
         """Return the Result as a JSON serialisable dictionary.
@@ -51,13 +120,13 @@ class Result:
         :rtype: Dict[str, Union[str, List[(float, str)]]
         """
         return dict(
-            domain_name=self._domain.protein_name,
-            domain_nr=self._domain.domain_nr,
-            domain_start=self._domain.start,
-            domain_end=self._domain.end,
-            domain_sequence=self._domain.sequence,
-            domain_signature=self._domain.signature,
-            domain_extended_signature=self._domain.extended_signature,
+            domain_name=self.domain.protein_name,
+            domain_nr=self.domain.domain_nr,
+            domain_start=self.domain.start,
+            domain_end=self.domain.end,
+            domain_sequence=self.domain.sequence,
+            domain_signature=self.domain.signature,
+            domain_extended_signature=self.domain.extended_signature,
             predictions=[
                 dict(substrate_name=sub_name, substrate_smiles=sub_smiles, probability=prob)
                 for sub_name, sub_smiles, prob in zip(
@@ -94,10 +163,23 @@ def run_paras(
     :raises KeyError: If smiles not found for substrate.
     """
     # write selected_input to file in temp folder
-    file_name = "input.fasta" if selected_input_type == "fasta" else "input.gbk"
+    if selected_input_type == "fasta":
+        file_name = "input.fasta"
+    elif selected_input_type == 'gbk':
+        file_name = "input.gbk"
+    elif selected_input_type == 'accession':
+        file_name = "input.fasta"
+    else:
+        raise ValueError(f"Unrecognised input type: {selected_input_type}")
+
     input_file = os.path.join(path_temp_dir, file_name)
-    with open(input_file, "w") as fo:
-        fo.write(selected_input)
+    if selected_input_type == 'accession':
+        accessions = selected_input.split(';')
+        fetch_from_genbank(accessions, input_file)
+
+    else:
+        with open(input_file, "w") as fo:
+            fo.write(selected_input)
 
     # get domains
     domains = get_domains(

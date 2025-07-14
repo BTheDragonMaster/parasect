@@ -6,12 +6,72 @@ import itertools
 import logging
 import os
 from typing import Dict, List, Tuple
+from dataclasses import dataclass
 
 from Bio import SeqIO
+from pikachu.general import read_smiles
 
 from parasect.core.chem import smiles_to_fingerprint
 from parasect.core.constants import FINGERPRINTS_FILE
 from parasect.core.tabular import Tabular
+
+@dataclass
+class SubstrateData:
+    name: str
+    smiles: str
+
+
+@dataclass
+class AdenylationDomainData:
+    id: int
+    synonyms: list[str]
+    sequence: str
+    substrates: list[SubstrateData]
+    signature: str
+    extended_signature: str
+
+
+def load_parasect_data(parasect_path: str, smiles_path: str, signature_path: str,
+                       extended_signature_path: str) -> tuple[List[AdenylationDomainData], List[SubstrateData]]:
+    parasect_data = Tabular(parasect_path, separator='\t')
+    smiles_data = Tabular(smiles_path, separator='\t')
+    domain_to_signature = parse_fasta_file(signature_path)
+    domain_to_extended = parse_fasta_file(extended_signature_path)
+
+    domains = []
+    substrates = []
+
+    for i, domain_name in enumerate(parasect_data.rows):
+        domain_synonyms = domain_name.split('|')
+        domain_id = i + 1
+        sequence = parasect_data.get_row_value(domain_name, "sequence")
+        substrate_names = parasect_data.get_row_value(domain_name, "specificity").split('|')
+        domain_substrates = []
+
+        for substrate_name in substrate_names:
+            if substrate_name in smiles_data.rows:
+                smiles = smiles_data.get_row_value(substrate_name, "smiles")
+
+                # Check SMILES string is valid
+                read_smiles(smiles)
+
+                domain_substrates.append(SubstrateData(substrate_name, smiles))
+            else:
+                raise ValueError(f"No SMILES found for substrate: {substrate_name}")
+
+        domain = AdenylationDomainData(domain_id, domain_synonyms, sequence, domain_substrates,
+                                       domain_to_signature[domain_name], domain_to_extended[domain_name])
+        domains.append(domain)
+
+    for substrate_name in smiles_data.rows:
+        smiles = smiles_data.get_row_value(substrate_name, "smiles")
+
+        # Check SMILES string is valid
+        read_smiles(smiles)
+
+        substrates.append(SubstrateData(substrate_name, smiles))
+
+    return domains, substrates
 
 
 def parse_substrate_list(path_in: str) -> List[str]:

@@ -9,7 +9,7 @@ import uuid
 from typing import Dict
 
 import joblib
-from flask import Blueprint, Response, request, redirect
+from flask import Blueprint, Response, request, redirect, jsonify
 
 from parasect.api import run_paras, run_parasect, run_paras_for_signatures
 from parasect.core.domain import AdenylationDomain
@@ -383,7 +383,7 @@ def submit_quick() -> Response:
             signature = request.args.get(signature_key, None)
 
             if signature is None:
-                return f"no signature provided for {accession}", 400
+                return jsonify(f"no signature provided for {accession}"), 400
 
             # retrieve optional attributes based on accession
             name = request.args.get(f"name{accession}", f"Signature {accession}")

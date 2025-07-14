@@ -1,5 +1,8 @@
 python-dotenv
 flask
+flask-cors
+sqlalchemy
+flask_sqlalchemy
 gunicorn
 joblib
 apscheduler

@@ -1,0 +1,248 @@
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { Box, IconButton, Divider, Typography, Button } from '@mui/material';
+import { FaCopy } from 'react-icons/fa';
+
+import Loading from '../components/Loading';
+import ProteinTile from '../components/ProteinTile';
+
+/**
+ * Component to display the results of the prediction.
+ *
+ * @returns {React.ReactElement} - The results component.
+ */
+
+const AnnotationEditor = () => {
+    // get job ID from URL
+    const { jobId } = useParams();
+
+    // state to store results
+    const [results, setResults] = useState(null);
+
+    // state to keep track of loading state
+    const [isLoading, setIsLoading] = useState(true);
+
+    const [proteinAnnotations, setProteinAnnotations] = useState({});
+
+    {/* For collecting protein annotations */}
+
+    const handleProteinAnnotationChange = (proteinId, data) => {
+    setProteinAnnotations((prev) => {
+        const updated = { ...prev };
+
+        // Check if domains object exists and has keys
+        const hasDomainAnnotations = data.domains && Object.keys(data.domains).length > 0;
+
+        if (data && hasDomainAnnotations) {
+            updated[proteinId] = data;
+        } else {
+            // Remove if no domain annotations (ignore synonym)
+            delete updated[proteinId];
+        }
+
+        return updated;
+    });
+};
+    {/* Submit updated protein data */}
+
+    const handleSubmit = async () => {
+    // Placeholder: validations can go here later
+    // For example:
+    // for (const [domainId, annotation] of Object.entries(domainAnnotations)) {
+    //     ... perform checks ...
+    // }
+
+    // Submit to backend to create PR
+
+        console.log("Submitting annotations:", proteinAnnotations);
+    const res = await fetch("/api/submit_annotations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ annotations: proteinAnnotations }),
+    });
+
+    const json = await res.json();
+    if (res.ok) {
+        alert(`Pull request created: ${json.pr_url}`);
+    } else {
+        alert(`Error: ${json.error}`);
+    }
+};
+
+    // fetch results from local storage
+    useEffect(() => {
+        let intervalId;
+
+        const fetchResult = async () => {
+            try {
+                const response = await fetch(`/api/retrieve/${jobId}`);
+                if (!response.ok) {
+                    throw new Error('failed to fetch results');
+                }
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    const results = data['payload']['results']
+
+                    // set states
+                    setResults(results);
+                    setIsLoading(false);
+                    clearInterval(intervalId);
+                } else if (data.status === 'failure') {
+                    throw new Error(data.message);
+                } // else keep polling
+            } catch (error) {
+                toast.error(
+                    <>
+                      {error.message}<br /><br />
+                      If you feel this is an error, or if you need assistance, please contact the developers in GitHub issues by selecting 'Report an issue' in the app bar at the top left of this page and posting your issue or question.
+                    </>,
+                    { autoClose: false }
+                );
+                setIsLoading(false);
+                clearInterval(intervalId);
+            }
+        };
+
+        if (jobId) {
+            // poll every second (1000 milliseconds)
+            intervalId = setInterval(fetchResult, 1000);
+        }
+
+        // clear interval when component unmounts
+        return () => clearInterval(intervalId);
+
+    }, [jobId]);
+
+    // render loading spinner while fetching results
+    if (isLoading) {
+        return (
+            <Box
+                display='flex'
+                flexDirection='column'
+                justifyContent='center'
+                alignItems='center'
+                minHeight='80vh'
+            >
+                <Loading
+                    frame1='paras_loading_1.png'
+                    frame2='paras_loading_2.png'
+                />
+                <p>Extracting A-domains and making PARAS predictions...</p>
+            </Box>
+        );
+    }
+
+    // render message if no results are found
+    if (!results) {
+        return (
+            <Box
+                display='flex'
+                justifyContent='center'
+                alignItems='center'
+                minHeight='80vh'
+            >
+                <p>No results found for job ID {jobId}</p>
+            </Box>
+        );
+    }
+
+    // render results if available
+    return (
+        <Box
+            display='flex'
+            flexDirection='column'
+            overflow='hidden'
+        >
+            <Box
+                display='flex'
+                flexDirection='column'
+                alignItems='left'
+                margin={4}
+            >
+
+                {/* header with job ID and download button */}
+                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
+                    <Typography variant='h4' gutterBottom>
+                        Extracted adenylation domains
+                    </Typography>
+
+                </Box>
+                <Typography variant='body1' gutterBottom>
+                    <IconButton
+                        onClick={() => {
+                            navigator.clipboard.writeText(jobId);
+                            toast.success('Copied the job ID to clipboard!');
+                        }}
+                    >
+                        <FaCopy size={15} style={{ paddingBottom: '3px' }} />
+                    </IconButton>
+                    {`Job ID: ${jobId}`}
+                </Typography>
+                <Divider />
+
+                <Box sx={{ mt: 4 }}>
+                    <Typography variant='body1' gutterBottom>
+                        In total, {results.length} of the submitted proteins contain adenylation domains. The tiles below show the domains for each protein. You can scroll horizontally to view all proteins.
+                    </Typography>
+
+                    <Typography variant='body1' gutterBottom>
+                        Domains which already exist in the PARAS/PARASECT dataset are displayed in grey. New domains are displayed in yellow.
+                    </Typography>
+
+                    <Typography variant='body1' gutterBottom>
+
+                    </Typography>
+
+                    <Typography variant='body1' gutterBottom>
+                        You can use the job ID to retrieve the results at a later time. All jobs are automatically deleted after 7 days.
+                    </Typography>
+                    <Box sx={{ mt: 4 }}>
+                    <Button variant="contained" color="primary" onClick={handleSubmit}>
+                        Submit Annotations
+                    </Button>
+            </Box>
+                </Box>
+            </Box>
+
+
+
+            {/* display results in a row, one item per protein */}
+            <Box
+                sx={{
+                    overflowY: 'auto',
+                    overflowX: 'auto',
+                    backgroundColor: 'white.main',
+                    flexDirection: 'row',
+                    display: 'flex',
+                    gap: '20px',
+                    paddingLeft: '30px',
+                    paddingRight: '30px',
+                    paddingBottom: '20px',
+
+                    // always show scrollbar
+                    '&::-webkit-scrollbar': {
+                        display: 'block',
+                    },
+
+                    // scrollbar style
+                    '&::-webkit-scrollbar-thumb': {
+                        backgroundColor: '#ceccca',
+                        borderRadius: '10px',
+                    },
+                }}
+            >
+                {results.map((result, index) => (
+                    <ProteinTile
+                        key={index}
+                        proteinResult={result}
+                        onUpdateAnnotation={handleProteinAnnotationChange} />
+                ))}
+            </Box>
+        </Box>
+    );
+};
+
+export default AnnotationEditor;

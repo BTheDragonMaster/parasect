@@ -10,9 +10,10 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from flask import Flask
 
+
 app = Flask(__name__)
 app.config["JOB_RESULTS"] = dict()
-
+app.config["SMILES"] = dict()
 
 app.config["ENV"] = os.getenv("FLASK_ENV", "production")  # defaults to "production"
 app.config["DEBUG"] = app.config["ENV"] == "development"
