@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import { Box, Button, MenuItem, Select, FormControl, TextField } from '@mui/material';
 import { FaFingerprint, FaCopy } from 'react-icons/fa';
@@ -17,7 +17,11 @@ const ProteinTile = ({ proteinResult, onUpdateAnnotation }) => {
     const [domainAnnotations, setDomainAnnotations] = useState({});
     // Extract first part of protein name (before whitespace)
 
-    const [proteinName, setProteinName] = useState('');
+    const defaultProteinName = useMemo(() => {
+  return proteinResult?.protein_name?.split(/\s+/)[0] || "";
+}, [proteinResult]);
+
+const [proteinName, setProteinName] = useState(defaultProteinName);
     const [proteinExists, setProteinExists] = useState(null); // null = not checked yet
 
     // 🔍 Check if protein is in dataset
@@ -135,6 +139,7 @@ const ProteinTile = ({ proteinResult, onUpdateAnnotation }) => {
                         result={result}
                         onAnnotationChange={(domainName, data) => handleDomainAnnotationChange(index, domainName, data)}
                     />
+
                 ))}
             </Box>
         </Box>

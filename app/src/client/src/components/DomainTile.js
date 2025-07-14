@@ -51,14 +51,18 @@ const DomainTile = ({ result , domainIndex, protein_name, onAnnotationChange}) =
     const [isDuplicateDomain, setIsDuplicateDomain] = useState(false);
     const [annotatedSubstrates, setAnnotatedSubstrates] = useState([]);
 
+    useEffect(() => {
+      setProteinName(protein_name);
+    }, [protein_name]);
+
     const domainName = useMemo(() => {
         return matchSynonym != null
             ? matchSynonym
-            : `${protein_name}.A${domainIndex}`;
-    }, [matchSynonym, protein_name, domainIndex]);
+            : `${proteinName}.A${domainIndex}`;
+    }, [matchSynonym, proteinName, domainIndex]);
 
     const domainSynonym = useMemo( () => {
-        return `${proteinName}.A${domainIndex}`;}, [protein_name, domainIndex]);
+        return `${proteinName}.A${domainIndex}`;}, [proteinName, domainIndex]);
 
     useEffect(() => {
     const hasValidSubstrate = substrates?.some(
@@ -645,7 +649,10 @@ const DomainTile = ({ result , domainIndex, protein_name, onAnnotationChange}) =
                                 selectedSubstrate: null,
                                 useCustomSmiles: false,
                                 customSmiles: '',
-                                newSubstrateName: ''
+                                newSubstrateName: '',
+                                sequence: sequence,
+                                signature: signature,
+                                extendedSignature: extendedSignature
                             },
                         ])
                     }

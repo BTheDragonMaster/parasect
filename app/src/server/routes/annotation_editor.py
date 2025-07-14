@@ -211,7 +211,7 @@ def submit_annotations():
         annotations = data.get("annotations", {})
         protein_to_entries = cleanup_annotations(annotations)
         pprint(protein_to_entries)
-        print("hello!")
+
         current_dir = os.path.dirname(os.path.abspath(__file__))
         user_submission = os.path.join(current_dir, '..', 'user_submissions', f"{str(uuid.uuid4())}.txt")
         write_annotations(user_submission, protein_to_entries)
