@@ -8,9 +8,9 @@ from typing import Dict, List, Tuple
 
 from Bio.SearchIO._model.hsp import HSP
 
-from parasect.core.constants import HMM2_FILE, PROPERTIES
+from parasect.core.constants import HMM2_FILE, HMM3_FILE, PROPERTIES
 from parasect.core.domain import AdenylationDomain
-from parasect.core.hmmer import parse_hmm2_results, rename_sequences, reverse_renaming, run_hmmpfam2
+from parasect.core.hmmer import parse_hmm_results, rename_sequences, reverse_renaming, run_hmmpfam2, run_hmmscan
 from parasect.core.parsing import parse_fasta_file, parse_genbank_file
 
 
@@ -36,6 +36,7 @@ def _hits_to_domains(
     path_in_fasta_file: str,
     path_temp_dir: str,
     use_profile_alignment: bool = False,
+        hmm_version: int = 2
 ) -> List[AdenylationDomain]:
     """Extract adenylation domains from HMM hits.
 
@@ -87,11 +88,12 @@ def _hits_to_domains(
 
                     if hit_id_2 == "AMP-binding_C":
                         if hit_start_2 > hit_end_1 and (hit_start_2 - hit_end_1) < 200:
+
                             a_domain = AdenylationDomain(
                                 protein_name=seq_id, domain_start=hit_start_1, domain_end=hit_end_2
                             )
 
-                            if not use_profile_alignment:
+                            if hmm_version == 2 and not use_profile_alignment:
                                 a_domain.set_domain_signatures_hmm(
                                     hit_n_terminal=id_to_hit[hit_key_1],
                                     hit_c_terminal=id_to_hit[hit_key_2],
@@ -106,10 +108,12 @@ def _hits_to_domains(
                         protein_name=seq_id, domain_start=hit_start_1, domain_end=hit_end_1
                     )
 
-                    a_domain.set_domain_signatures_hmm(
-                        hit_n_terminal=id_to_hit[hit_key_1],
-                        hit_c_terminal=None,
-                    )
+                    if hmm_version == 2 and not use_profile_alignment:
+
+                        a_domain.set_domain_signatures_hmm(
+                            hit_n_terminal=id_to_hit[hit_key_1],
+                            hit_c_terminal=None,
+                        )
                     seq_id_to_domains[seq_id].append(a_domain)
 
         if counter % 1000 == 0:
@@ -132,7 +136,7 @@ def _hits_to_domains(
                 if seq_id != a_domain.protein_name:
                     raise ValueError("Protein name mismatch")
 
-                a_domain_sequence = sequence[a_domain.start : a_domain.end]
+                a_domain_sequence = sequence[a_domain.start:a_domain.end]
 
                 if len(a_domain_sequence) > 100:
                     a_domain.set_sequence(a_domain_sequence)
@@ -140,7 +144,7 @@ def _hits_to_domains(
 
                     counter += 1
 
-    if not use_profile_alignment:
+    if hmm_version == 2 and not use_profile_alignment:
         logger.debug("filtering domains ...")
 
         filtered_a_domains = []
@@ -164,18 +168,61 @@ def _hits_to_domains(
         filtered_a_domains = []
         for a_domains in seq_id_to_domains.values():
             for a_domain in a_domains:
-                a_domain.set_domain_signatures_profile(path_temp_dir)
-                if (
-                    a_domain.sequence
-                    and a_domain.extended_signature
-                    and a_domain.signature
-                    and a_domain.domain_nr
-                ):
-                    filtered_a_domains.append(a_domain)
+                if use_profile_alignment:
+                    a_domain.set_domain_signatures_profile(path_temp_dir)
+                    if (
+                        a_domain.sequence
+                        and a_domain.extended_signature
+                        and a_domain.signature
+                        and a_domain.domain_nr
+                    ):
+                        filtered_a_domains.append(a_domain)
+                else:
+                    if a_domain.sequence and a_domain.domain_nr:
+                        filtered_a_domains.append(a_domain)
 
         filtered_a_domains.sort(key=lambda x: (x.protein_name, x.start))
 
     return filtered_a_domains
+
+
+# TODO: keep domains detected by hmmer3 that were not detected by hmmer2
+# TODO: enable profile alignment if hmmer3 detected a domain that hmmer2 didn't
+
+def update_hmmer2_domain_sequences(hmmer2_domains: list[AdenylationDomain],
+                                   hmmer3_domains: list[AdenylationDomain],
+                                   path_in_fasta_file: str) -> None:
+    """
+    Update hmmer2 domains with hmmer3 domain sequences, such that the longest detected sequence is maintained.
+
+    :param hmmer2_domains: list of [AdenylationDomain, ->], list of adenylation domains detected by HMMer2. These domains also
+    contain information on signatures and extended signatures. Typically contain short sequences
+    :type hmmer2_domains: list[AdenylationDomain]
+    :param hmmer3_domains: list of [AdenylationDomain, ->], list of adenylation domains detected by HMMer2. These domains do
+    not contain information on signatures and extended signatures. Typically contain full-length sequences. Use these
+    sequences to update
+    :type hmmer3_domains: list[AdenylationDomain]
+    :param path_in_fasta_file: Path to fasta file.
+    :type path_in_fasta_file: str
+    """
+
+    fasta = parse_fasta_file(path_in_fasta_file)
+
+    for domain_1 in hmmer2_domains:
+        for domain_2 in hmmer3_domains:
+            if domain_1.protein_name == domain_2.protein_name and domain_1.domains_overlap(domain_2, threshold=50):
+                sequence_altered = False
+                if domain_2.end > domain_1.end:
+                    domain_1.end = domain_2.end
+                    sequence_altered = True
+                if domain_2.start < domain_1.start:
+                    domain_1.start = domain_2.start
+                    sequence_altered = True
+
+                if sequence_altered:
+                    if domain_1.protein_name not in fasta:
+                        raise ValueError("Mismatching protein names")
+                    domain_1.set_sequence(fasta[domain_1.protein_name][domain_1.start:domain_1.end])
 
 
 def _domains_from_fasta(
@@ -195,26 +242,41 @@ def _domains_from_fasta(
     :rtype: List[AdenylationDomain]
     """
     # run HMM search and parse results
-    hmm_out = os.path.join(path_temp_dir, "run.hmm_result")
-    run_hmmpfam2(HMM2_FILE, path_in_fasta_file, hmm_out)
-    id_to_hit = parse_hmm2_results(hmm_out)
+    hmm2_out = os.path.join(path_temp_dir, "run.hmm2_result")
+    hmm3_out = os.path.join(path_temp_dir, "run.hmm3_result")
+
+    run_hmmpfam2(HMM2_FILE, path_in_fasta_file, hmm2_out)
+    run_hmmscan(HMM3_FILE, path_in_fasta_file, hmm3_out)
+
+    id_to_hit_2 = parse_hmm_results(hmm2_out, 2)
+    id_to_hit_3 = parse_hmm_results(hmm3_out, 3)
 
     if use_profile_alignment:
         # processing hits (profile alignment-based active site extraction)
         a_domains = _hits_to_domains(
-            id_to_hit=id_to_hit,
+            id_to_hit=id_to_hit_3,
             path_in_fasta_file=path_in_fasta_file,
             path_temp_dir=path_temp_dir,
             use_profile_alignment=True,
+            hmm_version=3
         )
     else:
         # processing hits (hmm-based active site extraction)
         a_domains = _hits_to_domains(
-            id_to_hit=id_to_hit,
+            id_to_hit=id_to_hit_2,
             path_in_fasta_file=path_in_fasta_file,
             path_temp_dir=path_temp_dir,
             use_profile_alignment=False,
+            hmm_version=2
         )
+        a_domains_3 = _hits_to_domains(
+            id_to_hit=id_to_hit_3,
+            path_in_fasta_file=path_in_fasta_file,
+            path_temp_dir=path_temp_dir,
+            use_profile_alignment=False,
+            hmm_version=3)
+
+        update_hmmer2_domain_sequences(a_domains, a_domains_3, path_in_fasta_file)
 
     return a_domains
 

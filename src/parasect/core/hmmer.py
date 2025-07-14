@@ -44,18 +44,25 @@ def run_hmmpfam2(hmm_dir: str, fasta_file: str, hmm_out: str) -> None:
         subprocess.call(command, stdout=out)
 
 
-def parse_hmm2_results(path_in: str) -> Dict[str, HSP]:
+def parse_hmm_results(path_in: str, hmmer_version: int = 2) -> Dict[str, HSP]:
     """Parse hmmpfam2 output file and return dictionary of domain identifier to Biopython HSP instance.
 
     :param path_in: path to hmmpfam2 output file (hmmer-2).
     :type path_in: str
+    :param hmmer_version: version of HMMer
+    "type hmmer_version: int, default: 2. Must be 2 or 3
     :return: Dictionary mapping domain identifier to Biopython HSP instance.
     :rtype: Dict[str, HSP]
     """
+
+    if hmmer_version not in [2, 3]:
+        raise ValueError(f"Unknown HMMer version: {hmmer_version}")
     filtered_hits = {}
 
+    hmmer_string = f"hmmer{hmmer_version}-text"
+
     # parse relevant information from hmmpfam2 output
-    for result in SearchIO.parse(path_in, "hmmer2-text"):
+    for result in SearchIO.parse(path_in, hmmer_string):
         for hsp in result.hsps:
 
             # filter hits based on bitscore and hit_id
