@@ -1,7 +1,6 @@
 import logging
 from typing import Any
 from flask import Blueprint, Response, request, jsonify
-from pprint import pprint
 import uuid
 import os
 
@@ -26,7 +25,6 @@ def substrates_from_smiles(smiles: str) -> list[Substrate]:
     session = next(session_generator)
     try:
         substrate_hits = get_substrates_from_smiles(session, smiles)
-        print(substrate_hits, smiles)
         return substrate_hits
 
     finally:
@@ -210,7 +208,6 @@ def submit_annotations():
         data = request.get_json()
         annotations = data.get("annotations", {})
         protein_to_entries = cleanup_annotations(annotations)
-        pprint(protein_to_entries)
 
         current_dir = os.path.dirname(os.path.abspath(__file__))
         user_submission = os.path.join(current_dir, '..', 'user_submissions', f"{str(uuid.uuid4())}.txt")
