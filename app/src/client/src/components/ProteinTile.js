@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { toast } from 'react-toastify';
-import { Box, Button, MenuItem, Select, FormControl, TextField } from '@mui/material';
-import { FaFingerprint, FaCopy } from 'react-icons/fa';
+import { Box, TextField } from '@mui/material';
 
-import SmileDrawerContainer from './SmilesDrawer';
 import DomainTile from '../components/DomainTile';
 
 /**

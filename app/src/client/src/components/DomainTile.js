@@ -49,7 +49,6 @@ const DomainTile = ({ result , domainIndex, protein_name, onAnnotationChange}) =
 
     const [proteinName, setProteinName] = useState(protein_name || '');
     const [isDuplicateDomain, setIsDuplicateDomain] = useState(false);
-    const [annotatedSubstrates, setAnnotatedSubstrates] = useState([]);
 
     useEffect(() => {
       setProteinName(protein_name);
