@@ -77,8 +77,8 @@ def get_substrates_from_name(session: Session, substrate_name: str) -> list[Subs
     return list(session.scalars(query))
 
 
-def get_domains_from_synonym(session: Session, synonym: str, domain_index: int) -> list[AdenylationDomain]:
-    query = select(AdenylationDomain).join(DomainSynonym).where(f"{DomainSynonym.synonym}.A{domain_index}" == synonym)
+def get_domains_from_synonym(session: Session, synonym: str) -> list[AdenylationDomain]:
+    query = select(AdenylationDomain).join(DomainSynonym).where(DomainSynonym.synonym == synonym)
     return list(session.scalars(query))
 
 

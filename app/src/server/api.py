@@ -8,7 +8,7 @@ from routes.retrieval import blueprint_retrieve
 from routes.submit import blueprint_submit_raw, blueprint_submit_quick
 from routes.data_annotation import blueprint_annotate_data
 from routes.annotation_editor import blueprint_check_smiles, blueprint_check_substrate_name, blueprint_get_substrates, \
-    blueprint_submit_annotations, blueprint_check_protein_name
+    blueprint_submit_annotations, blueprint_check_protein_name, blueprint_check_domain_name
 from routes.database import engine
 
 from parasect.version import get_version
@@ -18,6 +18,7 @@ app.register_blueprint(blueprint_submit_raw)
 app.register_blueprint(blueprint_submit_quick)
 app.register_blueprint(blueprint_annotate_data)
 app.register_blueprint(blueprint_check_smiles)
+app.register_blueprint(blueprint_check_domain_name)
 app.register_blueprint(blueprint_check_substrate_name)
 app.register_blueprint(blueprint_get_substrates)
 app.register_blueprint(blueprint_submit_annotations)

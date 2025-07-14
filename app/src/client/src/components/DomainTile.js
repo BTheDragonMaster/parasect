@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     ExpandMore,
     ExpandLess
@@ -28,19 +28,71 @@ import SmilesChecker from './SmilesChecker';
  * @param {Object} props.result - The result object.
  * @returns {React.ReactElement} - The result tile component.
  */
-const DomainTile = ({ result , onAnnotationChange}) => {
+const DomainTile = ({ result , domainIndex, protein_name, onAnnotationChange}) => {
     const [expanded, setExpanded] = useState(false);  // Start expanded
     const toggleExpanded = () => setExpanded(prev => !prev);
     const [nameWarnings, setNameWarnings] = useState({});
     const [nameValidity, setNameValidity] = useState({});
 
-    const parasResult = result["paras_result"]
+    const parasResult = result["paras_result"];
+    const sequence = parasResult["domain_sequence"];
+    const signature = parasResult["domain_signature"];
+    const extendedSignature = parasResult["domain_extended_signature"];
+
     const sequenceMatches = result["sequence_matches"];
     const hasSequenceMatch = sequenceMatches && sequenceMatches.length > 0;
     const firstSequenceMatch = hasSequenceMatch ? sequenceMatches[0] : null;
     const matchSynonym = hasSequenceMatch ? firstSequenceMatch["synonyms"][0]["synonym"] : null;
     const matchedSubstrates = hasSequenceMatch ? firstSequenceMatch["substrates"] : null;
     const [overrideSubstrates, setOverrideSubstrates] = useState(false);
+
+
+    const [proteinName, setProteinName] = useState(protein_name || '');
+    const [isDuplicateDomain, setIsDuplicateDomain] = useState(false);
+    const [annotatedSubstrates, setAnnotatedSubstrates] = useState([]);
+
+    const domainName = useMemo(() => {
+        return matchSynonym != null
+            ? matchSynonym
+            : `${protein_name}.A${domainIndex}`;
+    }, [matchSynonym, protein_name, domainIndex]);
+
+    const domainSynonym = useMemo( () => {
+        return `${proteinName}.A${domainIndex}`;}, [protein_name, domainIndex]);
+
+    useEffect(() => {
+    const hasValidSubstrate = substrates?.some(
+        sub => sub.substrateName && sub.substrateSmiles
+    );
+
+    if (hasValidSubstrate) {
+        updateSubstrateField(substrates);
+    }
+}, [isDuplicateDomain]);
+
+    useEffect(() => {
+        const fetchDuplicateStatus = async () => {
+            if (domainName) {
+                try {
+                    const response = await fetch('/api/check_domain_name', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ domain_name: domainName }),
+                    });
+
+                    const data = await response.json();
+                    setIsDuplicateDomain(data.domain_in_dataset ?? false);
+                } catch (error) {
+                    console.error('Error checking domain name:', error);
+                    setIsDuplicateDomain(false);
+                }
+            }
+        };
+
+        fetchDuplicateStatus();
+    }, [domainName]);
 
     {/* Initialize with one substrate entry, default to no selection & no custom smiles */
     }
@@ -52,7 +104,10 @@ const DomainTile = ({ result , onAnnotationChange}) => {
             newSubstrateName: '',
             substrateName: '',
             substrateSmiles: '',
-            annotationType: null},
+            annotationType: null,
+            sequence: sequence,
+            signature: signature,
+            extendedSignature: extendedSignature},
     ]);
 
     const [smilesOptions, setSmilesOptions] = useState([]);
@@ -72,20 +127,24 @@ const DomainTile = ({ result , onAnnotationChange}) => {
     const showNoUpdateMessage = hasSequenceMatch && allSelectedAreMatched;
 
     const recalculateAnnotationTypes = (substrates) => {
-        const matchedNames = new Set((matchedSubstrates || []).map(s => s.name));
-        const selectedDropdownNames = new Set(
-            substrates
-                .filter(sub => !sub.useCustomSmiles && sub.selectedSubstrate)
-                .map(sub => sub.selectedSubstrate.name)
-        );
-        const allMatch =
-            selectedDropdownNames.size === matchedNames.size &&
-            [...selectedDropdownNames].every(name => matchedNames.has(name));
+    const matchedNames = new Set((matchedSubstrates || []).map(s => s.name));
+    const selectedDropdownNames = new Set(
+        substrates
+            .filter(sub => !sub.useCustomSmiles && sub.selectedSubstrate)
+            .map(sub => sub.selectedSubstrate.name)
+    );
+
+    const allMatch =
+        selectedDropdownNames.size === matchedNames.size &&
+        [...selectedDropdownNames].every(name => matchedNames.has(name));
 
     return substrates.map((sub) => {
         let annotationType = null;
 
-        if (!sub.useCustomSmiles && sub.selectedSubstrate) {
+        // 🚨 Overwrite logic for duplicate domains without sequence match
+        if (!hasSequenceMatch && isDuplicateDomain) {
+            annotationType = 'duplicate_entry';
+        } else if (!sub.useCustomSmiles && sub.selectedSubstrate) {
             if (hasSequenceMatch && allMatch) {
                 annotationType = 'no_update';
             } else if (hasSequenceMatch) {
@@ -134,12 +193,12 @@ const DomainTile = ({ result , onAnnotationChange}) => {
         setSortedOptions(sorted);
     }, [smilesOptions, parasResult["predictions"]]);
 
-    {/* The first prediction for showing */
-    }
+    {/* The first prediction for showing */}
     const selectedPrediction = parasResult['predictions'][0];
 
-    {/* Handlers to update substrate entries */
-    }
+
+
+    {/* Handlers to update substrate entries */}
     const updateSubstrateField = (index, field, value) => {
     setSubstrates((prev) => {
         const newSubs = [...prev];
@@ -170,7 +229,7 @@ const DomainTile = ({ result , onAnnotationChange}) => {
         newSubs[index] = updated;
 
         const finalSubs = recalculateAnnotationTypes(newSubs);
-        onAnnotationChange?.(finalSubs);
+        onAnnotationChange?.(domainName, finalSubs);
         return finalSubs;
     });
 };
@@ -214,7 +273,7 @@ const DomainTile = ({ result , onAnnotationChange}) => {
                         }
 
                         updated[i] = item;
-                        onAnnotationChange?.(updated);
+                        onAnnotationChange?.(domainName, updated);
                         return updated;
                     });
                 })
@@ -284,29 +343,38 @@ const DomainTile = ({ result , onAnnotationChange}) => {
         >
             {/* Header with collapse toggle */}
             <Box
-                sx={{
-                    backgroundColor: hasSequenceMatch ? '#c0c0c0' : 'secondary.main',
-                    color: 'black.main',
-                    padding: '14px 8px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    borderTopLeftRadius: '10px',
-                    borderTopRightRadius: '10px',
-                }}
+              sx={{
+                backgroundColor: hasSequenceMatch ? '#c0c0c0' : 'secondary.main',
+                color: 'black.main',
+                padding: '14px 8px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderTopLeftRadius: '10px',
+                borderTopRightRadius: '10px',
+              }}
             >
+              {/* Left side: domain info + optional warning stacked vertically */}
+              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                 <Typography>
-                    {`Domain ${parasResult['domain_nr']} (${parasResult['domain_start']}-${parasResult['domain_end']})`}
-                    {hasSequenceMatch && (
-                        <span style={{marginLeft: '10px', fontSize: '0.9em', color: 'black'}}>
-                            Sequence already found in dataset ({matchSynonym})
-                        </span>
-                    )}
+                  {`Domain ${parasResult['domain_nr']}: ${domainSynonym} (${parasResult['domain_start']}-${parasResult['domain_end']})`}
                 </Typography>
-                <IconButton onClick={toggleExpanded} size="small">
-                    {expanded ? <ExpandLess/> : <ExpandMore/>}
-                </IconButton>
-            </Box>
+
+                {hasSequenceMatch && (
+                  <Typography
+                    variant="body2"
+                    sx={{ marginTop: 0.5, fontSize: '0.9em', color: 'black' }}
+                  >
+                    Sequence already found in dataset ({matchSynonym})
+                  </Typography>
+                )}
+              </Box>
+
+  {/* Right side: expand/collapse button */}
+  <IconButton onClick={toggleExpanded} size="small">
+    {expanded ? <ExpandLess /> : <ExpandMore />}
+  </IconButton>
+</Box>
 
             {/* Collapsible content */}
             <Collapse in={expanded}>
@@ -359,7 +427,7 @@ const DomainTile = ({ result , onAnnotationChange}) => {
                 setOverrideSubstrates(checked);
                 if (!checked) {
                     setSubstrates([]);
-                    onAnnotationChange?.([]);
+                    onAnnotationChange?.(domainName, []);
                 }
             }}
         />
@@ -386,7 +454,7 @@ const DomainTile = ({ result , onAnnotationChange}) => {
                             marginBottom: 0.5
                     }}
                         >
-                        Domain name
+
                     </Box>
 
                     <Box sx={{ fontWeight: 500, marginBottom: 0.5 }}>
@@ -440,7 +508,7 @@ const DomainTile = ({ result , onAnnotationChange}) => {
     setSubstrates((prev) => {
         const updated = prev.filter((_, idx) => idx !== i);
         const finalSubs = recalculateAnnotationTypes(updated);
-        onAnnotationChange?.(finalSubs);
+        onAnnotationChange?.(domainName, finalSubs);
         return finalSubs;
     })
 }

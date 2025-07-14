@@ -15,42 +15,74 @@ import DomainTile from '../components/DomainTile';
  */
 const ProteinTile = ({ proteinResult, onUpdateAnnotation }) => {
     const [domainAnnotations, setDomainAnnotations] = useState({});
-
     // Extract first part of protein name (before whitespace)
-    const initialProteinName = proteinResult['protein_name'].split(/\s+/)[0];
 
-    const [proteinName, setProteinName] = useState(initialProteinName);
+    const [proteinName, setProteinName] = useState('');
+    const [proteinExists, setProteinExists] = useState(null); // null = not checked yet
 
-    const handleDomainAnnotationChange = (domainKey, data) => {
-    const updatedDomains = { ...domainAnnotations };
+    // 🔍 Check if protein is in dataset
+    const checkProteinInDataset = async (name) => {
+        try {
+            const response = await fetch("/api/check_protein_name", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ protein_name: name }),
+            });
 
-    if (data && data.length > 0) {
-        updatedDomains[domainKey] = data;
-    } else {
-        delete updatedDomains[domainKey];
-    }
+            const result = await response.json();
+            setProteinExists(result.protein_in_dataset);
+        } catch (error) {
+            console.error("Error checking protein name:", error);
+            setProteinExists(null); // Reset on error
+        }
+    };
 
-    setDomainAnnotations(updatedDomains);
+    useEffect(() => {
+        if (proteinResult?.protein_name) {
+            const initial = proteinResult.protein_name.split(/\s+/)[0];
+            setProteinName(initial);
+            checkProteinInDataset(initial);
+        }
+    }, [proteinResult]);
 
-    if (onUpdateAnnotation) {
-        onUpdateAnnotation(proteinResult["protein_name"], {
-            synonym: proteinName,
-            domains: updatedDomains,
-        });
-    }
-};
 
-const handleProteinNameChange = (e) => {
-    const newName = e.target.value;
-    setProteinName(newName);
 
-    if (onUpdateAnnotation) {
-        onUpdateAnnotation(proteinResult["protein_name"], {
-            synonym: newName,
-            domains: domainAnnotations,
-        });
-    }
-};
+    const handleDomainAnnotationChange = (domainKey, domainName, data) => {
+        const updatedDomains = { ...domainAnnotations };
+
+        if (data && data.length > 0) {
+            updatedDomains[domainKey]= {
+                name: domainName,
+                substrates: data};
+            } else {
+                delete updatedDomains[domainKey];
+            }
+
+            setDomainAnnotations(updatedDomains);
+
+            if (onUpdateAnnotation) {
+                onUpdateAnnotation(proteinResult["protein_name"], {
+                    synonym: proteinName,
+                    domains: updatedDomains,
+                });
+            }
+        };
+
+
+    const handleProteinNameChange = (e) => {
+        const newName = e.target.value;
+        setProteinName(newName);
+        checkProteinInDataset(newName);
+
+        if (onUpdateAnnotation) {
+            onUpdateAnnotation(proteinResult["protein_name"], {
+                synonym: newName,
+                domains: domainAnnotations,
+            });
+        }
+    };
 
     return (
         <Box
@@ -88,6 +120,8 @@ const handleProteinNameChange = (e) => {
                     onChange={handleProteinNameChange}
                     variant="outlined"
                     size="small"
+                    error={proteinExists === true}
+                    helperText={proteinExists === true ? "This protein name already exists in the dataset." : ""}
                 />
             </Box>
 
@@ -96,8 +130,10 @@ const handleProteinNameChange = (e) => {
                 {proteinResult['results'].map((result, index) => (
                     <DomainTile
                         key={index}
+                        domainIndex={index + 1}
+                        protein_name={proteinName}
                         result={result}
-                        onAnnotationChange={(data) => handleDomainAnnotationChange(index, data)}
+                        onAnnotationChange={(domainName, data) => handleDomainAnnotationChange(index, domainName, data)}
                     />
                 ))}
             </Box>

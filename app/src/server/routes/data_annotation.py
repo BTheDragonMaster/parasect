@@ -93,8 +93,7 @@ def run_prediction_protein(job_id: str, data: Dict[str, str]) -> None:
             try:
                 for domain_hit in results:
                     sequence_matches = get_domains_from_sequence(session, domain_hit.domain.sequence)
-                    name_matches = get_domains_from_synonym(session, domain_hit.domain.protein_name,
-                                                            domain_hit.domain.domain_nr)
+                    name_matches = get_domains_from_synonym(session, domain_hit.domain.protein_name)
                     annotation_result = AnnotationResult(paras_result=domain_hit,
                                                          sequence_matches=sequence_matches,
                                                          synonym_matches=name_matches)
