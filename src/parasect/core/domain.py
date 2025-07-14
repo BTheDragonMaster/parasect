@@ -165,6 +165,25 @@ class AdenylationDomain:
         self.signature = ""
         self.extended_signature = ""
 
+    def domains_overlap(self, other: "AdenylationDomain", threshold: int = 50) -> bool:
+        """
+        Check if two domains overlap by at least a certain threshold of base pairs.
+
+        :param other: Other adenylation domain
+        :type other: AdenylationDomain
+        :param threshold: The number of base pairs the two domains need to overlap by for a match
+        :type threshold: int
+
+        :return: bool, True if domains overlap, False otherwise
+        """
+        if other.start <= self.start <= other.end:
+            if other.end - self.start >= threshold:
+                return True
+        if self.start <= other.start <= self.end:
+            if self.end - other.start >= threshold:
+                return True
+        return False
+
     def set_domain_number(self, domain_nr: int) -> None:
         """Set the domain number.
 
