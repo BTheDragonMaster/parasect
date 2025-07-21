@@ -31,6 +31,70 @@ def get_domain_features(amino_acid_sequence: str) -> List[float]:
     return features
 
 
+def merge_hits(hits: list[tuple[str, int, int, str]]) -> tuple[str, int, int, str]:
+    """
+    Merge N-terminal AMP-binding hits
+
+    :param hits: list of AMP-binding HMM hits
+    :type hits: list[tuple[str, int, int, str]]
+    """
+
+    if hits:
+        seq_id, hit_id, _ = hits[0][3].split('|')
+        hit_start = min([hit[1] for hit in hits])
+        hit_end = max([hit[2] for hit in hits])
+        hit_key = f"{seq_id}|{hit_id}|{hit_start}-{hit_end}"
+        merged_hit = (hit_id, hit_start, hit_end, hit_key)
+        return merged_hit
+    else:
+        raise ValueError("No hits to merge!")
+
+
+def group_n_terminal_hits(hit_list: list[tuple[str, int, int, str]]) -> list[tuple[str, int, int, str]]:
+    """
+    Group and merge N-terminal AMP-binding hits within a single protein
+
+    :param hit_list: list of AMP-binding HMM hits
+    :type hit_list: list[tuple[str, int, int, str]]
+    """
+    n_terminal_hits = []
+    c_terminal_hits = []
+
+    for hit in hit_list:
+        hit_id, hit_start, hit_end, hit_key = hit
+        if hit_id == "AMP-binding":
+            n_terminal_hits.append(hit)
+        elif hit_id == "AMP-binding_C":
+            c_terminal_hits.append(hit)
+
+    n_terminal_hits.sort(key=lambda x: x[1])
+    c_terminal_hits.sort(key=lambda x: x[1])
+
+    grouped_hits = []
+    if n_terminal_hits:
+        group = [n_terminal_hits[0]]
+
+        for i, hit_1 in enumerate(n_terminal_hits):
+            if i + 1 < len(n_terminal_hits):
+                hit_2 = n_terminal_hits[i + 1]
+                if hit_2[1] - hit_1[2] < 60:
+                    group.append(hit_2)
+                else:
+                    grouped_hits.append(group[:])
+                    group = [hit_2]
+            else:
+                grouped_hits.append(group[:])
+                group = []
+
+    merged_n_terminal = []
+
+    for group in grouped_hits:
+        merged_hit = merge_hits(group)
+        merged_n_terminal.append(merged_hit)
+
+    return merged_n_terminal + c_terminal_hits
+
+
 def _hits_to_domains(
     id_to_hit: Dict[str, HSP],
     path_in_fasta_file: str,
@@ -74,7 +138,11 @@ def _hits_to_domains(
 
     counter = 0
     seq_id_to_domains: Dict[str, List[AdenylationDomain]] = {}
+    seq_id_to_hits = {}
     for seq_id, hits in hits_by_seq_id.items():
+        seq_id_to_hits[seq_id] = group_n_terminal_hits(hits)
+
+    for seq_id, hits in seq_id_to_hits.items():
         counter += 1
 
         for hit_id_1, hit_start_1, hit_end_1, hit_key_1 in hits:
@@ -189,6 +257,30 @@ def _hits_to_domains(
 # TODO: keep domains detected by hmmer3 that were not detected by hmmer2
 # TODO: enable profile alignment if hmmer3 detected a domain that hmmer2 didn't
 
+def get_hmmer3_unique_domains(hmmer2_domains: list[AdenylationDomain],
+                              hmmer3_domains: list[AdenylationDomain],
+                              path_temp_dir: str) -> list[AdenylationDomain]:
+    """
+    Get domains that were found by hmmer3 but not hmmer 2, and obtain domain signatures through profile alignment
+
+    :param hmmer2_domains: list of [AdenylationDomain, ->], list of adenylation domains detected by HMMer2. These domains also
+    contain information on signatures and extended signatures. Typically contain short sequences
+    :type hmmer2_domains: list[AdenylationDomain]
+    :param hmmer3_domains: list of [AdenylationDomain, ->], list of adenylation domains detected by HMMer2. These domains do
+    not contain information on signatures and extended signatures. Typically contain full-length sequences. Use these
+    sequences to update
+    :type hmmer3_domains: list[AdenylationDomain]
+    :param path_temp_dir: Path to temp dir.
+    :type path_temp_dir: str
+    """
+    unique_domains = []
+    for domain in hmmer3_domains:
+        if domain.protein_name not in set([d.protein_name for d in hmmer2_domains]):
+            domain.set_domain_signatures_profile(path_temp_dir)
+            unique_domains.append(domain)
+    return unique_domains
+
+
 def update_hmmer2_domain_sequences(hmmer2_domains: list[AdenylationDomain],
                                    hmmer3_domains: list[AdenylationDomain],
                                    path_in_fasta_file: str) -> None:
@@ -212,11 +304,9 @@ def update_hmmer2_domain_sequences(hmmer2_domains: list[AdenylationDomain],
         for domain_2 in hmmer3_domains:
             if domain_1.protein_name == domain_2.protein_name and domain_1.domains_overlap(domain_2, threshold=50):
                 sequence_altered = False
-                if domain_2.end > domain_1.end:
-                    domain_1.end = domain_2.end
-                    sequence_altered = True
-                if domain_2.start < domain_1.start:
+                if len(domain_2.sequence) > len(domain_1.sequence):
                     domain_1.start = domain_2.start
+                    domain_1.end = domain_2.end
                     sequence_altered = True
 
                 if sequence_altered:
@@ -277,6 +367,8 @@ def _domains_from_fasta(
             hmm_version=3)
 
         update_hmmer2_domain_sequences(a_domains, a_domains_3, path_in_fasta_file)
+        unique_hmmer3_domains = get_hmmer3_unique_domains(a_domains, a_domains_3, path_temp_dir)
+        a_domains += unique_hmmer3_domains
 
     return a_domains
 
