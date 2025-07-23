@@ -41,6 +41,13 @@ def merge_hits(hits: list[tuple[str, int, int, str]]) -> tuple[str, int, int, st
 
     if hits:
         seq_id, hit_id, _ = hits[0][3].split('|')
+        for hit in hits:
+            seq_id_2, hit_id_2, _ = hit[3].split('|')
+            if seq_id_2 != seq_id:
+                raise ValueError(f"Cannot merge hits from different sequences! {seq_id}, {seq_id_2}")
+            if hit_id_2 != hit_id:
+                raise ValueError(f"Cannot merge different hit types! {hit_id}, {hit_id_2}")
+
         hit_start = min([hit[1] for hit in hits])
         hit_end = max([hit[2] for hit in hits])
         hit_key = f"{seq_id}|{hit_id}|{hit_start}-{hit_end}"
@@ -59,13 +66,20 @@ def group_n_terminal_hits(hit_list: list[tuple[str, int, int, str]]) -> list[tup
     """
     n_terminal_hits = []
     c_terminal_hits = []
+    seq_ids = set()
 
     for hit in hit_list:
+
         hit_id, hit_start, hit_end, hit_key = hit
+        seq_id = hit_key.split('|')[0]
+        seq_ids.add(seq_id)
         if hit_id == "AMP-binding":
             n_terminal_hits.append(hit)
         elif hit_id == "AMP-binding_C":
             c_terminal_hits.append(hit)
+
+    if len(seq_ids) > 1:
+        raise ValueError("Cannot group hits from multiple sequences!")
 
     n_terminal_hits.sort(key=lambda x: x[1])
     c_terminal_hits.sort(key=lambda x: x[1])
