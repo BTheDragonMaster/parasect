@@ -254,8 +254,32 @@ def _hits_to_domains(
     return filtered_a_domains
 
 
-# TODO: keep domains detected by hmmer3 that were not detected by hmmer2
-# TODO: enable profile alignment if hmmer3 detected a domain that hmmer2 didn't
+def set_domain_numbers(a_domains: list[AdenylationDomain]) -> None:
+    """
+    Set domain numbers from list of A domains
+
+    :param a_domains: list of A domains
+    :type a_domains: list[AdenylationDomain, ->]
+    """
+
+    if not a_domains:
+        return
+
+    a_domains.sort(key=lambda x: (x.protein_name, x.start))
+
+    protein_name = a_domains[0].protein_name
+    counter = 1
+    a_domains[0].set_domain_number(counter)
+
+    for a_domain in a_domains[1:]:
+        if a_domain.protein_name == protein_name:
+            counter += 1
+        else:
+            counter = 1
+            protein_name = a_domain.protein_name
+
+        a_domain.set_domain_number(counter)
+
 
 def get_hmmer3_unique_domains(hmmer2_domains: list[AdenylationDomain],
                               hmmer3_domains: list[AdenylationDomain],
@@ -274,10 +298,15 @@ def get_hmmer3_unique_domains(hmmer2_domains: list[AdenylationDomain],
     :type path_temp_dir: str
     """
     unique_domains = []
-    for domain in hmmer3_domains:
-        if domain.protein_name not in set([d.protein_name for d in hmmer2_domains]):
-            domain.set_domain_signatures_profile(path_temp_dir)
-            unique_domains.append(domain)
+    for domain_1 in hmmer3_domains:
+        match_found = False
+        for domain_2 in hmmer2_domains:
+            if domain_1.protein_name == domain_2.protein_name and domain_1.domains_overlap(domain_2, threshold=50):
+                match_found = True
+        if not match_found:
+            domain_1.set_domain_signatures_profile(path_temp_dir)
+            unique_domains.append(domain_1)
+
     return unique_domains
 
 
@@ -369,6 +398,8 @@ def _domains_from_fasta(
         update_hmmer2_domain_sequences(a_domains, a_domains_3, path_in_fasta_file)
         unique_hmmer3_domains = get_hmmer3_unique_domains(a_domains, a_domains_3, path_temp_dir)
         a_domains += unique_hmmer3_domains
+        a_domains.sort(key=lambda x: (x.protein_name, x.start))
+        set_domain_numbers(a_domains)
 
     return a_domains
 
