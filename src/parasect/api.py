@@ -22,14 +22,16 @@ from parasect.core.tabular import Tabular
 
 def sort_results(results: List["AnnotationResult"]) -> List["ProteinResult"]:
     protein_name_to_results: Dict[str, List[AnnotationResult]] = {}
+    protein_name_to_sequence: Dict[str, str] = {}
     for result in results:
         if result.paras_result.domain.protein_name not in protein_name_to_results:
             protein_name_to_results[result.paras_result.domain.protein_name] = []
+            protein_name_to_sequence[result.paras_result.domain.protein_name] = result.paras_result.domain.protein_sequence
         protein_name_to_results[result.paras_result.domain.protein_name].append(result)
 
     protein_results = []
     for protein_name, results in protein_name_to_results.items():
-        protein_results.append(ProteinResult(protein_name, results))
+        protein_results.append(ProteinResult(protein_name, protein_name_to_sequence[protein_name], results))
 
     return protein_results
 
@@ -40,6 +42,7 @@ class ProteinResult:
     def __init__(
             self,
             protein_name: str,
+            sequence: str,
             results: List["AnnotationResult"]
     ) -> None:
         """Initialise the Protein Result class.
@@ -48,6 +51,7 @@ class ProteinResult:
         :param results: List of results for that protein.
         """
         self._protein_name = protein_name
+        self._sequence = sequence
         self.results = results
 
     def to_json(self) -> Dict[str, Union[str, int, List[Dict[str, Union[str, float]]]]]:
@@ -58,6 +62,7 @@ class ProteinResult:
         """
         return dict(
             protein_name=self._protein_name,
+            sequence=self._sequence,
             results=[result.to_json() for result in self.results]
         )
 

@@ -66,6 +66,7 @@ const [proteinName, setProteinName] = useState(defaultProteinName);
             if (onUpdateAnnotation) {
                 onUpdateAnnotation(proteinResult["protein_name"], {
                     synonym: proteinName,
+                    sequence: proteinResult["sequence"],
                     domains: updatedDomains,
                 });
             }
@@ -80,6 +81,7 @@ const [proteinName, setProteinName] = useState(defaultProteinName);
         if (onUpdateAnnotation) {
             onUpdateAnnotation(proteinResult["protein_name"], {
                 synonym: newName,
+                sequence: proteinResult["sequence"],
                 domains: domainAnnotations,
             });
         }

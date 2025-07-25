@@ -222,6 +222,7 @@ def _hits_to_domains(
 
                 if len(a_domain_sequence) > 100:
                     a_domain.set_sequence(a_domain_sequence)
+                    a_domain.set_protein_sequence(sequence)
                     a_domain.set_domain_number(counter)
 
                     counter += 1

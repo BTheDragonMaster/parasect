@@ -162,6 +162,7 @@ class AdenylationDomain:
         self.end = domain_end
 
         self.sequence = ""
+        self.protein_sequence = ""
         self.signature = ""
         self.extended_signature = ""
 
@@ -193,6 +194,16 @@ class AdenylationDomain:
         .. note:: This function modifies the domain number attribute.
         """
         self.domain_nr = domain_nr
+
+    def set_protein_sequence(self, protein_sequence: str) -> None:
+        """Set the protein sequence that contains the domain
+
+        :param protein_sequence: The sequence of the domain.
+        :type protein_sequence: str
+
+        .. note:: This function modifies the sequence attribute.
+        """
+        self.protein_sequence = protein_sequence
 
     def set_sequence(self, sequence: str) -> None:
         """Set the sequence of the domain.
