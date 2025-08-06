@@ -5,7 +5,7 @@
 import itertools
 import logging
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional, Generator
 from dataclasses import dataclass
 
 from Bio import SeqIO
@@ -14,6 +14,7 @@ from pikachu.general import read_smiles
 from parasect.core.chem import smiles_to_fingerprint
 from parasect.core.constants import FINGERPRINTS_FILE
 from parasect.core.tabular import Tabular
+
 
 @dataclass
 class SubstrateData:
@@ -285,3 +286,27 @@ def bitvector_from_smiles(smiles: str, path_in_bitvector_file: str) -> List[int]
             vector.append(0)
 
     return vector
+
+
+def iterate_over_dir(directory: str, extension: Optional[str] = None, get_dirs: bool = False) -> Generator[tuple[str, str], None, None]:
+    """Yield the file/dir name and file/dir path of each file/dir in the specified path
+
+    :param directory: path to directory to iterate over
+    :type directory: str
+    :param extension: extension of files to retrieve
+    :type extension: Optional[str]
+    :param get_dirs: if True, retrieve subdirectories of directory. If False, retrieve files in directory.
+    :type get_dirs: bool
+    :return: generator of tuples of file/dir name and file/dir path
+    :rtype: Generator[str, str]
+    """
+    for file_name in os.listdir(directory):
+        if not get_dirs:
+            if file_name.endswith(extension):
+                file_label = file_name.split(extension)[0]
+                file_path = os.path.join(directory, file_name)
+                yield file_label, file_path
+        else:
+            file_path = os.path.join(directory, file_name)
+            if os.path.isdir(file_path):
+                yield file_name, file_path
