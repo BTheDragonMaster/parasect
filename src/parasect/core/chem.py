@@ -46,7 +46,10 @@ def is_same_molecule(smiles_1, smiles_2):
     structure_2 = read_smiles(smiles_2)
 
     if get_jaccard_index(structure_1, structure_2) == 1.0:
-        return True
+        atom_number_1 = len(structure_1.get_atoms())
+        atom_number_2 = len(structure_2.get_atoms())
+        if atom_number_1 == atom_number_2:
+            return True
 
     return False
 
