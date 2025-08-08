@@ -6,6 +6,7 @@ from typing import Optional
 from pikachu.general import read_smiles
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from sqlalchemy import select, func
 
 from parasect.core.parsing import iterate_over_dir, parse_fasta_file, write_fasta_file, SubstrateData, \
     parse_smiles_mapping
@@ -13,8 +14,11 @@ from parasect.core.tabular import Tabular, write_tabular
 from parasect.core.chem import is_same_molecule
 from parasect.database.query_database import get_substrates_from_smiles, get_substrates_from_name, \
     sequences_are_equivalent, get_domains_from_sequence, get_domains_from_synonym
+from parasect.database.build_database import AdenylationDomain
+from parasect.database.populate_database import populate_db
 
-# TODO: Auto-add entries as pending to the database, instead of writing them away to flatfiles
+# TODO: Refactor such that entries are auto-added entries as pending to the database,
+# instead of writing them away to flatfiles first
 # TODO: Create a table for proteins in the database
 # TODO: Create a coordinate field for A-domains in the database
 
@@ -452,6 +456,18 @@ def collate_user_submissions(submission_dir: str, database_path: str, check_agai
         out.write("substrate\tsmiles\n")
         for substrate in deduplicated_substrates:
             out.write(f"{substrate.name}\t{substrate.smiles}\n")
+
+    with Session(engine) as session:
+        try:
+            max_id = session.scalar(select(func.max(AdenylationDomain.id)))
+            populate_db(session, parasect_out, smiles_out, signatures_out, extended_out, pending=True,
+                        starting_id=max_id)
+        except Exception as e:
+            print("An error occurred while updating the database. Rolling back database.")
+            print(e)
+            session.rollback()
+        finally:
+            session.close()
 
 
 def main() -> None:

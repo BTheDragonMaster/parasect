@@ -10,10 +10,12 @@ from dataclasses import dataclass
 
 from Bio import SeqIO
 from pikachu.general import read_smiles
+from sqlalchemy.orm import Session
 
 from parasect.core.chem import smiles_to_fingerprint
 from parasect.core.constants import FINGERPRINTS_FILE
 from parasect.core.tabular import Tabular
+from parasect.database.query_database import get_substrates_from_name
 
 
 @dataclass
@@ -33,7 +35,9 @@ class AdenylationDomainData:
 
 
 def load_parasect_data(parasect_path: str, smiles_path: str, signature_path: str,
-                       extended_signature_path: str) -> tuple[List[AdenylationDomainData], List[SubstrateData]]:
+                       extended_signature_path: str, starting_id: int = 0,
+                       session: Optional[Session] = None) -> tuple[List[AdenylationDomainData], List[SubstrateData]]:
+
     parasect_data = Tabular(parasect_path, separator='\t')
     smiles_data = Tabular(smiles_path, separator='\t')
     domain_to_signature = parse_fasta_file(signature_path)
@@ -44,7 +48,7 @@ def load_parasect_data(parasect_path: str, smiles_path: str, signature_path: str
 
     for i, domain_name in enumerate(parasect_data.rows):
         domain_synonyms = domain_name.split('|')
-        domain_id = i + 1
+        domain_id = i + 1 + starting_id
         sequence = parasect_data.get_row_value(domain_name, "sequence")
         substrate_names = parasect_data.get_row_value(domain_name, "specificity").split('|')
         domain_substrates = []
@@ -57,6 +61,13 @@ def load_parasect_data(parasect_path: str, smiles_path: str, signature_path: str
                 read_smiles(smiles)
 
                 domain_substrates.append(SubstrateData(substrate_name, smiles))
+            elif session is not None:
+                db_substrates = get_substrates_from_name(session, substrate_name)
+                if db_substrates:
+                    domain_substrates.append(SubstrateData(substrate_name, db_substrates[0].smiles))
+                else:
+                    raise ValueError(f"No SMILES found for substrate: {substrate_name}")
+
             else:
                 raise ValueError(f"No SMILES found for substrate: {substrate_name}")
 
