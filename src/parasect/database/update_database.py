@@ -14,6 +14,10 @@ from parasect.core.chem import is_same_molecule
 from parasect.database.query_database import get_substrates_from_smiles, get_substrates_from_name, \
     sequences_are_equivalent, get_domains_from_sequence, get_domains_from_synonym
 
+# TODO: Auto-add entries as pending to the database, instead of writing them away to flatfiles
+# TODO: Create a table for proteins in the database
+# TODO: Create a coordinate field for A-domains in the database
+
 
 def parse_arguments() -> Namespace:
     """Parse arguments from command line
