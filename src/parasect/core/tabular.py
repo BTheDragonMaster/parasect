@@ -4,7 +4,41 @@
 
 import os
 from collections import OrderedDict
-from typing import List, Union
+from typing import List, Union, Any
+
+
+def write_tabular(dictionaries: list[dict[str, Any]], header: list[str], out_file: str) -> None:
+    """
+    Write tabular file from list of dictionaries, sorted by the first column
+
+    :param dictionaries: list of dictionaries. Keys of all dictionaries should be the same
+    :type dictionaries: list[dict[str, Any]]
+    :param header: list of categories for labelling the header. Length must be one more than the list of dictionaries.
+    First element represents category describing dictionary keys
+    :type header: list[str]
+    :param out_file: path to output file
+    :type out_file: str
+    """
+
+    assert len(dictionaries) + 1 == len(header)
+    assert len(header) >= 2
+    assert len(dictionaries) >= 1
+
+    with open(out_file, 'w') as out:
+
+        header_string = '\t'.join(header)
+        out.write(f"{header_string}\n")
+
+        keys = list(dictionaries[0].keys())
+        keys.sort()
+
+        for key in keys:
+            row = [key]
+            for dictionary in dictionaries:
+                row.append(dictionary[key])
+
+            row_string = '\t'.join(row)
+            out.write(f"{row_string}\n")
 
 
 class Tabular:

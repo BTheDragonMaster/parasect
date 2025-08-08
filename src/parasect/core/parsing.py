@@ -75,6 +75,31 @@ def load_parasect_data(parasect_path: str, smiles_path: str, signature_path: str
     return domains, substrates
 
 
+def parse_smiles_mapping(path_in: str) -> List[SubstrateData]:
+    """Return substrates from SMILES mapping
+
+    :param path_in: input path containing SMILES mapping
+    :type path_in: str
+    :return: list of substrates
+    :rtype: list[SubstrateData]
+    :raises FileNotFoundError: If the file at the specified path does not exist
+    """
+    if not os.path.exists(path_in):
+        raise FileNotFoundError(f"SMILES mapping file not found: {path_in}")
+
+    substrates = []
+    with open(path_in, 'r') as input_file:
+        input_file.readline()
+        for line in input_file:
+            line = line.strip()
+            if line:
+                name, smiles = line.split('\t')
+                substrate = SubstrateData(name, smiles)
+                substrates.append(substrate)
+
+    return substrates
+
+
 def parse_substrate_list(path_in: str) -> List[str]:
     """Parse a list of substrate names from a file.
 

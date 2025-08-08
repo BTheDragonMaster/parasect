@@ -279,3 +279,33 @@ trans-2-crotylglycine	C/C=C/C[C@@H](C(=O)O)N
 tryptophan	C1=CC=C2C(=C1)C(=CN2)C[C@@H](C(=O)O)N
 tyrosine	C1=CC(=CC=C1C[C@@H](C(=O)O)N)O
 valine	CC(C)[C@@H](C(=O)O)N
+caffeic acid	OC(=O)\C=C\c1ccc(O)c(O)c1
+grifolic acid	CC(C)=CCC/C(C)=C/CC/C(C)=C/CC1=C(O)C=C(C)C(C(=O)O)=C(O)1
+indole pyruvic acid	C1=CC=C2C(=C1)C(=CN2)CC(=O)C(=O)O
+3R-hydroxyglutamine	C([C@H]([C@@H](C(=O)O)N)O)C(=O)N
+3,3-dihomophenylalanine	N[C@@H](CCCC1=CC=CC=C1)C(=O)O
+3,3-dihomo-4-methoxytyrosine	N[C@@H](CCCC1=CC=C(OC)C=C1)C(=O)O
+3,3-dihomotyrosine	N[C@@H](CCCC1=CC=C(O)C=C1)C(=O)O
+trans-2-hexenoic acid	CCC\C=C\C(O)=O
+D-isovaline	CC[C@](C)(C(=O)O)N
+valine isocyanide	CC(C)[C@H]([N+]#[C-])C(O)=O
+ochratoxin beta	CC1CC2=C(C(=C(C=C2)C(=O)O)O)C(=O)O1
+tricarballylic acid	C(C(CC(=O)O)C(=O)O)C(=O)O
+piperonylic acid	OC(=O)c1ccc2OCOc2c1
+beta-methylphenylalanine	CC(C1=CC=CC=C1)C(C(=O)O)N
+colletorin D acid	CC1=CC(=C(C(=C1C(=O)O)O)CC=C(C)C)O
+leucinol	CC(C)C[C@@H](CO)N
+N-methylphenylalanine	CN[C@@H](CC1=CC=CC=C1)C(=O)O
+beta-hydroxy-gamma-methyl-hexadecanoic acid	CCCCCCCCCCCCC(C)C(O)CC(=O)O
+dihydrolysergic acid	CN1CC(CC2C1CC3=CNC4=CC=CC2=C34)C(=O)O
+O-dimethylallyl-L-tyrosine	CC(=CCOC1=CC=C(C=C1)C[C@@H](C(=O)O)N)C
+N-methyltyrosine	C1=CC(=CC=C1C[C@@H](C(=O)O)NC)O
+argininol	N[C@H](CO)CCCN=C(N)N
+3S-hydroxy-4R-methyloctanoic acid	CCCC[C@H]([C@H](CC(O)=O)O)C
+D-serine	C([C@H](C(=O)O)N)O
+fumaric acid	C(=C/C(=O)O)\C(=O)O
+phenylalaninol	C1=CC=C(C=C1)C[C@@H](CO)N
+malonamate	NC(=O)CC(=O)O
+methylglutaconyl hydroxyornithine	C/C(=C\C(=O)N(CCCC(C(=O)O)N)O)/CC(=O)O
+10,14-dimethyloctadecanoic acid	OC(CCCCCCCCC(C)CCCC(C)CCCC)=O
+ustethylinic acid	c1(C)c(O)c(C(=O)O)c(CC)cc(O)1
