@@ -1,7 +1,7 @@
-from typing import Optional, Any
+from typing import Any
 from sys import argv
 
-from sqlalchemy import create_engine, Column, ForeignKey, Table
+from sqlalchemy import create_engine, Column, ForeignKey, Table, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -12,9 +12,24 @@ class Base(DeclarativeBase):
 substrate_domain_association = Table(
     "substrate_domain_association",
     Base.metadata,
-    Column("substrate_name", ForeignKey("substrate.name"), primary_key=True),
+    Column("substrate_name", String, ForeignKey("substrate.name"), primary_key=True),
     Column("domain_id", ForeignKey("adenylation_domain.id"), primary_key=True),
 )
+
+
+class ProteinDomainAssociation(Base):
+    __tablename__ = "protein_domain_association"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    protein_id: Mapped[int] = mapped_column(ForeignKey("protein.id"))
+    domain_id: Mapped[int] = mapped_column(ForeignKey("adenylation_domain.id"))
+    domain_number: Mapped[int]
+
+    start: Mapped[int]
+    end: Mapped[int]
+
+    protein: Mapped["Protein"] = relationship(back_populates="domains")
+    domain: Mapped["AdenylationDomain"] = relationship(back_populates="proteins")
 
 
 class Substrate(Base):
@@ -32,6 +47,28 @@ class Substrate(Base):
         }
 
 
+class Protein(Base):
+    __tablename__ = "protein"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    sequence: Mapped[str]
+    synonyms: Mapped[list["ProteinSynonym"]] = relationship(back_populates="protein")
+    domains: Mapped[list["ProteinDomainAssociation"]] = relationship(
+        back_populates="protein",
+        cascade="all, delete-orphan"
+    )
+
+
+class ProteinSynonym(Base):
+    __tablename__ = "protein_synonym"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    protein_id: Mapped[int] = mapped_column(ForeignKey("protein.id"))
+    synonym: Mapped[str]
+
+    protein: Mapped[Protein] = relationship(back_populates="synonyms")
+
+
 class AdenylationDomain(Base):
     __tablename__ = "adenylation_domain"
 
@@ -41,9 +78,14 @@ class AdenylationDomain(Base):
         cascade="all, delete-orphan",
         lazy="selectin",
     )
-    ncbi_id: Mapped[Optional[str]]
     substrates: Mapped[list["Substrate"]] = relationship(secondary=substrate_domain_association,
                                                          back_populates="domains")
+
+    proteins: Mapped[list["ProteinDomainAssociation"]] = relationship(
+        back_populates="domain",
+        cascade="all, delete-orphan"
+    )
+
     sequence: Mapped[str]
     signature: Mapped[str]
     extended_signature: Mapped[str]
@@ -53,7 +95,6 @@ class AdenylationDomain(Base):
     def to_json(self) -> dict[str, Any]:
         return {
             "id": self.id,
-            "ncbi_id": self.ncbi_id,
             "sequence": self.sequence,
             "signature": self.signature,
             "extended_signature": self.extended_signature,
