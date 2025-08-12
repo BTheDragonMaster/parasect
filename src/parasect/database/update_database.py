@@ -17,8 +17,7 @@ from parasect.database.query_database import get_substrates_from_smiles, get_sub
 from parasect.database.build_database import AdenylationDomain
 from parasect.database.populate_database import populate_db
 
-# TODO: Refactor such that entries are auto-added entries as pending to the database,
-# instead of writing them away to flatfiles first
+# TODO: Refactor such that entries are auto-added as pending to the database
 # TODO: Create a table for proteins in the database
 # TODO: Create a coordinate field for A-domains in the database
 
