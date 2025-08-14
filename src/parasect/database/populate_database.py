@@ -22,7 +22,7 @@ def parse_args() -> Namespace:
     """
     parser = ArgumentParser(description="Populate empty SQL database with data")
     parser.add_argument("--parasect", required=True, type=str, help="Path to parasect dataset file")
-    parser.add_argument("--smiles", required=True, type=str, help="Path to parasect SMILES file")
+    parser.add_argument("--smiles", type=str, default=None, help="Path to parasect SMILES file")
     parser.add_argument("--database", required=True, type=str, help="Path to parasect database")
     parser.add_argument("--signature", required=True, type=str, help="Path to fasta containing A-domain signatures")
     parser.add_argument("--extended", required=True, type=str,
@@ -369,11 +369,16 @@ def link_domains_and_proteins(domain_entries: list[AdenylationDomain],
     return links
 
 
-def populate_db(session: Session, parasect_data_path: str, smiles_path: str, signature_path: str,
+def populate_db(session: Session, parasect_data_path: str, smiles_path: Optional[str], signature_path: str,
                 extended_path: str, protein_path: str):
 
     protein_entries, protein_synonyms = create_protein_entries(session, protein_path)
-    new_substrate_entries = create_substrate_entries(session, smiles_path)
+
+    if smiles_path is not None:
+        new_substrate_entries = create_substrate_entries(session, smiles_path)
+    else:
+        new_substrate_entries = []
+
     all_substrates: list[Substrate] = new_substrate_entries + list(session.scalars(select(Substrate)).all())
 
     domain_entries, domain_synonyms = create_domain_entries(session, parasect_data_path, signature_path, extended_path,
