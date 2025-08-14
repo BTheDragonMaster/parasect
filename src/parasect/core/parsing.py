@@ -9,29 +9,16 @@ from typing import Dict, List, Tuple, Optional, Generator
 from dataclasses import dataclass
 
 from Bio import SeqIO
-from pikachu.general import read_smiles
-from sqlalchemy.orm import Session
 
 from parasect.core.chem import smiles_to_fingerprint
 from parasect.core.constants import FINGERPRINTS_FILE
 from parasect.core.tabular import Tabular
-from parasect.database.query_database import get_substrates_from_name
 
 
 @dataclass
 class SubstrateData:
     name: str
     smiles: str
-
-
-@dataclass
-class AdenylationDomainData:
-    id: int
-    synonyms: list[str]
-    sequence: str
-    substrates: list[SubstrateData]
-    signature: str
-    extended_signature: str
 
 
 def parse_parasect_data(parasect_path: str) -> tuple[dict[str, str], dict[str, list[str]]]:
@@ -51,58 +38,6 @@ def parse_parasect_data(parasect_path: str) -> tuple[dict[str, str], dict[str, l
         id_to_spec[domain_id] = parasect_data.get_row_value(domain_id, "specificity").split('|')
 
     return id_to_seq, id_to_spec
-
-
-
-def load_parasect_data(parasect_path: str, smiles_path: str, signature_path: str,
-                       extended_signature_path: str,
-                       session: Optional[Session] = None) -> tuple[List[AdenylationDomainData], List[SubstrateData]]:
-
-    parasect_data = Tabular(parasect_path, separator='\t')
-    smiles_data = Tabular(smiles_path, separator='\t')
-    domain_to_signature = parse_fasta_file(signature_path)
-    domain_to_extended = parse_fasta_file(extended_signature_path)
-
-    domains = []
-    substrates = []
-
-    for i, domain_name in enumerate(parasect_data.rows):
-        domain_synonyms = domain_name.split('|')
-        sequence = parasect_data.get_row_value(domain_name, "sequence")
-        substrate_names = parasect_data.get_row_value(domain_name, "specificity").split('|')
-        domain_substrates = []
-
-        for substrate_name in substrate_names:
-            if substrate_name in smiles_data.rows:
-                smiles = smiles_data.get_row_value(substrate_name, "smiles")
-
-                # Check SMILES string is valid
-                read_smiles(smiles)
-
-                domain_substrates.append(SubstrateData(substrate_name, smiles))
-            elif session is not None:
-                db_substrates = get_substrates_from_name(session, substrate_name)
-                if db_substrates:
-                    domain_substrates.append(SubstrateData(substrate_name, db_substrates[0].smiles))
-                else:
-                    raise ValueError(f"No SMILES found for substrate: {substrate_name}")
-
-            else:
-                raise ValueError(f"No SMILES found for substrate: {substrate_name}")
-
-        domain = AdenylationDomainData(domain_name, domain_synonyms, sequence, domain_substrates,
-                                       domain_to_signature[domain_name], domain_to_extended[domain_name])
-        domains.append(domain)
-
-    for substrate_name in smiles_data.rows:
-        smiles = smiles_data.get_row_value(substrate_name, "smiles")
-
-        # Check SMILES string is valid
-        read_smiles(smiles)
-
-        substrates.append(SubstrateData(substrate_name, smiles))
-
-    return domains, substrates
 
 
 def parse_smiles_mapping(path_in: str) -> List[SubstrateData]:
