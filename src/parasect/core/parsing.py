@@ -34,8 +34,28 @@ class AdenylationDomainData:
     extended_signature: str
 
 
+def parse_parasect_data(parasect_path: str) -> tuple[dict[str, str], dict[str, list[str]]]:
+    """Return two dictionaries, with ids as keys and sequences/specificities as values from parasect data file
+
+    :param parasect_path: path to parasect data file
+    :type parasect_path: str
+    :return: Two dictionaries, one mapping id to sequence and the other mapping id to specificity
+    :rtype: tuple[dict[str, str], dict[str, list[str]]]
+    """
+    id_to_seq: dict[str, str] = {}
+    id_to_spec: dict[str, list[str]] = {}
+
+    parasect_data = Tabular(parasect_path, separator='\t')
+    for domain_id in parasect_data.rows:
+        id_to_seq[domain_id] = parasect_data.get_row_value(domain_id, "sequence")
+        id_to_spec[domain_id] = parasect_data.get_row_value(domain_id, "specificity").split('|')
+
+    return id_to_seq, id_to_spec
+
+
+
 def load_parasect_data(parasect_path: str, smiles_path: str, signature_path: str,
-                       extended_signature_path: str, starting_id: int = 0,
+                       extended_signature_path: str,
                        session: Optional[Session] = None) -> tuple[List[AdenylationDomainData], List[SubstrateData]]:
 
     parasect_data = Tabular(parasect_path, separator='\t')
@@ -48,7 +68,6 @@ def load_parasect_data(parasect_path: str, smiles_path: str, signature_path: str
 
     for i, domain_name in enumerate(parasect_data.rows):
         domain_synonyms = domain_name.split('|')
-        domain_id = i + 1 + starting_id
         sequence = parasect_data.get_row_value(domain_name, "sequence")
         substrate_names = parasect_data.get_row_value(domain_name, "specificity").split('|')
         domain_substrates = []
@@ -71,7 +90,7 @@ def load_parasect_data(parasect_path: str, smiles_path: str, signature_path: str
             else:
                 raise ValueError(f"No SMILES found for substrate: {substrate_name}")
 
-        domain = AdenylationDomainData(domain_id, domain_synonyms, sequence, domain_substrates,
+        domain = AdenylationDomainData(domain_name, domain_synonyms, sequence, domain_substrates,
                                        domain_to_signature[domain_name], domain_to_extended[domain_name])
         domains.append(domain)
 

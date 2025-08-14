@@ -3,8 +3,8 @@
 """Module for interacting with pikachu library."""
 
 import os
-from typing import List, Optional, Dict
-from dataclasses import dataclass
+from typing import List, Dict
+from math import isclose
 
 from pikachu.fingerprinting.ecfp_4 import ECFP
 from pikachu.general import read_smiles
@@ -35,26 +35,42 @@ def parse_smiles_mapping(path_in: str) -> Dict[str, str]:
     return name_to_smiles
 
 
-@dataclass
-class Substrate:
-    name: str
-    smiles: str
-
-
 def is_same_molecule(smiles_1, smiles_2):
     structure_1 = read_smiles(smiles_1)
     structure_2 = read_smiles(smiles_2)
 
+    atom_number_1 = len(structure_1.get_atoms())
+    atom_number_2 = len(structure_2.get_atoms())
+
+    if atom_number_1 != atom_number_2:
+        return False
+
     if get_jaccard_index(structure_1, structure_2) == 1.0:
-        atom_number_1 = len(structure_1.get_atoms())
-        atom_number_2 = len(structure_2.get_atoms())
-        if atom_number_1 == atom_number_2:
-            return True
+        return True
 
     return False
 
 
-def smiles_to_fingerprint(smiles: str) -> List[int]:
+def is_same_molecule_fingerprint(fingerprint_1: set[int], fingerprint_2: set[int]) -> bool:
+    """Return True if the Jaccard index between the molecules is 1.0, False otherwise
+
+    :param fingerprint_1: ECFP fingerprint of molecule 1
+    :type fingerprint_1: set[int]
+    :param fingerprint_2: ECFP fingerprint of molecule 2
+    :type fingerprint_2: set[int]
+    :return: True if molecules are the same, False otherwise
+    :rtype: bool
+    """
+
+    jaccard_index = len(fingerprint_1.intersection(fingerprint_2)) / len(fingerprint_1.union(fingerprint_2))
+
+    if isclose(jaccard_index, 1.0):
+        return True
+
+    return False
+
+
+def smiles_to_fingerprint(smiles: str) -> set[int]:
     """Convert SMILES string to ECFP fingerprint.
 
     :param smiles: SMILES string.
@@ -62,49 +78,12 @@ def smiles_to_fingerprint(smiles: str) -> List[int]:
     :return: ECFP fingerprint.
     :rtype: List[int]
     """
-    structure = read_smiles(smiles)
+    try:
+        structure = read_smiles(smiles)
+    except Exception:
+        raise StructureError(f"Invalid SMILES string: {smiles}")
 
     ecfp = ECFP(structure)
     fingerprint = ecfp.fingerprint
 
     return fingerprint
-
-
-def molecule_in_dataset(smiles_string: str, substrate_dataset: str) -> Optional[Substrate]:
-    """Return True if molecule already exists within dataset, False otherwise
-
-    :param smiles_string: SMILES string
-    :type smiles_string: str
-    :param substrate_dataset: path to file containing substrate dataset
-    :return: Substrate if match was found, None otherwise
-    :rtype: Optional[Substrate]
-    """
-    try:
-        read_smiles(smiles_string)
-    except Exception:
-        raise StructureError("Invalid SMILES string")
-
-    substrate_to_smiles = parse_smiles_mapping(substrate_dataset)
-    for substrate, smiles in substrate_to_smiles.items():
-        if is_same_molecule(smiles_string, smiles):
-            return Substrate(substrate, smiles)
-
-    return None
-
-
-def substrate_name_in_dataset(substrate_name: str, substrate_dataset: str) -> Optional[Substrate]:
-    """Return True if substrate name is already in dataset, False otherwise
-
-    :param substrate_name: name of molecule
-    :type substrate_name: str
-    :param substrate_dataset: path to file containing substrate dataset
-    :type substrate_dataset: str
-    :return: Substrate if match was found, None otherwise
-    :rtype: Optional[Substrate]
-    """
-    substrate_to_smiles = parse_smiles_mapping(substrate_dataset)
-    for substrate, smiles in substrate_to_smiles.items():
-        if substrate_name == substrate:
-            return Substrate(substrate, smiles)
-
-    return None

@@ -1,8 +1,9 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
+
 from parasect.database.build_database import AdenylationDomain, Substrate, DomainSynonym
-from parasect.core.chem import is_same_molecule
+from parasect.core.chem import is_same_molecule_fingerprint, smiles_to_fingerprint
 
 
 def get_protein_names(session: Session):
@@ -15,39 +16,47 @@ def get_protein_names(session: Session):
     return protein_names
 
 
-def sequences_are_equivalent(seq1: str, seq2: str, min_overlap_ratio: float = 0.8) -> bool:
+def sequences_are_equivalent(seq_1: str, seq_2: str, min_overlap_ratio: float = 0.8) -> bool:
+    """Return True if two sequences are equivalent based on an overlap threshold, False otherwise
+
+    :param seq_1: sequence 1
+    :type seq_1: str
+    :param seq_2: sequence 2
+    :type seq_2: str
+    :param min_overlap_ratio: proportion of the shortest sequence of the pair that needs to match
+    :type min_overlap_ratio: float
+    :return: True if sequences are equivalent, False otherwise
+    :rtype: bool
     """
-    Check if two DNA sequences represent the same sequence with partial overlaps.
 
-    Parameters:
-    - seq1, seq2: DNA sequences (strings)
-    - min_overlap_ratio: minimum fraction of the shorter sequence length to consider as valid overlap
+    def sequences_overlap(a: str, b: str, threshold: float) -> bool:
+        """
+        Return True if sequences overlap by at least a certain threshold, False otherwise
 
-    Returns:
-    - True if sequences overlap sufficiently and match in the overlapping region.
-    - False otherwise.
-    """
-
-    def overlap_length(a, b):
+        :param a: sequence 1
+        :type a: str
+        :param b: sequence 2
+        :type b: str
+        :param threshold: proportion of shortest sequence that has to match exactly
+        :type threshold: float
+        :return: True if sequences overlap, False otherwise
+        :rtype: bool
+        """
         max_overlap = min(len(a), len(b))
-        for length in range(max_overlap, 0, -1):
+        min_overlap = int(max_overlap * threshold)
+        for length in range(max_overlap, min_overlap - 1, -1):
             if a[-length:] == b[:length]:
-                return length
-        return 0
+                return True
+        return False
 
-    overlap_1_2 = overlap_length(seq1, seq2)
-    overlap_2_1 = overlap_length(seq2, seq1)
+    if seq_1 in seq_2:
+        return True
+    if seq_2 in seq_1:
+        return True
 
-    min_len = min(len(seq1), len(seq2))
-    threshold = int(min_len * min_overlap_ratio)
-
-    if overlap_1_2 >= threshold:
+    if sequences_overlap(seq_1, seq_2, min_overlap_ratio):
         return True
-    if overlap_2_1 >= threshold:
-        return True
-    if seq1 in seq2:
-        return True
-    if seq2 in seq1:
+    if sequences_overlap(seq_2, seq_1, min_overlap_ratio):
         return True
 
     return False
@@ -63,10 +72,20 @@ def get_all_substrates(session: Session) -> list[Substrate]:
 
 
 def get_substrates_from_smiles(session: Session, smiles: str) -> list[Substrate]:
+    """
+
+    :param session: database session
+    :type session: Session
+    :param smiles: SMILES string of query molecule
+    :type smiles: str
+    :return: list of matching substrates
+    :rtype:
+    """
     query = select(Substrate)
     substrates = []
+    fingerprint = smiles_to_fingerprint(smiles)
     for substrate in session.scalars(query):
-        if is_same_molecule(substrate.smiles, smiles):
+        if is_same_molecule_fingerprint(set(substrate.fingerprint), set(fingerprint)):
             substrates.append(substrate)
 
     return substrates

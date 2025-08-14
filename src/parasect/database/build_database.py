@@ -1,7 +1,7 @@
 from typing import Any
 from sys import argv
 
-from sqlalchemy import create_engine, Column, ForeignKey, Table, String
+from sqlalchemy import create_engine, Column, ForeignKey, Table, String, JSON
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -36,6 +36,7 @@ class Substrate(Base):
     __tablename__ = "substrate"
 
     name: Mapped[str] = mapped_column(primary_key=True)
+    fingerprint: Mapped[list[int]] = mapped_column(JSON)
     smiles: Mapped[str]
     domains: Mapped[list["AdenylationDomain"]] = relationship(secondary=substrate_domain_association,
                                                               back_populates="substrates")
@@ -43,7 +44,8 @@ class Substrate(Base):
     def to_json(self) -> dict[str, Any]:
         return {
             "name": self.name,
-            "smiles": self.smiles
+            "smiles": self.smiles,
+            "fingerprint": self.fingerprint
         }
 
 
@@ -55,8 +57,7 @@ class Protein(Base):
     synonyms: Mapped[list["ProteinSynonym"]] = relationship(back_populates="protein")
     domains: Mapped[list["ProteinDomainAssociation"]] = relationship(
         back_populates="protein",
-        cascade="all, delete-orphan"
-    )
+        cascade="all, delete-orphan")
 
 
 class ProteinSynonym(Base):
@@ -90,15 +91,12 @@ class AdenylationDomain(Base):
     signature: Mapped[str]
     extended_signature: Mapped[str]
 
-    pending: Mapped[bool]
-
     def to_json(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "sequence": self.sequence,
             "signature": self.signature,
             "extended_signature": self.extended_signature,
-            "pending": self.pending,
             "synonyms": [syn.to_json() for syn in self.synonyms] if self.synonyms else [],
             "substrates": [sub.to_json() for sub in self.substrates] if self.substrates else [],
         }
