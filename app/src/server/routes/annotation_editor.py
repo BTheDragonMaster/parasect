@@ -1,8 +1,6 @@
 import logging
 from typing import Any
 from flask import Blueprint, Response, request, jsonify
-import uuid
-import os
 
 
 from parasect.database.query_database import get_substrates_from_smiles, \
@@ -187,98 +185,12 @@ def cleanup_annotations(annotations: dict[str, dict[str, Any]]) -> dict[str, dic
     return protein_to_entries
 
 
-def protein_has_annotation_type(domain_annotations, annotation_name):
-    for domain_info in domain_annotations.values():
-        if domain_info["annotation_type"] == annotation_name:
-            return True
-
-    return False
-
-
-def data_has_annotation_type(annotations, annotation_name):
-    for protein_annotations in annotations.values():
-        if protein_has_annotation_type(protein_annotations["domains"], annotation_name):
-            return True
-    return False
-
-
-def write_annotations(submission_dir, annotations):
-    new_entries = os.path.join(submission_dir, "new")
-    corrections = os.path.join(submission_dir, "corrections")
-    duplicates = os.path.join(submission_dir, "duplicates")
-
-    all_annotation_types = ["new_entry", "correction", "duplicate_entry"]
-    directories = [new_entries, corrections, duplicates]
-
-    annotation_types = []
-    submission_dirs = []
-
-    for i, annotation_type in enumerate(all_annotation_types):
-
-        if data_has_annotation_type(annotations, annotation_type):
-            submission_dirs.append(directories[i])
-            annotation_types.append(annotation_type)
-
-    substrates_out = os.path.join(submission_dir, "smiles.tsv")
-    new_substrates = []
-
-    for i, directory in enumerate(submission_dirs):
-        annotation_type = annotation_types[i]
-        os.mkdir(directory)
-        domain_out = os.path.join(directory, "domains.fasta")
-        protein_out = os.path.join(directory, "proteins.fasta")
-        parasect_data_out = os.path.join(directory, "parasect_data.txt")
-        signatures_out = os.path.join(directory, "signatures.fasta")
-        extended_signatures_out = os.path.join(directory, "extended_signatures.fasta")
-        with open(domain_out, 'w') as d_out, open(protein_out, 'w') as p_out, \
-                open(parasect_data_out, 'w') as data_out, open(signatures_out, 'w') as sig_out, \
-                open(extended_signatures_out, 'w') as ext_out:
-            data_out.write("domain_id\tsequence\tspecificity\n")
-            for protein, protein_annotations in annotations.items():
-                if not protein_has_annotation_type(protein_annotations["domains"], annotation_type):
-                    continue
-
-                p_out.write(f">{protein}\n{protein_annotations['sequence']}\n")
-                domain_annotations = protein_annotations["domains"]
-                for domain_id, domain_info in domain_annotations.items():
-                    if domain_info["annotation_type"] != annotation_type:
-                        continue
-
-                    substrates = domain_info["substrates"]
-                    specificities = []
-
-                    for substrate_info in substrates:
-                        specificities.append(substrate_info["name"])
-                        if not substrates_from_name(substrate_info["name"]):
-                            new_substrates.append((substrate_info["name"], substrate_info["smiles"]))
-
-                    d_out.write(f">{domain_id}\n{domain_info['sequence']}\n")
-                    sig_out.write(f">{domain_id}\n{domain_info['signature']}\n")
-                    ext_out.write(f">{domain_id}\n{domain_info['extended_signature']}\n")
-
-                    specificities = '|'.join(specificities)
-                    data_out.write(f"{domain_id}\t{domain_info['sequence']}\t{specificities}\n")
-
-    if new_substrates:
-        new_substrates = list(set(new_substrates))
-        with open(substrates_out, 'w') as s_out:
-            s_out.write("substrate\tsmiles\n")
-            for new_substrate in new_substrates:
-                s_out.write(f"{new_substrate[0]}\t{new_substrate[1]}\n")
-
-
 @blueprint_submit_annotations.route("/api/submit_annotations", methods=["POST"])
 def submit_annotations():
     try:
         data = request.get_json()
         annotations = data.get("annotations", {})
         protein_to_entries = cleanup_annotations(annotations)
-
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        job_id = str(uuid.uuid4())
-        user_submission = os.path.join(current_dir, '..', 'user_submissions', job_id)
-        os.mkdir(user_submission)
-        write_annotations(user_submission, protein_to_entries)
 
         # Create a GitHub PR with annotations
         pr_url = create_github_issue(protein_to_entries)
@@ -299,7 +211,6 @@ def create_github_issue(annotations: dict[str, dict[str, Any]]) -> str:
     :return: Link to github issues page
     :rtype: str
     """
-    print("Annotations received for GitHub issue:", annotations)
     session_generator = get_db()
     session = next(session_generator)
     submit_github_issues(session, annotations)

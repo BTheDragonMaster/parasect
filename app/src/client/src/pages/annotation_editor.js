@@ -64,7 +64,7 @@ const AnnotationEditor = () => {
 
     const json = await res.json();
     if (res.ok) {
-        alert(`Pull request created: ${json.pr_url}`);
+        alert(`GitHub issue created for annotations at: ${json.pr_url}`);
     } else {
         alert(`Error: ${json.error}`);
     }

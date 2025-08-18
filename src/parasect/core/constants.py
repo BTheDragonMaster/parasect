@@ -83,7 +83,7 @@ A_POSITION_FILE = get_path("stachelhaus.txt")
 A_POSITION_FILE_34 = get_path("active_site.txt")
 A_POSITION_FILE_HMM2 = get_path("stachelhaus_hmm2.txt")
 A_POSITION_FILE_34_HMM2 = get_path("active_site_hmm2.txt")
-SMILES_FILE = get_path("smiles.tsv")
+SMILES_FILE = get_path("database_files/smiles.tsv")
 
 FINGERPRINTS_FILE = get_path("fingerprints.txt")
 INCLUDED_SUBSTRATES_FILE = get_path("included_substrates.txt")
