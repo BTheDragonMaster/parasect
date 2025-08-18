@@ -8,6 +8,7 @@ import os
 from parasect.database.query_database import get_substrates_from_smiles, \
     get_substrates_from_name, get_all_substrates, get_protein_names, get_domains_from_synonym
 from parasect.database.build_database import Substrate
+from parasect.core.github import submit_github_issues
 from pikachu.general import read_smiles
 
 from .database import get_db
@@ -149,31 +150,35 @@ def check_domain_name() -> Response:
     return jsonify({"domain_in_dataset": in_dataset})
 
 
-def cleanup_annotations(annotations: dict[str, Any]):
-    protein_to_entries = {}
+def cleanup_annotations(annotations: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    protein_to_entries: dict[str, dict[str, Any]] = {}
 
     for protein in annotations.keys():
 
         domain_to_annotations = annotations[protein]["domains"]
 
         synonym = annotations[protein]["synonym"]
-        domain_to_entries = {}
+        domain_to_entries: dict[str, dict[str, Any]] = {}
         for domain, domain_annotations in domain_to_annotations.items():
             domain_name = domain_annotations["name"]
-            for annotation in domain_annotations["substrates"]:
-                if 'substrateName' in annotation and 'substrateSmiles' in annotation and\
-                        annotation['substrateName'] and annotation['substrateSmiles'] and \
-                        annotation['annotationType'] and annotation['sequence'] and \
-                        annotation['signature'] and annotation['extendedSignature'] and \
-                        annotation['annotationType'] != 'no_update':
-                    if domain_name not in domain_to_entries:
-                        domain_to_entries[domain_name] = {"sequence": annotation['sequence'],
-                                                          "signature": annotation['signature'],
-                                                          "extended_signature": annotation['extendedSignature'],
-                                                          "substrates": []}
-                    domain_to_entries[domain_name]["substrates"].append({"name": annotation['substrateName'],
-                                                                         "smiles": annotation['substrateSmiles'],
-                                                                         "annotation_type": annotation['annotationType']})
+            annotation_type = domain_annotations["annotationType"]
+            if annotation_type == 'no_update':
+                continue
+            elif not annotation_type:
+                continue
+            else:
+                for annotation in domain_annotations["substrates"]:
+                    if 'substrateName' in annotation and 'substrateSmiles' in annotation and\
+                            annotation['substrateName'] and annotation['substrateSmiles'] and annotation['sequence'] and \
+                            annotation['signature'] and annotation['extendedSignature']:
+                        if domain_name not in domain_to_entries:
+                            domain_to_entries[domain_name] = {"sequence": annotation['sequence'],
+                                                              "signature": annotation['signature'],
+                                                              "extended_signature": annotation['extendedSignature'],
+                                                              "substrates": [],
+                                                              "annotation_type": annotation_type}
+                        domain_to_entries[domain_name]["substrates"].append({"name": annotation['substrateName'],
+                                                                             "smiles": annotation['substrateSmiles'],})
 
         if domain_to_entries:
             protein_to_entries[synonym] = {"domains": domain_to_entries,
@@ -182,20 +187,9 @@ def cleanup_annotations(annotations: dict[str, Any]):
     return protein_to_entries
 
 
-def domain_has_annotation_type(domain_info, annotation_name):
-    substrates = domain_info["substrates"]
-
-    for substrate_info in substrates:
-        annotation_type = substrate_info["annotation_type"]
-        if annotation_type == annotation_name:
-            return True
-
-    return False
-
-
 def protein_has_annotation_type(domain_annotations, annotation_name):
     for domain_info in domain_annotations.values():
-        if domain_has_annotation_type(domain_info, annotation_name):
+        if domain_info["annotation_type"] == annotation_name:
             return True
 
     return False
@@ -246,9 +240,8 @@ def write_annotations(submission_dir, annotations):
 
                 p_out.write(f">{protein}\n{protein_annotations['sequence']}\n")
                 domain_annotations = protein_annotations["domains"]
-                print(domain_annotations)
                 for domain_id, domain_info in domain_annotations.items():
-                    if not domain_has_annotation_type(domain_info, annotation_type):
+                    if domain_info["annotation_type"] != annotation_type:
                         continue
 
                     substrates = domain_info["substrates"]
@@ -287,13 +280,8 @@ def submit_annotations():
         os.mkdir(user_submission)
         write_annotations(user_submission, protein_to_entries)
 
-
-
-        # Future: validate or transform annotations here
-        # Example: check structure, check duplicates, etc.
-
         # Create a GitHub PR with annotations
-        pr_url = create_github_pr(annotations)
+        pr_url = create_github_issue(protein_to_entries)
 
         return jsonify({"pr_url": pr_url}), 200
 
@@ -302,17 +290,20 @@ def submit_annotations():
         return jsonify({"error": str(e)}), 500
 
 
-def create_github_pr(annotations):
+def create_github_issue(annotations: dict[str, dict[str, Any]]) -> str:
     """
-    TODO: Replace this stub with logic to:
-    - write a JSON or YAML file from the annotations
-    - commit it to a new branch
-    - open a GitHub pull request using PyGithub or Git CLI
-    """
-    # Simulate PR creation
-    print("Annotations received for PR:", annotations)
+    Create one GitHub issue per protein
 
-    # Replace this with actual PR URL
-    return "https://github.com/your-org/your-repo/pull/123"
+    :param annotations: dictionary of protein entries
+    :type annotations: dict[str, dict[str, Any]]
+    :return: Link to github issues page
+    :rtype: str
+    """
+    print("Annotations received for GitHub issue:", annotations)
+    session_generator = get_db()
+    session = next(session_generator)
+    submit_github_issues(session, annotations)
+
+    return "https://github.com/BTheDragonMaster/parasect/issues"
 
 

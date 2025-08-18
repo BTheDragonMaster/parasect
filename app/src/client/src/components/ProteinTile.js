@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Box, TextField } from '@mui/material';
+import React, {useState, useEffect, useMemo} from 'react';
+import {Box, TextField} from '@mui/material';
 
 import DomainTile from '../components/DomainTile';
 
@@ -10,15 +10,15 @@ import DomainTile from '../components/DomainTile';
  * @param {Object} props.proteinResult - The protein result object.
  * @returns {React.ReactElement} - The result tile component.
  */
-const ProteinTile = ({ proteinResult, onUpdateAnnotation }) => {
+const ProteinTile = ({proteinResult, onUpdateAnnotation}) => {
     const [domainAnnotations, setDomainAnnotations] = useState({});
     // Extract first part of protein name (before whitespace)
 
     const defaultProteinName = useMemo(() => {
-  return proteinResult?.protein_name?.split(/\s+/)[0] || "";
-}, [proteinResult]);
+        return proteinResult?.protein_name?.split(/\s+/)[0] || "";
+    }, [proteinResult]);
 
-const [proteinName, setProteinName] = useState(defaultProteinName);
+    const [proteinName, setProteinName] = useState(defaultProteinName);
     const [proteinExists, setProteinExists] = useState(null); // null = not checked yet
 
     // 🔍 Check if protein is in dataset
@@ -29,7 +29,7 @@ const [proteinName, setProteinName] = useState(defaultProteinName);
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ protein_name: name }),
+                body: JSON.stringify({protein_name: name}),
             });
 
             const result = await response.json();
@@ -49,28 +49,29 @@ const [proteinName, setProteinName] = useState(defaultProteinName);
     }, [proteinResult]);
 
 
-
-    const handleDomainAnnotationChange = (domainKey, domainName, data) => {
-        const updatedDomains = { ...domainAnnotations };
+    const handleDomainAnnotationChange = (domainKey, domainName, data, annotationType) => {
+        const updatedDomains = {...domainAnnotations};
 
         if (data && data.length > 0) {
-            updatedDomains[domainKey]= {
+            updatedDomains[domainKey] = {
                 name: domainName,
-                substrates: data};
-            } else {
-                delete updatedDomains[domainKey];
-            }
+                substrates: data,
+                annotationType: annotationType
+            };
+        } else {
+            delete updatedDomains[domainKey];
+        }
 
-            setDomainAnnotations(updatedDomains);
+        setDomainAnnotations(updatedDomains);
 
-            if (onUpdateAnnotation) {
-                onUpdateAnnotation(proteinResult["protein_name"], {
-                    synonym: proteinName,
-                    sequence: proteinResult["sequence"],
-                    domains: updatedDomains,
-                });
-            }
-        };
+        if (onUpdateAnnotation) {
+            onUpdateAnnotation(proteinResult["protein_name"], {
+                synonym: proteinName,
+                sequence: proteinResult["sequence"],
+                domains: updatedDomains,
+            });
+        }
+    };
 
 
     const handleProteinNameChange = (e) => {
@@ -115,7 +116,7 @@ const [proteinName, setProteinName] = useState(defaultProteinName);
             </Box>
 
             {/* Protein name input field */}
-            <Box sx={{ px: 2, mb: 1 }}>
+            <Box sx={{px: 2, mb: 1}}>
                 <TextField
                     fullWidth
                     label="Protein name"
@@ -129,14 +130,14 @@ const [proteinName, setProteinName] = useState(defaultProteinName);
             </Box>
 
             {/* Domains in the protein > 0 */}
-            <Box sx={{ padding: 2, pt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{padding: 2, pt: 1, display: 'flex', flexDirection: 'column', gap: 2}}>
                 {proteinResult['results'].map((result, index) => (
                     <DomainTile
                         key={index}
                         domainIndex={index + 1}
                         protein_name={proteinName}
                         result={result}
-                        onAnnotationChange={(domainName, data) => handleDomainAnnotationChange(index, domainName, data)}
+                        onAnnotationChange={(domainName, data, annotationType) => handleDomainAnnotationChange(index, domainName, data, annotationType)}
                     />
 
                 ))}
