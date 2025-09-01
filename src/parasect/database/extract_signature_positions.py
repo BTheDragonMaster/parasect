@@ -84,10 +84,10 @@ def extract_signatures(session: Session, protein_file: str, tmp_path: str, out_p
                             db_domain_to_positions[db_domain][name] = []
 
                         if db_domain.extended_signature != domain.extended_signature:
-                            print(f"Mismatching signatures for domain {db_domain.get_name()}:"
-                                  f"{db_domain.extended_signature}"
-                                  f"{domain.extended_signature}"
-                                  f"{domain.extended_signature_positions}")
+                            print(f"Mismatching signatures for domain {db_domain.get_name()}:")
+                            print(f"{db_domain.extended_signature}")
+                            print(f"{domain.extended_signature}")
+                            print(f"{domain.extended_signature_positions}")
                         relative_positions = [
                             pos - (association.start - 1) if pos is not None else None
                             for pos in domain.extended_signature_positions
@@ -95,16 +95,15 @@ def extract_signatures(session: Session, protein_file: str, tmp_path: str, out_p
                         db_domain_to_positions[db_domain][name].append(domain.extended_signature_positions)
                         if db_domain in db_domain_to_relative:
                             if db_domain_to_relative[db_domain] != relative_positions:
-                                print(f"Mismatching relative positions for domain {db_domain.get_name()}:"
-                                      f"{db_domain_to_relative[db_domain]}"
-                                      f"{relative_positions}")
+                                print(f"Mismatching relative positions for domain {db_domain.get_name()}:")
+                                print(f"{db_domain_to_relative[db_domain]}")
+                                print(f"{relative_positions}")
                         else:
                             db_domain_to_relative[db_domain] = relative_positions
 
     missing_domains = all_db_domains - found_db_domains
-    print("Missing domains:")
-    for domain in missing_domains:
-        print(domain.get_name())
+    print(f"Number of mssing domains: {len(missing_domains)}")
+
     if not os.path.exists(out_path):
         os.mkdir(out_path)
 
