@@ -80,8 +80,7 @@ def create_protein_entries(session: Session, protein_path: str) -> tuple[list[Pr
             new_protein: Protein = Protein(sequence=seq)
             protein_entries.append(new_protein)
             for synonym in synonyms:
-                if synonym == "CAG15009.1":
-                    print("It exists")
+
                 protein_synonyms.append(ProteinSynonym(synonym=synonym, protein=new_protein))
                 synonym_map[synonym] = new_protein
 
@@ -321,8 +320,6 @@ def link_domains_and_proteins(domain_entries: list[AdenylationDomain],
         for domain_synonym in domain_entry.synonyms:
             synonym = domain_synonym.synonym
             protein_name, domain_number = _parse_domain_synonym(synonym)
-            if protein_name == 'CAG15009.1':
-                print("I can also find it here", domain_entry.get_name())
 
             domain_numbers.add(domain_number)
 
