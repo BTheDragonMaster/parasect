@@ -45,7 +45,7 @@ def _get_reference_positions(positions: List[int], aligned_reference: str) -> Li
 
 def _get_reference_positions_hmm(
     query_sequence: str, reference_sequence: str, reference_positions: List[int]
-) -> Optional[str]:
+) -> Optional[list[int]]:
     """Extract the given positions from a query alignment.
 
     :param query_sequence: The aligned query sequence.
@@ -54,9 +54,9 @@ def _get_reference_positions_hmm(
     :type reference_sequence: str
     :param reference_positions: The positions of interest in the unaligned reference.
     :type reference_positions: List[int]
-    :return: A string containing the sequence elements at the adjusted reference,
+    :return: Positions of sequence elements at the adjusted reference,
         or None if the positions could not be extracted.
-    :rtype: str
+    :rtype: list[int
     :raises ValueError: If the reference sequence is too short.
 
     .. note:: Positions are adjusted to account for gaps in the reference sequence.
@@ -101,7 +101,7 @@ def _get_reference_positions_hmm(
         return None
 
     # extract positions from query sequence
-    return "".join([query_sequence[i] for i in positions])
+    return positions
 
 
 def _align_adenylation_domain(
@@ -143,6 +143,32 @@ def _align_adenylation_domain(
     return aligned_domain, aligned_reference
 
 
+def _get_gap_adjusted_positions(query: str, positions: list[int], offset: int) -> list[Optional[int]]:
+    """Return sequence positions adjusted for gaps
+
+    :param query: query sequence
+    :type query: str
+    :param positions: positions in the gapped query sequence
+    :type positions: list[int]
+    :param offset: query start position
+    :type offset: int
+    :return: list of gap-adjusted positions
+    :rtype: list[int]
+    """
+    adjusted_positions: list[Optional[int]] = []
+    position = offset
+    for i, char in enumerate(query):
+        if i in positions:
+            if char != '-':
+                adjusted_positions.append(position)
+            else:
+                adjusted_positions.append(None)
+        if char != '-':
+            position += 1
+
+    return adjusted_positions
+
+
 class AdenylationDomain:
     """Class for representing adenylation domains."""
 
@@ -165,6 +191,8 @@ class AdenylationDomain:
         self.protein_sequence = ""
         self.signature = ""
         self.extended_signature = ""
+        self.signature_positions: list[int] = []
+        self.extended_signature_positions: list[int] = []
 
     def domains_overlap(self, other: "AdenylationDomain", threshold: int = 50) -> bool:
         """
@@ -258,42 +286,53 @@ class AdenylationDomain:
         profile = hit_n_terminal.aln[1].seq
         query = hit_n_terminal.aln[0].seq
         offset = hit_n_terminal.hit_start
+        query_offset = hit_n_terminal.query_start
 
-        signature = _get_reference_positions_hmm(
+        signature_location = _get_reference_positions_hmm(
             query_sequence=query,
             reference_sequence=profile,
             reference_positions=[p - offset for p in signature_positions],
         )
 
-        if signature and all([char in valid for char in signature]):
-            self.signature = signature
+        if signature_location:
+            signature = "".join([query[i] for i in signature_location])
+            if all([char in valid for char in signature]):
+                self.signature = signature
+                self.signature_positions = _get_gap_adjusted_positions(query, signature_location, query_offset)
 
         lysine = None
+        lysine_position = None
+        query_c = None
         if hit_c_terminal:
             profile_c = hit_c_terminal.aln[1].seq
             query_c = hit_c_terminal.aln[0].seq
             offset_c = hit_c_terminal.hit_start
 
-            lysine = _get_reference_positions_hmm(
+            lysine_position = _get_reference_positions_hmm(
                 query_sequence=query_c,
                 reference_sequence=profile_c,
                 reference_positions=[p - offset_c for p in position_k],
             )
 
         if self.signature:
+            if lysine_position and query_c:
+                lysine = query_c[lysine_position[0]]
             if lysine and lysine in valid and lysine != "-":
                 self.signature += lysine
             else:
                 self.signature += "K"
 
-        extended_signature = _get_reference_positions_hmm(
+        extended_signature_location = _get_reference_positions_hmm(
             query_sequence=query,
             reference_sequence=profile,
             reference_positions=[p - offset for p in extended_signature_positions],
         )
-
-        if extended_signature and all([char in valid for char in extended_signature]):
-            self.extended_signature = extended_signature
+        if extended_signature_location:
+            extended_signature = "".join([query[i] for i in extended_signature_location])
+            if all([char in valid for char in extended_signature]):
+                self.extended_signature = extended_signature
+                self.extended_signature_positions = _get_gap_adjusted_positions(query, extended_signature_location,
+                                                                                query_offset)
 
     def set_domain_signatures_profile(self, path_temp_dir: str) -> None:
         """Extract (extended) signatures from adenylation domains using profile alignment.
@@ -304,6 +343,7 @@ class AdenylationDomain:
 
         .. note:: This function modifies the signature and extended signature attributes.
         """
+
         if self.sequence is None:
             raise Exception("sequence needs to be defined first")
 
@@ -325,9 +365,13 @@ class AdenylationDomain:
         signature = []
         for position in aligned_positions_signature:
             signature.append(aligned_domain[position])
+
         self.signature = "".join(signature)
+        self.signature_positions = _get_gap_adjusted_positions(aligned_domain, aligned_positions_signature, self.start)
 
         extended_signature = []
         for position in aligned_positions_extended_signature:
             extended_signature.append(aligned_domain[position])
         self.extended_signature = "".join(extended_signature)
+        self.extended_signature_positions = _get_gap_adjusted_positions(aligned_domain,
+                                                                        aligned_positions_extended_signature, self.start)
