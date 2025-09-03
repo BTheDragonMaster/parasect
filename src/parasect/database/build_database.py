@@ -59,6 +59,14 @@ class Protein(Base):
         back_populates="protein",
         cascade="all, delete-orphan")
 
+    def get_name(self) -> str:
+        """
+        Return the protein name
+        :return: protein name
+        :rtype: str
+        """
+        return '|'.join([s.synonym for s in self.synonyms])
+
 
 class ProteinSynonym(Base):
     __tablename__ = "protein_synonym"
@@ -90,6 +98,14 @@ class AdenylationDomain(Base):
     sequence: Mapped[str]
     signature: Mapped[str]
     extended_signature: Mapped[str]
+
+    def get_name(self) -> str:
+        """
+        Return the domain name
+        :return: domain name
+        :rtype: str
+        """
+        return '|'.join([s.synonym for s in self.synonyms])
 
     def to_json(self) -> dict[str, Any]:
         return {

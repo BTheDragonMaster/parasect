@@ -150,10 +150,12 @@ def write_fasta_file(fasta_dict: Dict[str, str], path_out: str) -> None:
     :param path_out: Path to output fasta file.
     :type path_out: str
     """
+    sorted_ids = sorted(fasta_dict.keys())
     with open(path_out, "w") as fo:
 
         # iterate over the dictionary items
-        for header, sequence in fasta_dict.items():
+        for header in sorted_ids:
+            sequence = fasta_dict[header]
             fo.write(f">{header}\n{sequence}\n")
 
 

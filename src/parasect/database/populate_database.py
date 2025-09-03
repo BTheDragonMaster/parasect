@@ -80,6 +80,7 @@ def create_protein_entries(session: Session, protein_path: str) -> tuple[list[Pr
             new_protein: Protein = Protein(sequence=seq)
             protein_entries.append(new_protein)
             for synonym in synonyms:
+
                 protein_synonyms.append(ProteinSynonym(synonym=synonym, protein=new_protein))
                 synonym_map[synonym] = new_protein
 
@@ -302,12 +303,13 @@ def link_domains_and_proteins(domain_entries: list[AdenylationDomain],
                               protein_entries: list[Protein],
                               session: Session) -> list[ProteinDomainAssociation]:
     print("Mapping domains to proteins...")
-    links = []
+    links: list[ProteinDomainAssociation] = []
 
     old_protein_entries: list[Protein] = list(session.scalars(select(Protein)).all())
     protein_lookup = _build_synonym_lookup(old_protein_entries + protein_entries)
 
     for domain_entry in domain_entries:
+        seen_links: set[tuple[str, str, int]] = set()
         multiple_matches = False
         domain_numbers = set()
         start_coords_multiple: list[int] = []
@@ -322,21 +324,27 @@ def link_domains_and_proteins(domain_entries: list[AdenylationDomain],
             domain_numbers.add(domain_number)
 
             if protein_name in protein_lookup:
+
                 match_found = True
                 protein = protein_lookup[protein_name]
+
 
                 start_coords = [match.start() + 1 for match in re.finditer(domain_entry.sequence, protein.sequence)]
 
                 if len(start_coords) == 0:
                     raise ValueError(f"Domain {synonym} not found in protein {protein_name}")
                 elif len(start_coords) == 1:
+                    start_coord = start_coords[0]
+                    end_coord = start_coord + len(domain_entry.sequence)
+                    link_id = (protein.get_name(), domain_entry.get_name(), start_coord)
 
-                    end_coord = start_coords[0] + len(domain_entry.sequence)
-                    links.append(ProteinDomainAssociation(protein=protein,
-                                                          domain=domain_entry,
-                                                          domain_number=domain_number,
-                                                          start=start_coords[0],
-                                                          end=end_coord))
+                    if link_id not in seen_links:
+                        links.append(ProteinDomainAssociation(protein=protein,
+                                                              domain=domain_entry,
+                                                              domain_number=domain_number,
+                                                              start=start_coord,
+                                                              end=end_coord))
+                        seen_links.add(link_id)
                 else:
                     multiple_matches = True
                     start_coords_multiple = start_coords
@@ -359,12 +367,14 @@ def link_domains_and_proteins(domain_entries: list[AdenylationDomain],
                         start_coord_index = domain_numbers.index(domain_number)
                         start_coord = start_coords_multiple[start_coord_index]
                         end_coord = start_coord + len(domain_entry.sequence)
-
-                        links.append(ProteinDomainAssociation(protein=protein,
-                                                              domain=domain_entry,
-                                                              domain_number=domain_number,
-                                                              start=start_coord,
-                                                              end=end_coord))
+                        link_id = (protein.get_name(), domain_entry.get_name(), start_coord)
+                        if link_id not in seen_links:
+                            links.append(ProteinDomainAssociation(protein=protein,
+                                                                  domain=domain_entry,
+                                                                  domain_number=domain_number,
+                                                                  start=start_coord,
+                                                                  end=end_coord))
+                            seen_links.add(link_id)
 
     return links
 
