@@ -18,6 +18,21 @@ from pikachu.general import read_smiles
 from .app import app
 from .common import ResponseData, Status
 from .constants import MODEL_DIR, TEMP_DIR
+from .model_loader import ModelSpec, MultiModelLoader
+
+
+# Model registry
+MODEL_PARAS_ALL_SUBSTRATES = os.path.join(MODEL_DIR, "all_substrates_model.paras")
+MODEL_PARAS_COMMON_SUBSTRATES = os.path.join(MODEL_DIR, "model.paras")
+MODEL_PARASECT = os.path.join(MODEL_DIR, "model.parasect")
+
+
+loader = MultiModelLoader({
+    "parasAllSubstrates": ModelSpec(name="PARAS (all substrates)", path=MODEL_PARAS_ALL_SUBSTRATES, mmap=True),
+    "parasCommonSubstrates": ModelSpec(name="PARAS (common substrates)", path=MODEL_PARAS_COMMON_SUBSTRATES, mmap=True),
+    "parasect": ModelSpec(name="PARASECT", path=MODEL_PARASECT, mmap=True)
+})
+
 
 blueprint_submit_raw = Blueprint("submit_raw", __name__)
 blueprint_submit_quick = Blueprint("submit_quick", __name__)
@@ -83,20 +98,7 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
         # load model
         # return error if not successful
         try:
-            if selected_model == "parasAllSubstrates":
-                model = joblib.load(os.path.join(MODEL_DIR, "all_substrates_model.paras"))
-                model.set_params(n_jobs=1)
-                assert model is not None
-            elif selected_model == "parasCommonSubstrates":
-                model = joblib.load(os.path.join(MODEL_DIR, "model.paras"))
-                model.set_params(n_jobs=1)
-                assert model is not None
-            elif selected_model == "parasect":
-                model = joblib.load(os.path.join(MODEL_DIR, "model.parasect"))
-                model.set_params(n_jobs=1)
-                assert model is not None
-            else:
-                raise Exception("not successful loading model")
+            model = loader.get(selected_model)
         except Exception as e:
             msg = f"failed to load model: {str(e)}"
             raise Exception(msg)
