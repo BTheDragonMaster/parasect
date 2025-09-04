@@ -16,8 +16,9 @@ from parasect.database.query_database import get_domains_from_sequence, get_doma
 
 from .app import app
 from .common import ResponseData, Status
-from .constants import MODEL_DIR, TEMP_DIR
+from .constants import TEMP_DIR
 from .database import get_db
+from .submit import loader
 
 
 blueprint_annotate_data = Blueprint("annotate_data", __name__)
@@ -64,10 +65,7 @@ def run_prediction_protein(job_id: str, data: Dict[str, str]) -> None:
         # load model
         # return error if not successful
         try:
-            model = joblib.load(os.path.join(MODEL_DIR, "all_substrates_model.paras"))
-            model.set_params(n_jobs=1)
-            assert model is not None
-
+            model = loader.get("parasAllSubstrates")
         except Exception as e:
             msg = f"failed to load model: {str(e)}"
             raise Exception(msg)

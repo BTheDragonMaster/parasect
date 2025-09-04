@@ -1,4 +1,4 @@
-import threading, logging
+import threading, logging, errno
 from dataclasses import dataclass
 from typing import Callable, Dict, Optional, Any
 
@@ -41,7 +41,14 @@ class MultiModelLoader:
         # Try joblib with mmap first
         if joblib_load:
             mmap_mode = "r" if mmap else None
-            return joblib_load(path, mmap_mode=mmap_mode)
+            try:
+                return joblib_load(path, mmap_mode=mmap_mode)
+            except OSError as e:
+                logging.warning("Joblib failed to load %s: %s", path, e)
+                if e.errno == errno.EMFILE:
+                    logging.warning("Too many open files; retrying load without mmap: %s", path)
+                    return joblib_load(path, mmap_mode=None)
+                raise
         # Fallback to pickle
         import pickle
         with open(path, "rb") as fh:

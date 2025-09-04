@@ -297,9 +297,7 @@ def run_prediction_signature(job_id: str, data: Dict[str, str]) -> None:
         # load model
         # return error if not successful
         try:
-            model = joblib.load(os.path.join(MODEL_DIR, "model.paras"))
-            model.set_params(n_jobs=1)
-            assert model is not None
+            model = loader.get("parasCommonSubstrates")
         except Exception as e:
             msg = f"failed to load model: {str(e)}"
             raise Exception(msg)
