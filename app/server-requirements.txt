@@ -6,4 +6,4 @@ flask_sqlalchemy
 gunicorn
 joblib
 apscheduler
-git+https://github.com/BTheDragonMaster/parasect@webapp
+git+https://github.com/BTheDragonMaster/parasect@webapp_dev_docker

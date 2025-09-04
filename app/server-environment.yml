@@ -1,0 +1,17 @@
+name: web
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  # Python runtime
+  - python=3.9
+
+  # Bio tools (from bioconda)
+  - hmmer             # HMMER v3 (hmmsearch, hmmscan, hmmpress, etc.)
+  - hmmer2            # HMMER v2 (e.g., hmmpfam, hmmsearch from v2 toolset)
+  - muscle=3.8.1551   # MUSCLE aligner
+
+  # Extra PyPI deps
+  - pip
+  - pip:
+      - -r /app/server-requirements.txt
