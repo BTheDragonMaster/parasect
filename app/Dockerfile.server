@@ -31,6 +31,15 @@ COPY --chown=${USER_UID}:${USER_GID} ./src/server/ /app/
 # Ensure temp dir exists and is writable
 RUN mkdir -p /app/temp && chown -R ${USER_UID}:${USER_GID} /app
 
+# Runtime env: unbuffered logs, mmap for joblib, cap math threads
+ENV PYTHONUNBUFFERED=1 \
+    LOG_LEVEL=INFO \
+    OMP_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1 \
+    MKL_NUM_THREADS=1 \
+    NUMEXPR_NUM_THREADS=1 \
+    JOBLIB_MMAP_MODE=r
+
 # Use the unprivileged user at runtime
 USER $USERNAME
 
@@ -39,4 +48,4 @@ EXPOSE 4009
 
 # Run everything inside the conda env without needing manual activation
 ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "web"]
-CMD ["gunicorn", "-b", ":4009", "--timeout", "120", "api:app"]
+CMD ["gunicorn", "-b", ":4009", "--worker-class", "gthread", "--workers", "1", "--threads", "4", "--preload", "--timeout", "120", "api:app"]

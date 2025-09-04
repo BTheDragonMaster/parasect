@@ -9,10 +9,25 @@ services:
     restart: always
     container_name: paras-server
     volumes:
-      - ./models:/app/models:rw
+      - ./models:/app/models:ro
     environment:
       - MODEL_DIR=/app/models
+      - LOG_LEVEL=INFO
+      # Also set in Dockerfile, can override here
+      - OMP_NUM_THREADS=1
+      - OPENBLAS_NUM_THREADS=1
+      - MKL_NUM_THREADS=1
+      - NUMEXPR_NUM_THREADS=1
+      - JOBLIB_MMAP_MODE=r
     networks: [paras-network]
+    healthcheck:
+      # Use base Python; no curl/wget dependency needed
+      test: [ "CMD", "/opt/conda/bin/python", "-c",
+              "import urllib.request,sys; urllib.request.urlopen('http://localhost:4009/health', timeout=2); sys.exit(0)" ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
   paras-client:
     build: 
