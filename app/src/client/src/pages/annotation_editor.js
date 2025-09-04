@@ -168,19 +168,7 @@ const AnnotationEditor = () => {
                     <Typography variant='h4' gutterBottom>
                         Extracted adenylation domains
                     </Typography>
-
                 </Box>
-                <Typography variant='body1' gutterBottom>
-                    <IconButton
-                        onClick={() => {
-                            navigator.clipboard.writeText(jobId);
-                            toast.success('Copied the job ID to clipboard!');
-                        }}
-                    >
-                        <FaCopy size={15} style={{ paddingBottom: '3px' }} />
-                    </IconButton>
-                    {`Job ID: ${jobId}`}
-                </Typography>
                 <Divider />
 
                 <Box sx={{ mt: 4 }}>
@@ -194,10 +182,6 @@ const AnnotationEditor = () => {
 
                     <Typography variant='body1' gutterBottom>
 
-                    </Typography>
-
-                    <Typography variant='body1' gutterBottom>
-                        You can use the job ID to retrieve the results at a later time. All jobs are automatically deleted after 7 days.
                     </Typography>
                     <Box sx={{ mt: 4 }}>
                     <Button variant="contained" color="primary" onClick={handleSubmit}>
