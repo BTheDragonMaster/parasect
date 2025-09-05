@@ -39,6 +39,8 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
 
         if (!captchaToken) return;
         setSubmitting(true);
+
+        const pr_url = null;
     
         try {
             const res = await fetch("/api/submit_annotations", {
@@ -51,14 +53,17 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                 credentials: 'include' // include cookies
             });
 
-            // const data =
-            //     (res.headers.get("content-type") || "").includes("application/json")
-            //     ? await res.json()
-            //     : null;
+            const data = await res.json();
+            pr_url = data.pr_url;
 
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
                 throw new Error(err?.error || "Submission failed")
+            }
+
+            // open PR url in separate tab
+            if (pr_url) {
+                window.open(pr_url, "_blank");
             }
 
             // success UI
@@ -137,7 +142,7 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                         onClick={handleSubmit}
                         disabled={!captchaToken || submitting}
                     >
-                        {submitting ? 'Submitting…' : 'Submit'}
+                        {submitting ? 'Submitting…' : `Submit ${Object.keys(proteinAnnotations).length} annotated protein(s)`}
                     </Button>
                 </Box>
             </Box>
