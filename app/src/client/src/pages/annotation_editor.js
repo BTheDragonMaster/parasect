@@ -312,7 +312,8 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                 throw new Error(data?.error || "Submission failed")
             }
 
-            prUrl = data?.prUrl || null;
+            prUrl = data?.pr_url || null;
+            console.log(prUrl);
 
             // open PR url in separate tab
             if (prUrl) {
