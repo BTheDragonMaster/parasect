@@ -1,7 +1,8 @@
 import React, {useState, useEffect, useMemo} from 'react';
 import {
     ExpandMore,
-    ExpandLess
+    ExpandLess,
+    CheckCircle
 } from '@mui/icons-material';
 
 import {
@@ -15,6 +16,7 @@ import {
     Collapse,
     IconButton,
     Typography,
+    Tooltip
 } from '@mui/material';
 import {FaFingerprint} from 'react-icons/fa';
 
@@ -46,6 +48,7 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
     const matchedSubstrates = hasSequenceMatch ? firstSequenceMatch["substrates"] : null;
     const [overrideSubstrates, setOverrideSubstrates] = useState(false);
     const [annotationType, setAnnotationType] = useState(null);
+    const isAnnotated = useMemo(() => Boolean(annotationType), [annotationType]);
 
 
     const [proteinName, setProteinName] = useState(protein_name || '');
@@ -396,9 +399,23 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                 </Box>
 
                 {/* Right side: expand/collapse button */}
-                <IconButton onClick={toggleExpanded} size="small">
+                {/* <IconButton onClick={toggleExpanded} size="small">
                     {expanded ? <ExpandLess/> : <ExpandMore/>}
-                </IconButton>
+                </IconButton> */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {isAnnotated && (
+                    <Tooltip title="Annotated" arrow>
+                      <CheckCircle
+                        fontSize="small"
+                        sx={{ color: 'success.main' }}
+                        aria-label="Annotated"
+                      />
+                    </Tooltip>
+                  )}
+                  <IconButton onClick={toggleExpanded} size="small" aria-label={expanded ? 'Collapse' : 'Expand'}>
+                    {expanded ? <ExpandLess/> : <ExpandMore/>}
+                  </IconButton>
+                </Box>
             </Box>
 
             {/* Collapsible content */}
@@ -453,7 +470,8 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                                                 setOverrideSubstrates(checked);
                                                 if (!checked) {
                                                     setSubstrates([]);
-                                                    onAnnotationChange?.(domainName, [], annotationType);
+                                                    setAnnotationType(null);
+                                                    onAnnotationChange?.(domainName, [], null);
                                                 }
                                             }}
                                         />
