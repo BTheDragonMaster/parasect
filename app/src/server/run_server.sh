@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Load environment variables from .env in project root
+set -a
+source "$(dirname "$0")/../../.env"
+set +a
+
 # Set environment variables
 export FLASK_APP=api.py
 export FLASK_ENV=development

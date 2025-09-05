@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Box, IconButton, Divider, Typography, Button } from '@mui/material';
-import { FaCopy } from 'react-icons/fa';
+import { Box, IconButton, Divider, Typography, Button, Modal, Tooltip } from '@mui/material';
+import { MdClose } from 'react-icons/md';
 
 import Loading from '../components/Loading';
 import ProteinTile from '../components/ProteinTile';
@@ -25,6 +25,17 @@ const AnnotationEditor = () => {
 
     const [proteinAnnotations, setProteinAnnotations] = useState({});
 
+    // submission modal state
+    const [openAnnotationsSubmissionModal, setOpenAnnotationsSubmissionModal] = useState(false);
+
+    const handleOpenAnnotationsSubmissionModal = () => {
+        setOpenAnnotationsSubmissionModal(true);
+    };
+
+    const handleCloseAnnotationsSubmissionModal = () => {
+        setOpenAnnotationsSubmissionModal(false);
+    };
+
     {/* For collecting protein annotations */}
 
     const handleProteinAnnotationChange = (proteinId, data) => {
@@ -45,30 +56,37 @@ const AnnotationEditor = () => {
     });
 };
     {/* Submit updated protein data */}
-
     const handleSubmit = async () => {
-    // Placeholder: validations can go here later
-    // For example:
-    // for (const [domainId, annotation] of Object.entries(domainAnnotations)) {
-    //     ... perform checks ...
-    // }
 
-    // Submit to backend to create PR
+        if (Object.keys(proteinAnnotations).length === 0) {
+            toast.error("No annotations to submit");
+            return;
+        };
 
-        console.log("Submitting annotations:", proteinAnnotations);
-    const res = await fetch("/api/submit_annotations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ annotations: proteinAnnotations }),
-    });
+        // Placeholder: validations can go here later
+        // For example:
+        // for (const [domainId, annotation] of Object.entries(domainAnnotations)) {
+        //     ... perform checks ...
+        // }
 
-    const json = await res.json();
-    if (res.ok) {
-        alert(`GitHub issue created for annotations at: ${json.pr_url}`);
-    } else {
-        alert(`Error: ${json.error}`);
-    }
-};
+        // Submit to backend to create PR
+        const res = await fetch("/api/submit_annotations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ annotations: proteinAnnotations }),
+        });
+
+        const json = await res.json();
+        if (res.ok) {
+            toast.success(`GitHub issue created for annotations at: ${json.pr_url}`);
+        } else {
+            toast.error(`Error: ${json.error}`, { autoClose: false });
+        }
+    };
+
+    const OpenAnnotationsSubmissionsModal = () => {
+        setOpenAnnotationsSubmissionModal(true);
+    };
 
     // fetch results from local storage
     useEffect(() => {
@@ -151,81 +169,149 @@ const AnnotationEditor = () => {
 
     // render results if available
     return (
-        <Box
-            display='flex'
-            flexDirection='column'
-            overflow='hidden'
-        >
+        <>
             <Box
                 display='flex'
                 flexDirection='column'
-                alignItems='left'
-                margin={4}
+                overflow='hidden'
             >
+                <Box
+                    display='flex'
+                    flexDirection='column'
+                    alignItems='left'
+                    margin={4}
+                >
+                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
+                        <Typography variant='h4' gutterBottom>
+                            Extracted adenylation domains
+                        </Typography>
+                    </Box>
+                    <Divider />
 
-                {/* header with job ID and download button */}
-                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
-                    <Typography variant='h4' gutterBottom>
-                        Extracted adenylation domains
-                    </Typography>
-                </Box>
-                <Divider />
-
-                <Box sx={{ mt: 4 }}>
-                    <Typography variant='body1' gutterBottom>
-                        In total, {results.length} of the submitted proteins contain adenylation domains. The tiles below show the domains for each protein. You can scroll horizontally to view all proteins.
-                    </Typography>
-
-                    <Typography variant='body1' gutterBottom>
-                        Domains which already exist in the PARAS/PARASECT dataset are displayed in grey. New domains are displayed in yellow.
-                    </Typography>
-
-                    <Typography variant='body1' gutterBottom>
-
-                    </Typography>
                     <Box sx={{ mt: 4 }}>
-                    <Button variant="contained" color="primary" onClick={handleSubmit}>
-                        Submit Annotations
-                    </Button>
-            </Box>
+                        <Typography variant='body1' gutterBottom>
+                            In total, {results.length} of the submitted proteins contain adenylation domains. The tiles below show the domains for each protein. You can scroll horizontally to view all proteins.
+                        </Typography>
+
+                        <Typography variant='body1' gutterBottom>
+                            Domains which already exist in the PARAS/PARASECT dataset are displayed in grey. New domains are displayed in yellow.
+                        </Typography>
+
+                        <Typography variant='body1' gutterBottom>
+                        </Typography>
+                        <Box sx={{ mt: 4 }}>
+                            <Tooltip title={Object.keys(proteinAnnotations).length === 0 ? "Nothing to submit!" : ""} arrow>
+                                {/* Wrap Button in a span to support tooltip for disabled state */}
+                                <span>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={OpenAnnotationsSubmissionsModal}
+                                        disabled={Object.keys(proteinAnnotations).length === 0}
+                                    >
+                                        Proceed with submission
+                                    </Button>
+                                </span>
+                            </Tooltip>
+                        </Box>
+                    </Box>
+                </Box>
+
+                {/* display results in a row, one item per protein */}
+                <Box
+                    sx={{
+                        overflowY: 'auto',
+                        overflowX: 'auto',
+                        backgroundColor: 'white.main',
+                        flexDirection: 'row',
+                        display: 'flex',
+                        gap: '20px',
+                        paddingLeft: '30px',
+                        paddingRight: '30px',
+                        paddingBottom: '20px',
+
+                        // always show scrollbar
+                        '&::-webkit-scrollbar': {
+                            display: 'block',
+                        },
+
+                        // scrollbar style
+                        '&::-webkit-scrollbar-thumb': {
+                            backgroundColor: '#ceccca',
+                            borderRadius: '10px',
+                        },
+                    }}
+                >
+                    {results.map((result, index) => (
+                        <ProteinTile
+                            key={index}
+                            proteinResult={result}
+                            onUpdateAnnotation={handleProteinAnnotationChange} />
+                    ))}
                 </Box>
             </Box>
 
+            {/* Dialogue modal */}
+            <Modal open={openAnnotationsSubmissionModal} onClose={handleCloseAnnotationsSubmissionModal}>
+                <Box
+                    width={800}
+                    bgcolor='white.main'
+                    mx='auto'
+                    my={10}
+                    borderRadius={4}
+                    boxShadow={3}
+                >
+                    <Box
+                        sx={{
+                            backgroundColor: 'secondary.main',
+                            borderTopLeftRadius: '14px',
+                            borderTopRightRadius: '14px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: 1,
+                        }}
+                    >
+                        <Typography 
+                            variant='h5' 
+                            gutterBottom
+                            sx={{ 
+                                color: 'black.main', 
+                                textAlign: 'center',
+                                pl: 2,
+                                pt: 2, 
+                            }}
+                        >
+                            Submit annotations
+                        </Typography>
+                        <IconButton onClick={handleCloseAnnotationsSubmissionModal}>
+                            <MdClose size={24} />
+                        </IconButton>
+                    </Box>
 
 
-            {/* display results in a row, one item per protein */}
-            <Box
-                sx={{
-                    overflowY: 'auto',
-                    overflowX: 'auto',
-                    backgroundColor: 'white.main',
-                    flexDirection: 'row',
-                    display: 'flex',
-                    gap: '20px',
-                    paddingLeft: '30px',
-                    paddingRight: '30px',
-                    paddingBottom: '20px',
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'left',
+                            gap: 3,
+                            p: 4,
+                        }}
+                    >
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleSubmit}
+                        >
+                            Submit
+                        </Button>
 
-                    // always show scrollbar
-                    '&::-webkit-scrollbar': {
-                        display: 'block',
-                    },
-
-                    // scrollbar style
-                    '&::-webkit-scrollbar-thumb': {
-                        backgroundColor: '#ceccca',
-                        borderRadius: '10px',
-                    },
-                }}
-            >
-                {results.map((result, index) => (
-                    <ProteinTile
-                        key={index}
-                        proteinResult={result}
-                        onUpdateAnnotation={handleProteinAnnotationChange} />
-                ))}
-            </Box>
-        </Box>
+                    </Box>
+                </Box>
+            </Modal>
+        </>
+        
     );
 };
 

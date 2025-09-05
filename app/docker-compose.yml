@@ -7,6 +7,8 @@ services:
       dockerfile: Dockerfile.server
     image: paras-server
     restart: always
+    env_file:
+      - .env  # Need secrets for submitting newly annotated domains
     container_name: paras-server
     volumes:
       - ./models:/app/models:ro
