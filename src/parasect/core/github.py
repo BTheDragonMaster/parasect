@@ -101,16 +101,16 @@ def submit_github_issue_protein(
                      "substrates": [s.name for s in domain.substrates]} for domain in domains]
     }
 
-    body = json.dumps(body_dict, indent=2)
+    body_md = f"```json\n{json.dumps(body_dict, indent=2)}\n```"
+    payload = {"title": title, "body": body_md}
 
-    issue = {"title": title, "body": body}
-    response = requests.post(url, json=issue, headers=headers)
+    resp = requests.post(url, json=payload, headers=headers)
 
-    # evaluate response code and throw error if not good
-    if response.status_code != 201:
-        raise ValueError(f"Failed to create GitHub issue: {response.text}")
+    if resp.status_code != 201:
+        # include response body to help debugging
+        raise ValueError(f"Failed to create GitHub issue ({resp.status_code}): {resp.text}")
 
-    return response.json()
+    return resp.json()
 
 
 def submit_github_issues(
