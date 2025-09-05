@@ -2,13 +2,12 @@
 
 """Parsers module for PARASECT."""
 
-import itertools
 import logging
 import os
+
 from typing import Dict, List, Tuple, Optional, Generator
 from dataclasses import dataclass
 
-from Bio import SeqIO
 import numpy as np
 from numpy.typing import NDArray
 
@@ -197,72 +196,6 @@ def parse_fasta_file(path_in: str) -> Dict[str, str]:
             fasta_dict[header] = "".join(sequence)
 
     return fasta_dict
-
-
-def write_fasta_file(fasta_dict: Dict[str, str], path_out: str) -> None:
-    """Write a dictionary of fasta sequences to a file.
-
-    :param fasta_dict: Dictionary of fasta sequences, where the key is the sequence
-        header and the value is the sequence.
-    :type fasta_dict: Dict[str, str]
-    :param path_out: Path to output fasta file.
-    :type path_out: str
-    """
-    sorted_ids = sorted(fasta_dict.keys())
-    with open(path_out, "w") as fo:
-
-        # iterate over the dictionary items
-        for header in sorted_ids:
-            sequence = fasta_dict[header]
-            fo.write(f">{header}\n{sequence}\n")
-
-
-def parse_genbank_file(path_in: str, path_out: str) -> None:
-    """Parse protein sequences from a GenBank file and writes them to a fasta file.
-
-    :param path_in: Path to input GenBank file.
-    :type path_in: str
-    :param path_out: Path to output fasta file.
-    :type path_out: str
-    :raises FileNotFoundError: If the file at the specified path does not exist.
-    """
-    # check if the file exists
-    if not os.path.exists(path_in):
-        raise FileNotFoundError(f"File not found: {path_in}")
-
-    # initialize a counter for generating gene IDs
-    counter = itertools.count()
-
-    # initialize a dictionary to store the fasta sequences
-    fasta_dict = {}
-
-    # parse the GenBank file
-    for record in SeqIO.parse(path_in, "genbank"):
-        for feature in record.features:
-
-            # check if the feature is a coding sequence (CDS)
-            if feature.type == "CDS":
-
-                # check if the feature has a translation
-                if "translation" in feature.qualifiers:
-                    sequence = feature.qualifiers["translation"]
-
-                    # check if the feature has a protein ID, gene ID, or locus tag
-                    # to use as the sequence ID. If not, generate a gene ID
-                    if "protein_id" in feature.qualifiers:
-                        seq_id = feature.qualifiers["protein_id"][0]
-                    elif "gene_id" in feature.qualifiers:
-                        seq_id = feature.qualifiers["gene_id"][0]
-                    elif "locus_tag" in feature.qualifiers:
-                        seq_id = feature.qualifiers["locus_tag"][0]
-                    else:
-                        seq_id = f"gene_{next(counter)}"
-
-                    # add the sequence to the dictionary
-                    fasta_dict[seq_id] = sequence
-
-    # write the fasta sequences to a file
-    write_fasta_file(fasta_dict=fasta_dict, path_out=path_out)
 
 
 def data_from_substrate_names(

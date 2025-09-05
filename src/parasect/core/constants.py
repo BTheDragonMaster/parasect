@@ -96,3 +96,7 @@ POSITIONS_EXTENDED_SIGNATURE = _read_positions(A_POSITION_FILE_34, 66)
 HMM2_FILE = get_path("AMP-binding_hmmer2.hmm")
 HMM3_FILE = get_path("AMP-binding_full.hmm")
 PROPERTIES = _parse_amino_acid_properties_file(get_path("physicochemical_properties.txt"))
+
+SEPARATOR_1 = '|'
+SEPARATOR_2 = '_'
+SEPARATOR_3 = '-'

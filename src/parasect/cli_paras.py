@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""CLI for PARASECT."""
+"""CLI for PARAS."""
 
 import os
 import argparse
@@ -51,7 +51,7 @@ def cli() -> argparse.Namespace:
 
 
 def main() -> None:
-    """Run CLI for PARASECT."""
+    """Run CLI for PARAS."""
     args = cli()
     logger = logging.getLogger(__name__)
     logging.basicConfig(level="INFO")
