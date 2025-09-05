@@ -46,10 +46,29 @@ def process_nrpstransformer_data(nrpstransformer_raw_file: str, substrate_mappin
 
     raw_data = Tabular(nrpstransformer_raw_file)
     for domain_name in raw_data.rows:
-        sequence = raw_data.get_row_value(domain_name, "sequence for NRPStransformer development")
-        specificity = raw_data.get_row_value(domain_name, "Label amino acid")
+        if "sequence for NRPStransformer development" in raw_data.column_names:
+            sequence = raw_data.get_row_value(domain_name, "sequence for NRPStransformer development")
+        elif "A domain Sequence full length" in raw_data.column_names:
+            sequence = raw_data.get_row_value(domain_name, "A domain Sequence full length")
+        else:
+            raise ValueError(f"No sequence column found in data file")
+
+        if "Label amino acid" in raw_data.column_names:
+            specificity = raw_data.get_row_value(domain_name, "Label amino acid")
+        elif "Label" in raw_data.column_names:
+            specificity = raw_data.get_row_value(domain_name, "Label")
+        else:
+            raise ValueError(f"No label column found in data file")
+
         id_to_seq[domain_name] = sequence
-        id_to_spec[domain_name] = abbreviation_to_spec[specificity.lower()]
+        specificities = specificity.lower().split('|')
+
+        specificity_string = []
+        for specificity in specificities:
+            spec = abbreviation_to_spec[specificity.lower()]
+            specs = spec.split('|')
+            specificity_string.extend(list(set(specs)))
+        id_to_spec[domain_name] = '|'.join(specificity_string)
 
     write_tabular([id_to_seq, id_to_spec], ["domain_id", "sequence", "specificity"], out_file)
 
