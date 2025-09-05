@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Box, IconButton, Divider, Typography, Button, Modal, Tooltip } from '@mui/material';
 import { MdClose } from 'react-icons/md';
+import { useNavigate } from "react-router-dom";
 
 import Loading from '../components/Loading';
 import ProteinTile from '../components/ProteinTile';
@@ -14,6 +15,7 @@ const SITE_KEY = process.env.REACT_APP_TURNSTILE_SITE_KEY;
 
 
 function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
+    const navigate = useNavigate();
     const [captchaToken, setCaptchaToken] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [turnstileKey, setTurnstileKey] = useState(0); // force reset when modal re-opens
@@ -37,7 +39,7 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
 
         if (!captchaToken) return;
         setSubmitting(true);
-
+    
         try {
             const res = await fetch("/api/submit_annotations", {
                 method: "POST",
@@ -49,13 +51,20 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                 credentials: 'include' // include cookies
             });
 
+            // const data =
+            //     (res.headers.get("content-type") || "").includes("application/json")
+            //     ? await res.json()
+            //     : null;
+
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
                 throw new Error(err?.error || "Submission failed")
             }
 
             // success UI
-            onClose();
+            toast.success("Annotations submitted successfully");
+            onClose?.();
+            navigate("/data_annotation");
         } catch(e) {
             console.error(e);
             toast.error(`Error: ${e.message}`, { autoClose: false });
