@@ -296,13 +296,13 @@ const AnnotationEditor = () => {
                         </Typography>
 
                         <Typography variant='body1' gutterBottom>
-                            Domains which already exist in the PARAS/PARASECT dataset are displayed in grey. New domains are displayed in yellow.
+                            Domains which already exist in the PARAS/PARASECT dataset are displayed in grey. New domains are displayed in yellow. Please review the new domains and provide annotations where possible. You can proceed with submitting domains once they are annotated.
                         </Typography>
 
                         <Typography variant='body1' gutterBottom>
                         </Typography>
                         <Box sx={{ mt: 4 }}>
-                            <Tooltip title={Object.keys(proteinAnnotations).length === 0 ? "Nothing to submit!" : ""} arrow>
+                            <Tooltip title={Object.keys(proteinAnnotations).length === 0 ? "Nothing to submit! Have you annotated all new domains?" : ""} arrow>
                                 {/* Wrap Button in a span to support tooltip for disabled state */}
                                 <span>
                                     <Button

@@ -370,11 +370,18 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                     alignItems: 'center',
                     borderTopLeftRadius: '10px',
                     borderTopRightRadius: '10px',
+                    // add radius to bottom corners if not expanded
+                    borderBottomLeftRadius: expanded ? '0' : '10px',
+                    borderBottomRightRadius: expanded ? '0' : '10px',
                 }}
             >
                 {/* Left side: domain info + optional warning stacked vertically */}
                 <Box sx={{display: 'flex', flexDirection: 'column'}}>
-                    <Typography>
+                    <Typography
+                        sx={{
+                            px: 1,
+                        }}
+                    >
                         {`Domain ${parasResult['domain_nr']}: ${domainSynonym} (${parasResult['domain_start']}-${parasResult['domain_end']})`}
                     </Typography>
 
