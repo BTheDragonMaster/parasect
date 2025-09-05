@@ -96,7 +96,11 @@ def submit_github_issue_protein(protein_entry, domains, new_substrates, annotati
 
     issue = {"title": title, "body": body}
     response = requests.post(url, json=issue, headers=headers)
-    print(response.status_code)
+
+    # evaluate response code and throw error if not good
+    if response.status_code != 201:
+        raise ValueError(f"Failed to create GitHub issue: {response.text}")
+
     return response.json()
 
 
@@ -108,7 +112,6 @@ def submit_github_issues(session: Session, protein_to_entry: dict[str, dict[str,
     :param protein_to_entry: dictionary of protein names as keys and protein and domain annotations as (nested) values
     :type protein_to_entry: dict[str, dict[str, Any]]
     """
-
     for protein_name, protein_info in protein_to_entry.items():
         protein_entry = ProteinEntry(protein_name, protein_info["sequence"])
 
