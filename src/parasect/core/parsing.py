@@ -9,6 +9,8 @@ from typing import Dict, List, Tuple, Optional, Generator
 from dataclasses import dataclass
 
 from Bio import SeqIO
+import numpy as np
+from numpy.typing import NDArray
 
 from parasect.core.chem import smiles_to_fingerprint
 from parasect.core.constants import FINGERPRINTS_FILE
@@ -19,6 +21,62 @@ from parasect.core.tabular import Tabular
 class SubstrateData:
     name: str
     smiles: str
+
+
+def parse_pcs(pca_file: str) -> tuple[list[str], NDArray[np.float64]]:
+    """Return list of domain names and numpy array of precomputed principal components for each domain
+
+    :param pca_file: file containing precomputed principal components
+    :type pca_file: str
+    :return: list of domain names and array of precomputed principal components for each domain
+    :rtype: tuple[list[str, NDArray[NDArray[np.float64]]]]
+    """
+
+    with open(pca_file, 'r') as pca_data:
+        header = pca_data.readline()
+        pc_nr = int(header.split('\t')[-1].split('_')[-1])
+        domain_nr = 0
+        for line in pca_data:
+            line = line.strip()
+            if line:
+                domain_nr += 1
+
+    array = np.zeros(shape=(domain_nr, pc_nr))
+    domains = []
+
+    with open(pca_file, 'r') as pca_data:
+        pca_data.readline()
+        counter = 0
+        for line in pca_data:
+            line = line.strip()
+            if line:
+                line_data = line.split('\t')
+                pcs = line_data[1:]
+                array[counter] = pcs
+                domains.append(line_data[0])
+
+    return domains, array
+
+
+def parse_esm_embedding(embedding_path: str) -> NDArray[np.float64]:
+    """Return ESM embedding from file
+
+    :param embedding_path: path to file containing precomputed ESM embeddings
+    :type embedding_path: str
+    :return: Numpy array of full, ~34,000 feature embedding
+    :rtype: numpy.ndarray
+    """
+    embedding: list[float] = []
+    with open(embedding_path, 'r') as embedding_file:
+
+        embedding_file.readline()
+        for line in embedding_file:
+            line = line.strip()
+            if line:
+                features = line.split('\t')[1:]
+                embedding.extend(list(map(float, features)))
+
+    return np.array(embedding, dtype=np.float64)
 
 
 def parse_parasect_data(parasect_path: str) -> tuple[dict[str, str], dict[str, list[str]]]:
