@@ -291,7 +291,7 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
 
         setSubmitting(true);
 
-        const pr_url = null;
+        let prUrl = null;
     
         try {
             const res = await fetch("/api/submit_annotations", {
@@ -312,11 +312,11 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                 throw new Error(data?.error || "Submission failed")
             }
 
-            pr_url = data?.pr_url || null;
+            prUrl = data?.prUrl || null;
 
             // open PR url in separate tab
-            if (pr_url) {
-                window.open(pr_url, "_blank");
+            if (prUrl) {
+                window.open(prUrl, "_blank");
             }
 
             // success UI
@@ -393,7 +393,7 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
 
                     {/* References */}
                     <Box sx={{ width: "100%" }}> 
-                        <Typography vairant="subtitle1" sx={{ mb: 1}}>
+                        <Typography variant="subtitle1" sx={{ mb: 1}}>
                             Related publications (DOI or PubMed ID) - optional
                         </Typography>
 
