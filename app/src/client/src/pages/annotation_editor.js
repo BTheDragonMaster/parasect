@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Box, IconButton, Divider, Typography, Button, Modal, Tooltip } from '@mui/material';
+import { Box, IconButton, Divider, Typography, Button, Modal, Tooltip, TextField, Stack, Chip, CircularProgress } from '@mui/material';
+import { CheckCircle, ErrorOutline } from "@mui/icons-material";
 import { MdClose } from 'react-icons/md';
+
 import { useNavigate } from "react-router-dom";
 
 import Loading from '../components/Loading';
@@ -20,15 +22,251 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
     const [submitting, setSubmitting] = useState(false);
     const [turnstileKey, setTurnstileKey] = useState(0); // force reset when modal re-opens
 
+    // ORCID state
+    const [orcidInput, setOrcidInput] = useState("");
+    const [orcidNormalized, setOrcidNormalized] = useState("");
+    const [orcidError, setOrcidError] = useState("");
+
+    // Reference (DOI / PMID)
+    const [refInput, setRefInput] = useState("");
+    const [references, setReferences] = useState([]); // [{key,type:'doi'|'pmid', id, status:'pending'|'valid'|'invalid'|'error', title?, url?}]
+    const MAX_REFS = 20;
+
     useEffect(() => {
         if (open) {
             // reset widget each time the modal opens
             setCaptchaToken(null);
             setTurnstileKey(k => k + 1);
+
+            setOrcidInput("");
+            setOrcidNormalized("");
+            setOrcidError("");
+
+            setRefInput("");
+            setReferences([]);
         }
     }, [open]);
 
-    {/* Submit updated protein data */}
+    // ----- ORCID helpers -----
+    const normalizeOrcid = (value) => {
+        if (!value) return '';
+        // Strip URL prefix if present
+        const cleaned = value
+            .trim()
+            .replace(/^https?:\/\/(www\.)?orcid\.org\//i, '')
+            .replace(/[^0-9xX]/g, ''); // keep digits and X
+        // Allow last char X, others must be digits; length should be 16
+        return cleaned.toUpperCase();
+    };
+
+    const formatOrcidPretty = (digits16) => {
+        // returns 0000-0000-0000-0000
+        return `${digits16.slice(0,4)}-${digits16.slice(4,8)}-${digits16.slice(8,12)}-${digits16.slice(12,16)}`;
+    };
+
+    // ISO 7064 mod 11-2 checksum for ORCID (last char may be 'X' which means 10)
+    const isValidOrcid = (digits16) => {
+        if (!/^\d{15}[\dX]$/.test(digits16)) return false;
+        let total = 0;
+        for (let i = 0; i < 15; i++) {
+            total = (total + parseInt(digits16[i], 10)) * 2;
+        }
+        const remainder = total % 11;
+        const result = (12 - remainder) % 11;
+        const checkChar = result === 10 ? 'X' : String(result);
+        return checkChar === digits16[15];
+    };
+
+    const handleOrcidChange = (e) => {
+        const raw = e.target.value;
+        setOrcidInput(raw);
+
+        const normalized = normalizeOrcid(raw);
+        if (normalized.length === 16 && isValidOrcid(normalized)) {
+            setOrcidNormalized(formatOrcidPretty(normalized));
+            setOrcidError('');
+        } else {
+            setOrcidNormalized('');
+            // only show error once user has typed enough chars that could plausibly be an ORCID
+            if (normalized.length >= 12) {
+                setOrcidError('Invalid ORCID. Expected format 0000-0000-0000-000X with a valid checksum.');
+            } else {
+                setOrcidError('');
+            }
+        }
+    };
+
+    // ----- Reference helpers -----
+    const parseRefToken = (token) => {
+        const t = token.trim();
+        if (!t) return null;
+
+        // Strip URL wrappers
+        const stripped = t
+            .replace(/^https?:\/\/(dx\.)?doi\.org\//i, "")
+            .replace(/^https?:\/\/pubmed\.ncbi\.nlm\.nih\.gov\//i, "")
+            .replace(/^pmid:\s*/i, "");
+
+        // DOI regex (from Crossref guide)
+        const doiRegex = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i;
+        if (doiRegex.test(stripped)) {
+            return { type: "doi", id: stripped };
+        }
+
+        // PMID (digits only, typical up to 8-9 digits)
+        const pmidRegex = /^\d{1,9}$/;
+        if (pmidRegex.test(stripped)) {
+            return { type: "pmid", id: stripped };
+        }
+
+        return null;
+    };
+
+    const addReferencesFromInput = async () => {
+        if (!refInput.trim()) return;
+
+        const tokens = refInput
+            .split(/[\s,;\n]+/) // spaces, commas, semicolons, newlines
+            .map((x) => x.trim())
+            .filter(Boolean);
+
+        let current = [...references];
+        const seen = new Set(current.map((r) => `${r.type}:${r.id}`));
+
+        for (const tok of tokens) {
+            if (current.length >= MAX_REFS) break;
+            const parsed = parseRefToken(tok);
+            if (!parsed) continue;
+            const key = `${parsed.type}:${parsed.id}`.toLowerCase();
+            if (seen.has(key)) continue;
+
+            seen.add(key);
+            current.push({
+                key,
+                ...parsed,
+                status: "pending",
+                title: undefined,
+                url: undefined,
+            });
+        }
+
+        if (current.length > references.length) {
+            setReferences(current);
+            setRefInput("");
+            // validate the new ones
+            const newOnes = current.filter((r) => r.status === "pending");
+            for (const ref of newOnes) {
+                validateReference(ref);
+            }
+        } else {
+            // nothing added
+            setRefInput("");
+        }
+    };
+
+    const removeReference = (key) => {
+        setReferences((prev) => prev.filter((r) => r.key !== key));
+    };
+
+    const markRef = (key, patch) => {
+        setReferences((prev) => prev.map((r) => (r.key === key ? { ...r, ...patch } : r)));
+    };
+
+    // Crossref for DOI
+    const validateViaCrossref = async (doi) => {
+        const url = `https://api.crossref.org/works/${encodeURIComponent(doi)}`;
+        const res = await fetch(url, { headers: { Accept: "application/json" } });
+        if (!res.ok) throw new Error(`Crossref ${res.status}`);
+        const json = await res.json();
+        const msg = json?.message;
+        if (!msg) return { valid: false };
+
+        const type = msg.type; // 'journal-article', 'posted-content' (preprint), etc.
+        const issued = msg.issued; // date parts if available
+        const isPreprint = type === "posted-content";
+        const isPublished = !!issued && !isPreprint;
+
+        const title = (Array.isArray(msg.title) && msg.title[0]) || doi;
+        const urlOut = msg.URL || `https://doi.org/${doi}`;
+
+        return { valid: Boolean(isPublished), title, url: urlOut };
+    };
+
+    // PubMed E-utilities for PMID
+    const validateViaPubMed = async (pmid) => {
+        const url = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=${encodeURIComponent(
+            pmid
+        )}&retmode=json`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`NCBI ${res.status}`);
+        const json = await res.json();
+        const rec = json?.result?.[pmid];
+        if (!rec) return { valid: false };
+
+        const title = rec.title || `PMID:${pmid}`;
+        // consider "published" if has a pubdate and is not preprint. PubMed labels preprints differently
+        const hasDate = Boolean(rec.pubdate || rec.epubdate || rec.sortpubdate);
+        const isPreprint =
+            Array.isArray(rec.pubtype) && rec.pubtype.some((pt) => /preprint/i.test(pt)); // conservative
+        const valid = hasDate && !isPreprint;
+
+        const urlOut = `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`;
+        return { valid, title, url: urlOut };
+    };
+
+    const validateReference = async (ref) => {
+        try {
+            if (ref.type === "doi") {
+                const { valid, title, url } = await validateViaCrossref(ref.id);
+                markRef(ref.key, { status: valid ? "valid" : "invalid", title, url });
+            } else if (ref.type === "pmid") {
+                const { valid, title, url } = await validateViaPubMed(ref.id);
+                markRef(ref.key, { status: valid ? "valid" : "invalid", title, url });
+            } else {
+                markRef(ref.key, { status: "invalid" });
+            }
+        } catch (e) {
+            // Fallback to backend if CORS/network fails
+            // TODO: implement server endpint to validate reference
+            try {
+                const res = await fetch("/api/validate_reference", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ type: ref.type, id: ref.id }),
+                });
+                if (res.ok) {
+                    const j = await res.json();
+                    const { valid, title, url } = j || {};
+                    markRef(ref.key, { status: valid ? "valid" : "invalid", title, url });
+                } else {
+                    markRef(ref.key, { status: "error" });
+                }
+            } catch {
+                markRef(ref.key, { status: "error" });
+            }
+        }
+    };
+    
+    const refsPending = references.some((r) => r.status === "pending");
+    const refsInvalid = references.some((r) => r.status === "invalid" || r.status === "error");
+    const refsValidPayload = useMemo(
+        () =>
+            references
+                .filter((r) => r.status === "valid")
+                .map(({ type, id, title, url }) => ({ type, id, title, url })),
+        [references]
+    );
+
+    const canSubmit =
+        !!captchaToken &&
+        !submitting &&
+        Object.keys(proteinAnnotations).length > 0 &&
+        !!orcidNormalized && 
+        !orcidError &&
+        !refsPending &&
+        !refsInvalid;
+
+    // Submit updated protein data 
     const handleSubmit = async () => {
         if (submitting) return; // prevent multiple submissions
 
@@ -38,6 +276,19 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
         };
 
         if (!captchaToken) return;
+
+        // Require valid ORCID
+        if (!orcidNormalized || orcidError) {
+            setOrcidError('Please provide a valid ORCID.');
+            return;
+        }
+
+        // Require valid references that are not pending
+        if (refsPending || refsInvalid) {
+            toast.error("Please resolve or remove invalid/pending references.");
+            return;
+        }
+
         setSubmitting(true);
 
         const pr_url = null;
@@ -48,18 +299,20 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
                     annotations: proteinAnnotations,
-                    turnstileToken: captchaToken
+                    turnstileToken: captchaToken,
+                    orcid: orcidNormalized,
+                    references: refsValidPayload
                 }),
                 credentials: 'include' // include cookies
             });
 
             const data = await res.json();
-            pr_url = data.pr_url;
 
             if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(err?.error || "Submission failed")
+                throw new Error(data?.error || "Submission failed")
             }
+
+            pr_url = data?.pr_url || null;
 
             // open PR url in separate tab
             if (pr_url) {
@@ -122,11 +375,94 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                     sx={{
                         display: 'flex',
                         flexDirection: 'column',
-                        alignItems: 'left',
+                        alignItems: 'flex-start',
                         gap: 3,
                         p: 4,
                     }}
                 >
+                    {/* ORCID field */}
+                    <TextField 
+                        label="Contributor ORCID"
+                        placeholder="e.g., 0000-0002-1825-0097 or https://orcid.org/0000-0002-1825-0097"
+                        fullWidth
+                        value={orcidInput}
+                        onChange={handleOrcidChange}
+                        error={!!orcidError}
+                        helperText={orcidError || (orcidNormalized ? `Using: ${orcidNormalized}` : 'Enter your 16-character ORCID')}
+                    />
+
+                    {/* References */}
+                    <Box sx={{ width: "100%" }}> 
+                        <Typography vairant="subtitle1" sx={{ mb: 1}}>
+                            Related publications (DOI or PubMed ID) - optional
+                        </Typography>
+
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                            <TextField 
+                                fullWidth
+                                label={`Enter DOI or PMID${references.length ? " (you can paste multiple)" : ""}`}
+                                placeholder="10.1038/nature14539, 12345678, https://doi.org/10.1093/nar/gkv123, PMID: 9876543"
+                                value={refInput}
+                                onChange={(e) => setRefInput(e.target.value)}
+                                helperText={`${references.length}/${MAX_REFS} added`}
+                            />
+                            <Button
+                                variant="outlined"
+                                onClick={addReferencesFromInput}
+                                disabled={!refInput.trim() || references.length >= MAX_REFS}
+                                sx={{ whiteSpace: "nowrap", height: '56px' }}
+                            >
+                                Add
+                            </Button>
+                        </Box>
+
+                        {!!references.length && (
+                            <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
+                                {references.map((r) => {
+                                    const color =
+                                        r.status === "valid" ? "success" : r.status === "pending" ? "default" : "error";
+                                    const icon =
+                                        r.status === "valid" ? (
+                                            <CheckCircle fontSize="small" />
+                                        ) : r.status === "pending" ? (
+                                            <CircularProgress size={14} />
+                                        ) : (
+                                            <ErrorOutline fontSize="small" />
+                                        );
+                                    const label =
+                                        r.type === "doi" ? `DOI:${r.id}` : r.type === "pmid" ? `PMID:${r.id}` : r.id;
+
+                                    return (
+                                        <Tooltip
+                                            key={r.key}
+                                            title={r.title ? `${r.title}${r.url ? `\n${r.url}` : ""}` : ""}
+                                            arrow
+                                        >
+                                        <Chip
+                                            icon={icon}
+                                            label={label}
+                                            color={color}
+                                            onDelete={() => removeReference(r.key)}
+                                            variant={r.status === "valid" ? "filled" : "outlined"}
+                                        />
+                                        </Tooltip>
+                                    );
+                                })}
+                            </Stack>
+                        )}
+
+                        {refsInvalid && (
+                            <Typography variant="body2" sx={{ mt: 1 }} color="error">
+                                Some references are invalid or not recognized as published articles. Remove or correct them to submit.
+                            </Typography>
+                        )}
+                        {refsPending && (
+                            <Typography variant="body2" sx={{ mt: 1 }}>
+                                Validating references…
+                            </Typography>
+                        )}
+                    </Box>
+
                     {/* Turnstile widget */}
                     <Turnstile
                         key={turnstileKey}
@@ -134,15 +470,17 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                         onVerify={(token) => setCaptchaToken(token)}
                         onExpire={() => setCaptchaToken(null)}
                         onError={() => setCaptchaToken(null)}
-                        // options={{ theme: 'auto', appearance: 'always' }} // optional
+                        options={{ theme: 'auto', appearance: 'always' }}
                     />
                     <Button
                         variant="contained"
                         color="primary"
                         onClick={handleSubmit}
-                        disabled={!captchaToken || submitting}
+                        disabled={!canSubmit}
                     >
-                        {submitting ? 'Submitting…' : `Submit ${Object.keys(proteinAnnotations).length} annotated protein(s)`}
+                        {submitting 
+                            ? 'Submitting…' 
+                            : `Submit ${Object.keys(proteinAnnotations).length} annotated protein(s)`}
                     </Button>
                 </Box>
             </Box>
