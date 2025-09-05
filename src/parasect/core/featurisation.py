@@ -11,7 +11,8 @@ from Bio.SearchIO._model.hsp import HSP
 from parasect.core.constants import HMM2_FILE, HMM3_FILE, PROPERTIES
 from parasect.core.domain import AdenylationDomain
 from parasect.core.hmmer import parse_hmm_results, rename_sequences, reverse_renaming, run_hmmpfam2, run_hmmscan
-from parasect.core.parsing import parse_fasta_file, parse_genbank_file
+from parasect.core.parsing import parse_fasta_file
+from parasect.core.genbank import genbank_to_fasta
 
 
 def get_domain_features(amino_acid_sequence: str) -> List[float]:
@@ -453,7 +454,7 @@ def get_domains(
     if file_type == "gbk":
         # parse genbank file
         original_fasta = os.path.join(path_temp_dir, "proteins_from_genbank.fasta")
-        parse_genbank_file(
+        genbank_to_fasta(
             path_in=path_in, path_out=original_fasta
         )  # creates a fasta file at path_out
         mapping_file, renamed_fasta_file = rename_sequences(

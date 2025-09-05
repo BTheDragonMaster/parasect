@@ -5,7 +5,8 @@ import traceback
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from parasect.core.parsing import iterate_over_dir, parse_fasta_file, write_fasta_file
+from parasect.core.parsing import iterate_over_dir, parse_fasta_file
+from parasect.core.writers import write_fasta_file
 from parasect.core.tabular import Tabular
 
 from parasect.database.populate_database import populate_db
