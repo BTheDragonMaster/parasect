@@ -167,10 +167,6 @@ const AnnotationEditor = () => {
     // submission modal state
     const [openAnnotationsSubmissionModal, setOpenAnnotationsSubmissionModal] = useState(false);
 
-    const handleOpenAnnotationsSubmissionModal = () => {
-        setOpenAnnotationsSubmissionModal(true);
-    };
-
     const handleCloseAnnotationsSubmissionModal = () => {
         setOpenAnnotationsSubmissionModal(false);
     };
