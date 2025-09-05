@@ -5,6 +5,10 @@
 FROM node:20-alpine as build 
 WORKDIR /app 
 
+# Provide the site key at build time (public value)
+ARG REACT_APP_TURNSTILE_SITE_KEY
+ENV REACT_APP_TURNSTILE_SITE_KEY=${REACT_APP_TURNSTILE_SITE_KEY}
+
 # Install dependencies with cache-friendly order
 COPY ./src/client/package.json ./src/client/package-lock.json ./
 RUN npm ci

@@ -7,6 +7,136 @@ import { MdClose } from 'react-icons/md';
 import Loading from '../components/Loading';
 import ProteinTile from '../components/ProteinTile';
 
+import Turnstile from 'react-turnstile';
+
+
+const SITE_KEY = process.env.REACT_APP_TURNSTILE_SITE_KEY;
+
+
+function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
+    const [captchaToken, setCaptchaToken] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [turnstileKey, setTurnstileKey] = useState(0); // force reset when modal re-opens
+
+    useEffect(() => {
+        if (open) {
+            // reset widget each time the modal opens
+            setCaptchaToken(null);
+            setTurnstileKey(k => k + 1);
+        }
+    }, [open]);
+
+    {/* Submit updated protein data */}
+    const handleSubmit = async () => {
+        if (submitting) return; // prevent multiple submissions
+
+        if (Object.keys(proteinAnnotations).length === 0) {
+            toast.error("No annotations to submit");
+            return;
+        };
+
+        if (!captchaToken) return;
+        setSubmitting(true);
+
+        try {
+            const res = await fetch("/api/submit_annotations", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    annotations: proteinAnnotations,
+                    turnstileToken: captchaToken
+                }),
+                credentials: 'include' // include cookies
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err?.error || "Submission failed")
+            }
+
+            // success UI
+            onClose();
+        } catch(e) {
+            console.error(e);
+            toast.error(`Error: ${e.message}`, { autoClose: false });
+        } finally {
+            setSubmitting(false);
+            setCaptchaToken(null);
+            setTurnstileKey(k => k + 1);  // reset widget after submit
+        }
+    };
+
+    return (
+        <Modal open={open} onClose={onClose}>
+            <Box
+                width={800}
+                bgcolor='white.main'
+                mx='auto'
+                my={10}
+                borderRadius={4}
+                boxShadow={3}
+            >
+                <Box
+                    sx={{
+                        backgroundColor: 'secondary.main',
+                        borderTopLeftRadius: '14px',
+                        borderTopRightRadius: '14px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: 1,
+                    }}
+                >
+                    <Typography 
+                        variant='h5' 
+                        gutterBottom
+                        sx={{ 
+                            color: 'black.main', 
+                            textAlign: 'center',
+                            pl: 2,
+                            pt: 2, 
+                        }}
+                    >
+                        Submit annotations
+                    </Typography>
+                    <IconButton onClick={onClose}>
+                        <MdClose size={24} />
+                    </IconButton>
+                </Box>
+
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'left',
+                        gap: 3,
+                        p: 4,
+                    }}
+                >
+                    {/* Turnstile widget */}
+                    <Turnstile
+                        key={turnstileKey}
+                        sitekey={SITE_KEY}
+                        onVerify={(token) => setCaptchaToken(token)}
+                        onExpire={() => setCaptchaToken(null)}
+                        onError={() => setCaptchaToken(null)}
+                        // options={{ theme: 'auto', appearance: 'always' }} // optional
+                    />
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleSubmit}
+                        disabled={!captchaToken || submitting}
+                    >
+                        {submitting ? 'Submitting…' : 'Submit'}
+                    </Button>
+                </Box>
+            </Box>
+        </Modal>
+    )  
+};
+
+
 /**
  * Component to display the results of the prediction.
  *
@@ -55,34 +185,6 @@ const AnnotationEditor = () => {
         return updated;
     });
 };
-    {/* Submit updated protein data */}
-    const handleSubmit = async () => {
-
-        if (Object.keys(proteinAnnotations).length === 0) {
-            toast.error("No annotations to submit");
-            return;
-        };
-
-        // Placeholder: validations can go here later
-        // For example:
-        // for (const [domainId, annotation] of Object.entries(domainAnnotations)) {
-        //     ... perform checks ...
-        // }
-
-        // Submit to backend to create PR
-        const res = await fetch("/api/submit_annotations", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ annotations: proteinAnnotations }),
-        });
-
-        const json = await res.json();
-        if (res.ok) {
-            toast.success(`GitHub issue created for annotations at: ${json.pr_url}`);
-        } else {
-            toast.error(`Error: ${json.error}`, { autoClose: false });
-        }
-    };
 
     const OpenAnnotationsSubmissionsModal = () => {
         setOpenAnnotationsSubmissionModal(true);
@@ -252,64 +354,11 @@ const AnnotationEditor = () => {
             </Box>
 
             {/* Dialogue modal */}
-            <Modal open={openAnnotationsSubmissionModal} onClose={handleCloseAnnotationsSubmissionModal}>
-                <Box
-                    width={800}
-                    bgcolor='white.main'
-                    mx='auto'
-                    my={10}
-                    borderRadius={4}
-                    boxShadow={3}
-                >
-                    <Box
-                        sx={{
-                            backgroundColor: 'secondary.main',
-                            borderTopLeftRadius: '14px',
-                            borderTopRightRadius: '14px',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: 1,
-                        }}
-                    >
-                        <Typography 
-                            variant='h5' 
-                            gutterBottom
-                            sx={{ 
-                                color: 'black.main', 
-                                textAlign: 'center',
-                                pl: 2,
-                                pt: 2, 
-                            }}
-                        >
-                            Submit annotations
-                        </Typography>
-                        <IconButton onClick={handleCloseAnnotationsSubmissionModal}>
-                            <MdClose size={24} />
-                        </IconButton>
-                    </Box>
-
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'left',
-                            gap: 3,
-                            p: 4,
-                        }}
-                    >
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleSubmit}
-                        >
-                            Submit
-                        </Button>
-
-                    </Box>
-                </Box>
-            </Modal>
+            <SubmitAnnotationsModal 
+                open={openAnnotationsSubmissionModal}
+                onClose={handleCloseAnnotationsSubmissionModal}
+                proteinAnnotations={proteinAnnotations}
+            />
         </>
         
     );

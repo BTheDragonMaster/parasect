@@ -1,6 +1,8 @@
 import logging
 from typing import Any
 from flask import Blueprint, Response, request, jsonify
+import requests
+import os
 
 
 from parasect.database.query_database import get_substrates_from_smiles, \
@@ -10,6 +12,10 @@ from parasect.core.github import submit_github_issues
 from pikachu.general import read_smiles
 
 from .database import get_db
+
+
+TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+
 
 blueprint_check_smiles = Blueprint("check_smiles", __name__)
 blueprint_check_substrate_name = Blueprint("check_substrate_name", __name__)
@@ -187,8 +193,34 @@ def cleanup_annotations(annotations: dict[str, dict[str, Any]]) -> dict[str, dic
 
 @blueprint_submit_annotations.route("/api/submit_annotations", methods=["POST"])
 def submit_annotations():
+    data = request.get_json()
+
+    token = data.get("turnstileToken")
+    if not token:
+        return jsonify({"error": "missing_turnstile_token"}), 400
+    
+    # Optional: capture client IP for verification
+    client_ip = request.headers.get("CF-Connecting-IP") or request.remote_addr
+
     try:
-        data = request.get_json()
+        r = requests.post(
+            TURNSTILE_VERIFY_URL,
+            data={
+                "secret": os.environ["TURNSTILE_SECRET_KEY"],
+                "response": token,
+                "remoteip": client_ip,
+            },
+            timeout=5,
+        )
+        ver = r.json()
+    except Exception as e:
+        return jsonify({"error": "turnstile_verification_failed", "detail": str(e)}), 502
+    
+    if not ver.get("success"):
+        # ver contains fields like "error-codes", "action", "cdata"
+        return jsonify({"error": "captcha_failed", "detail": ver}), 400
+
+    try:
         annotations = data.get("annotations", {})
         protein_to_entries = cleanup_annotations(annotations)
 
