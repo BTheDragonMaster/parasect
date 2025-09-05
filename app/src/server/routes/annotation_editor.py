@@ -222,10 +222,13 @@ def submit_annotations():
 
     try:
         annotations = data.get("annotations", {})
+        orcid = data.get("orcid", "")
+        references = data.get("references", [])
+
         protein_to_entries = cleanup_annotations(annotations)
 
         # Create a GitHub PR with annotations
-        pr_url = create_github_issue(protein_to_entries)
+        pr_url = create_github_issue(protein_to_entries, orcid, references)
 
         return jsonify({"pr_url": pr_url}), 200
 
@@ -234,7 +237,11 @@ def submit_annotations():
         return jsonify({"error": str(e)}), 500
 
 
-def create_github_issue(annotations: dict[str, dict[str, Any]]) -> str:
+def create_github_issue(
+    annotations: dict[str, dict[str, Any]],
+    orcid: str,
+    references: list[dict[str, str]]
+) -> str:
     """
     Create one GitHub issue per protein
 
@@ -245,7 +252,7 @@ def create_github_issue(annotations: dict[str, dict[str, Any]]) -> str:
     """
     session_generator = get_db()
     session = next(session_generator)
-    submit_github_issues(session, annotations)
+    submit_github_issues(session, annotations, orcid, references)
 
     return "https://github.com/BTheDragonMaster/parasect/issues"
 
