@@ -137,7 +137,7 @@ const CustomToolbar = () => {
                     </MenuItem>
                     <MenuItem onClick={() => handleMenuItemClick('/data_annotation')}>
                         <DatasetIcon sx={{ marginRight: '10px' }} />
-                        Data Annotation
+                        Data annotation
                     </MenuItem>
                     <MenuItem onClick={() => handleExternalLinkClick('https://github.com/BTheDragonMaster/parasect/issues')}>
                         <GitHubIcon sx={{ marginRight: '10px' }} />
