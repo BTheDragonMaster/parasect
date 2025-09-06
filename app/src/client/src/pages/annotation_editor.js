@@ -257,14 +257,15 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
         [references]
     );
 
+    // ORCID is optional, need at least one valid reference. However if an ORCID is provided, it must be valid.
     const canSubmit =
         !!captchaToken &&
         !submitting &&
         Object.keys(proteinAnnotations).length > 0 &&
-        !!orcidNormalized && 
-        !orcidError &&
+        (!orcidInput.trim() || (!!orcidNormalized && !orcidError)) &&
         !refsPending &&
-        !refsInvalid;
+        !refsInvalid &&
+        refsValidPayload.length > 0;
 
     // Submit updated protein data 
     const handleSubmit = async () => {
@@ -382,20 +383,25 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                     }}
                 >
                     {/* ORCID field */}
-                    <TextField 
-                        label="Contributor ORCID"
-                        placeholder="e.g., 0000-0002-1825-0097 or https://orcid.org/0000-0002-1825-0097"
-                        fullWidth
-                        value={orcidInput}
-                        onChange={handleOrcidChange}
-                        error={!!orcidError}
-                        helperText={orcidError || (orcidNormalized ? `Using: ${orcidNormalized}` : 'Enter your 16-character ORCID')}
-                    />
+                    <Box sx={{ width: "100%" }}> 
+                        <Typography variant="subtitle1" sx={{ mb: 1}}>
+                            Contributor ORCID - optional
+                        </Typography>
+                        <TextField 
+                            label="Contributor ORCID"
+                            placeholder="e.g., 0000-0002-1825-0097 or https://orcid.org/0000-0002-1825-0097"
+                            fullWidth
+                            value={orcidInput}
+                            onChange={handleOrcidChange}
+                            error={!!orcidError}
+                            helperText={orcidError || (orcidNormalized ? `Using: ${orcidNormalized}` : 'Enter your 16-character ORCID')}
+                        />
+                    </Box>
 
                     {/* References */}
                     <Box sx={{ width: "100%" }}> 
                         <Typography variant="subtitle1" sx={{ mb: 1}}>
-                            Related publications (DOI or PubMed ID) - optional
+                            Related publications (DOI or PubMed ID) - at least one required
                         </Typography>
 
                         <Box sx={{ display: "flex", gap: 1 }}>
