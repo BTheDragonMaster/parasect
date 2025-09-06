@@ -72,6 +72,17 @@ const Home = () => {
                         Retrieve results
                     </Typography>
                 </Button>
+                <Button
+                    variant='contained'
+                    color='primary'
+                    size='large'
+                    href='/data_annotation'
+                    sx={{ marginBottom: 3 }}
+                >
+                    <Typography sx={{ color: 'white.main' }}>
+                        Annotate domain
+                    </Typography>
+                </Button>
             </Box>
 
             <Typography variant='body1' align='center' color='textSecondary' gutterBottom>
