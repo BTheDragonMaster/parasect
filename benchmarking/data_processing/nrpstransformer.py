@@ -67,7 +67,8 @@ def process_nrpstransformer_data(nrpstransformer_raw_file: str, substrate_mappin
         for specificity in specificities:
             spec = abbreviation_to_spec[specificity.lower()]
             specs = spec.split('|')
-            specificity_string.extend(list(set(specs)))
+            specificity_string.extend(specs)
+        specificity_string = list(set(specificity_string))
         id_to_spec[domain_name] = '|'.join(specificity_string)
 
     write_tabular([id_to_seq, id_to_spec], ["domain_id", "sequence", "specificity"], out_file)
