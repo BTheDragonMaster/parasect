@@ -47,3 +47,19 @@ def write_fasta_file(fasta_dict: dict[str, str], path_out: str) -> None:
         for header in sorted_ids:
             sequence = fasta_dict[header]
             fo.write(f">{header}\n{sequence}\n")
+
+
+def write_list(list_of_things: list[str], out_file: str) -> None:
+    """Write a list of things to a file, one thing per line
+
+    :param list_of_things: list of strings
+    :type list_of_things: list[str]
+    :param out_file: path to output file
+    :type out_file: str
+    """
+
+    list_of_things.sort()
+
+    with open(out_file, 'w') as out:
+        for thing in list_of_things:
+            out.write(f"{thing}\n")

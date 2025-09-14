@@ -22,6 +22,86 @@ class SubstrateData:
     smiles: str
 
 
+@dataclass
+class TaxonomyData:
+    domain: str
+    kingdom: str
+    phylum: str
+    cls: str
+    order: str
+    family: str
+    genus: str
+    species: str
+    strain: Optional[str]
+
+    def __hash__(self):
+
+        return hash((self.domain, self.kingdom, self.phylum, self.cls, self.order, self.family, self.genus, self.species, self.strain))
+
+def parse_taxonomy_file(taxonomy_file: str) -> dict[str, TaxonomyData]:
+    """Return dictionary of protein id to taxonomy
+
+    :param taxonomy_file: taxonomy file
+    :type taxonomy_file: str
+    :return: dict of protein to taxonomy data object
+    :rtype: dict[str, TaxonomyData
+    """
+
+    protein_to_taxonomy: dict[str, TaxonomyData] = {}
+    tax_info = Tabular(taxonomy_file, separator='\t')
+    for protein in tax_info.rows:
+        domain = tax_info.get_row_value(protein, "domain")
+        kingdom = tax_info.get_row_value(protein, "kingdom")
+        phylum = tax_info.get_row_value(protein, "phylum")
+        cls = tax_info.get_row_value(protein, "class")
+        order = tax_info.get_row_value(protein, "order")
+        family = tax_info.get_row_value(protein, "family")
+        genus = tax_info.get_row_value(protein, "genus")
+        species = tax_info.get_row_value(protein, "species")
+        strain = tax_info.get_row_value(protein, "strain")
+        if strain == "Unknown":
+            strain = None
+        protein_to_taxonomy[protein] = TaxonomyData(domain, kingdom, phylum, cls, order, family, genus, species, strain)
+
+    return protein_to_taxonomy
+
+
+def parse_raw_taxonomy(taxonomy_file: str) -> dict[str, list[str]]:
+    """Return dictionary of protein id to taxonomy
+
+    :param taxonomy_file: taxonomy file
+    :type taxonomy_file: str
+    :return: dictionary of protein ID to taxonomy
+    :rtype: dict[str, list[str]]
+    """
+    protein_to_taxonomy: dict[str, list[str]] = {}
+    with open(taxonomy_file, 'r') as tax_info:
+        for line in tax_info:
+            tax_data = line.strip().split('\t')
+            protein = tax_data[0]
+            taxonomy = tax_data[1:]
+            protein_to_taxonomy[protein] = taxonomy
+    return protein_to_taxonomy
+
+
+def parse_list(list_file: str) -> list[str]:
+    """Return list of things from file containing one item per line
+
+    :param list_file: path to file containing one string per line
+    :type list_file: str
+    :return: list of unique strings
+    :rtype: list[str]
+    """
+    string_list: list[str] = []
+    with open(list_file, 'r') as list_of_things:
+        for line in list_of_things:
+            line = line.strip()
+            if line:
+                string_list.append(line)
+
+    return sorted(list(set(string_list)))
+
+
 def parse_pcs(pca_file: str) -> tuple[list[str], NDArray[np.float64]]:
     """Return list of domain names and numpy array of precomputed principal components for each domain
 
