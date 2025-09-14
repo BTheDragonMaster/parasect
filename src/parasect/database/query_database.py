@@ -2,7 +2,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 
-from parasect.database.build_database import AdenylationDomain, Substrate, DomainSynonym
+from parasect.database.build_database import AdenylationDomain, Substrate, DomainSynonym, ProteinDomainAssociation, \
+    ProteinSynonym, Protein
 from parasect.core.chem import is_same_molecule_fingerprint, smiles_to_fingerprint
 
 
@@ -99,6 +100,33 @@ def get_substrates_from_name(session: Session, substrate_name: str) -> list[Subs
 def get_domains_from_synonym(session: Session, synonym: str) -> list[AdenylationDomain]:
     query = select(AdenylationDomain).join(DomainSynonym).where(DomainSynonym.synonym == synonym)
     return list(session.scalars(query))
+
+
+def get_proteins_from_synonym(session: Session, synonym: str) -> list[Protein]:
+    query = select(Protein).join(ProteinSynonym).where(ProteinSynonym.synonym == synonym)
+    return list(session.scalars(query))
+
+
+def get_proteins_from_domain_synonym(session: Session, synonym: str) -> list[Protein]:
+    query = (
+        select(Protein)
+        .join(Protein.domains)                   # Protein → ProteinDomainAssociation
+        .join(ProteinDomainAssociation.domain)   # ProteinDomainAssociation → AdenylationDomain
+        .join(AdenylationDomain.synonyms)        # AdenylationDomain → DomainSynonym
+        .where(DomainSynonym.synonym == synonym)
+    )
+    return list(session.scalars(query).unique())
+
+
+def get_domains_from_protein_synonym(session: Session, synonym: str) -> list[AdenylationDomain]:
+    query = (
+        select(AdenylationDomain)
+        .join(AdenylationDomain.proteins)        # AdenylationDomain → ProteinDomainAssociation
+        .join(ProteinDomainAssociation.protein)  # ProteinDomainAssociation → Protein
+        .join(Protein.synonyms)                  # Protein → ProteinSynonym
+        .where(ProteinSynonym.synonym == synonym)
+    )
+    return list(session.scalars(query).unique())
 
 
 def get_domains_from_sequence(session: Session, sequence: str) -> list[AdenylationDomain]:
