@@ -47,6 +47,19 @@ class Substrate(Base):
     def __repr__(self):
         return self.name
 
+    def __eq__(self, other):
+        if not isinstance(other, Substrate):
+            return NotImplemented
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def __lt__(self, other):
+        if not isinstance(other, Substrate):
+            return NotImplemented
+        return self.name < other.name
+
     def to_json(self) -> dict[str, Any]:
         return {
             "name": self.name,

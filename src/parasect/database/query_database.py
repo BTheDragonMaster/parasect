@@ -117,6 +117,20 @@ def get_domains_from_synonym(session: Session, synonym: str) -> list[Adenylation
     return list(session.scalars(query))
 
 
+def get_domains_from_names(session: Session, names: list[str]) -> list[AdenylationDomain]:
+    if not names:
+        return []
+
+    query = (
+        select(AdenylationDomain)
+        .join(DomainSynonym)
+        .where(DomainSynonym.synonym.in_(names))
+        .distinct()  # <-- ensures unique AdenylationDomain rows
+    )
+
+    return list(session.scalars(query))
+
+
 def get_proteins_from_synonym(session: Session, synonym: str) -> list[Protein]:
     query = select(Protein).join(ProteinSynonym).where(ProteinSynonym.synonym == synonym)
     return list(session.scalars(query))

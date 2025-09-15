@@ -1,8 +1,7 @@
 import random
 import os
-from typing import Optional, Iterable
+
 from argparse import ArgumentParser, Namespace
-from enum import Enum
 
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
@@ -10,7 +9,12 @@ from sqlalchemy import create_engine
 from parasect.database.build_database import AdenylationDomain, Substrate
 from parasect.core.taxonomy import Rank
 
-from .domain_scope import DomainScope
+from parasect.model_training.train_test_splits.domain_scope import DomainScope
+from parasect.model_training.train_test_splits.substrate_selection import SubstrateSelectionMode, \
+    count_first_valid_substrate, map_domains_to_substrates, count_substrates_in_domains, count_substrates
+from parasect.model_training.train_test_splits.multilabel_stratification import binarise_data
+from parasect.model_training.train_test_splits.crossvalidation import make_crossval_sets
+from parasect.core.writers import write_list
 
 
 def parse_arguments() -> Namespace:
@@ -33,6 +37,8 @@ def parse_arguments() -> Namespace:
                         help="Max attempts made for splitting data")
     parser.add_argument("-t", "--taxonomic_rank", default="family", type=str,
                         help="Taxonomic rank to split on")
+    parser.add_argument('-f', "--fold_cross_validation", default=3, type=int,
+                        help="Fold crossvalidation")
 
     mode_group = parser.add_mutually_exclusive_group()
     mode_group.add_argument('--first_only', action='store_true',
@@ -49,114 +55,6 @@ def parse_arguments() -> Namespace:
     arguments = parser.parse_args()
 
     return arguments
-
-
-class SubstrateSelectionMode(Enum):
-    FIRST_ONLY = 1
-    FIRST_VALID = 2
-    ALL = 3
-
-    @staticmethod
-    def get_mode_from_string(string) -> Optional["SubstrateSelectionMode"]:
-        """
-        Convert a string to a SplitMode enum value.
-
-        :param string: String representation of split mode
-        :type string: str
-        :return: Corresponding SplitMode, or None if invalid
-        :rtype: SubstrateSelectionMode
-        """
-        string_to_split_mode = {s.name: s for s in SubstrateSelectionMode}
-        return string_to_split_mode.get(string.upper())
-
-
-def _count_first_valid_substrate(session: Session, cutoff: int,
-                                 included_domains: DomainScope = DomainScope.ALL) -> dict[Substrate, int]:
-    """
-    Count the first valid substrate for each domain in the database, iteratively filtering
-    substrates that do not meet a minimum occurrence cutoff.
-
-    This function performs the following steps:
-
-    1. Computes the total counts of all substrates across all domains, regardless of order.
-    2. Identifies a set of candidate substrates that meet the specified `cutoff` globally.
-    3. Iteratively assigns to each domain the first substrate (in the domain's list) that
-       is in the set of candidate substrates.
-    4. After each iteration, any substrate whose assigned count falls below the `cutoff`
-       is removed from the candidate set, and the process repeats until no substrates are
-       pruned.
-
-    This ensures that the returned counts only include substrates that are both globally
-    and locally valid as "first substrates" for a sufficient number of domains.
-
-    :param session: database session
-    :type session: Session
-    :param cutoff: minimum occurrence cutoff
-    :type cutoff: int
-    :param included_domains: determines which domains are considered (fungal, bacterial, all)
-    :type included_domains: DomainScope
-    :return: mapping of substrate to substrate counts
-    :rtype: dict[Substrate, int]
-    """
-
-    # Step 1: start with all substrates meeting cutoff globally
-    domains = DomainScope.get_domains(session, included_domains)
-    global_counts = _count_substrates_in_domains(domains, first_only=False)
-    valid_substrates = {s for s, c in global_counts.items() if c >= cutoff}
-
-    changed = True
-    counts = {}
-
-    while changed:
-        # Step 2: assign first valid substrate for each domain
-        domain_to_valid = {}
-        counts = {s: 0 for s in valid_substrates}
-        for d in domains:
-            for s in d.substrates:
-                if s in valid_substrates:
-                    domain_to_valid[d] = s
-                    counts[s] += 1
-                    break
-            else:
-                # No valid substrate for this domain
-                domain_to_valid[d] = None
-
-        # Step 3: prune those that fell below cutoff
-        demoted = {s for s, c in counts.items() if c < cutoff}
-        if demoted:
-            valid_substrates -= demoted
-            changed = True
-        else:
-            changed = False
-
-    return counts
-
-
-def _map_domains_to_first_valid(domains: Iterable[AdenylationDomain],
-                                included_substrates: set[Substrate]):
-    """
-    Assign to each domain the first substrate from `included_substrates` that appears
-    in its substrate list. Domains with no matching substrate are assigned None.
-
-    :param domains: Domains to process.
-    :type domains: Iterable[AdenylationDomain]
-    :param included_substrates: Substrates considered valid for assignment.
-    :type included_substrates: set[Substrate]
-    :return: Mapping of domains to their first valid substrate or None.
-    :rtype: dict[AdenylationDomain, Optional[Substrate]]
-    """
-    domain_to_first_valid = {}
-
-    for d in domains:
-        for s in d.substrates:
-            if s in included_substrates:
-                domain_to_first_valid[d] = s
-                break
-        else:
-            # No valid substrate found
-            domain_to_first_valid[d] = None
-
-    return domain_to_first_valid
 
 
 def get_clades(session: Session, rank: Rank,
@@ -207,57 +105,6 @@ def get_clades(session: Session, rank: Rank,
     return clade_group_to_domains
 
 
-def _count_substrates_in_domains(domains: Iterable[AdenylationDomain],
-                                 first_only: bool) -> dict[Substrate, int]:
-    """Count substrates in a collection of domains.
-
-    :param domains: collection of unique adenylation domains
-    :type domains: Iterable[AdenylationDomain]
-    :param first_only: if True, only count the first substrate for each domain.
-    :type first_only: bool
-    :return: dictionary mapping substrate to substrate counts
-    :rtype: dict[Substrate, int]
-    """
-    counts: dict[Substrate, int] = {}
-
-    for domain in domains:
-        for substrate in domain.substrates:
-            if substrate not in counts:
-                counts[substrate] = 0
-            counts[substrate] += 1
-
-            if first_only:
-                break
-
-    return counts
-
-
-def count_substrates(session: Session, first_only: bool, cutoff: int = 0,
-                     included_domains: DomainScope = DomainScope.ALL) -> dict[Substrate, int]:
-    """Count occurrences of substrates across all domains, optionally filtering by cutoff.
-
-    :param session: database session
-    :type session: Session
-    :param first_only: if given, only count the first substrate for each domain
-    :type first_only: bool
-    :param cutoff: only include substrates that occur at least this many times
-    :type cutoff: int
-    :param included_domains: determines which domains are considered (fungal, bacterial, all)
-    :type included_domains: DomainScope
-    :return: dictionary mapping substrate to substrate counts
-    :rtype: dict[Substrate, int]
-    """
-    domains = DomainScope.get_domains(session, included_domains)
-
-    substrate_to_count = _count_substrates_in_domains(domains, first_only)
-
-    for substrate, count in list(substrate_to_count.items()):
-        if count < cutoff:
-            del substrate_to_count[substrate]
-
-    return substrate_to_count
-
-
 def get_counts_per_clade_first_valid(clade_group_to_domains: dict[tuple[str, ...], set[AdenylationDomain]],
                                      included_substrates: set[Substrate]) -> dict[tuple[str, ...], dict[Substrate, int]]:
     """
@@ -272,7 +119,8 @@ def get_counts_per_clade_first_valid(clade_group_to_domains: dict[tuple[str, ...
     """
     counts_per_clade = {}
     for clade, domains in clade_group_to_domains.items():
-        domain_to_valid = _map_domains_to_first_valid(domains, included_substrates)
+        domain_to_valid = map_domains_to_substrates(domains, included_substrates,
+                                                    selection_mode=SubstrateSelectionMode.FIRST_VALID)
         substrate_counts = {s: 0 for s in included_substrates}
         for s in domain_to_valid.values():
             if s is not None:
@@ -298,7 +146,7 @@ def get_counts_per_clade(clade_group_to_domains: dict[tuple[str, ...], set[Adeny
     counts_per_clade: dict[tuple[str, ...], dict[Substrate, int]] = {}
 
     for clade, domains in clade_group_to_domains.items():
-        substrate_to_count = _count_substrates_in_domains(domains, first_only=first_only)
+        substrate_to_count = count_substrates_in_domains(domains, first_only=first_only)
         for substrate in list(substrate_to_count.keys()):
             if substrate not in included_substrates:
                 del substrate_to_count[substrate]
@@ -306,24 +154,6 @@ def get_counts_per_clade(clade_group_to_domains: dict[tuple[str, ...], set[Adeny
         counts_per_clade[clade] = substrate_to_count
 
     return counts_per_clade
-
-
-def check_split_possible(clade_substrate_counts: dict[tuple[str, ...], dict], substrates: set[Substrate]) -> bool:
-    """
-    Check if all substrates appear in at least two clades, required for splitting train/test sets.
-
-    :param clade_substrate_counts: dict mapping clade groups → substrate counts
-    :type clade_substrate_counts: dict[tuple[str, ...], dict]
-    :param substrates: set of substrates to check
-    :type substrates: set[Substrate]
-    :return: True if split possible, False otherwise
-    """
-    for sub in substrates:
-        clades_with_sub = [clade for clade, counts in clade_substrate_counts.items() if counts.get(sub, 0) > 0]
-        if len(clades_with_sub) < 2:
-            print(f"Substrate {sub} occurs in less than 2 clades: {len(clades_with_sub)}")
-            return False
-    return True
 
 
 def split_on_rank(session: Session,
@@ -368,7 +198,7 @@ def split_on_rank(session: Session,
                                               included_domains=included_domains)
     elif split_mode == SubstrateSelectionMode.FIRST_VALID:
 
-        substrate_to_count = _count_first_valid_substrate(session, cutoff, included_domains=included_domains)
+        substrate_to_count = count_first_valid_substrate(session, cutoff, included_domains=included_domains)
     else:
         raise ValueError(f"Unknown split mode: {split_mode}")
 
@@ -481,6 +311,7 @@ def split_on_rank(session: Session,
                         domain_assignment[domain] = side
                         break
 
+
     return {
         "assignment": coverage_assignment,
         "substrate_counts": substrate_counts,
@@ -530,6 +361,10 @@ def main():
         substrate_counts = result["substrate_counts"]
         domain_assignment = result["domain_assignment"]
 
+        train_domains = [domain for domain, side in domain_assignment.items() if side == "train"]
+        domain_to_substrates = map_domains_to_substrates(train_domains, set(substrate_counts.keys()), split_mode)
+
+
         with open(train_out, 'w') as train, open(test_out, 'w') as test:
             for domain, assignment in domain_assignment.items():
                 if assignment == "train":
@@ -549,10 +384,35 @@ def main():
                     else:
                         raise ValueError(f"Unknown clade assignment: {assignment}")
 
+        included_substrates_file = os.path.join(args.output, "included_substrates.txt")
+        included_substrates = list(substrate_counts.keys())
+        included_substrates.sort()
+        write_list(included_substrates, included_substrates_file)
+
         with open(substrate_splits, 'w') as substrates_out:
             substrates_out.write("substrate_name\ttrain\ttest\n")
             for substrate, counts in substrate_counts.items():
                 substrates_out.write(f"{substrate.name}\t{counts['train']}\t{counts['test']}\n")
+
+        if split_mode == SubstrateSelectionMode.ALL:
+            label_sets = []
+            for domain in train_domains:
+                substrates = domain_to_substrates[domain]
+                label_sets.append(substrates)
+
+            binary_labels, labels = binarise_data(label_sets)
+            binary_labels = list(binary_labels)
+
+
+            make_crossval_sets(train_domains, [domain_to_substrates[d] for d in train_domains], args.output,
+                               binary_labels=binary_labels,
+                               fold_validation=args.fold_cross_validation,
+                               selection_mode=split_mode)
+
+        else:
+
+            make_crossval_sets(train_domains, [domain_to_substrates[d] for d in train_domains], args.output,
+                               fold_validation=args.fold_cross_validation, selection_mode=split_mode)
 
         # Sum across all substrates
         total_train = sum(ct["train"] for ct in substrate_counts.values())
