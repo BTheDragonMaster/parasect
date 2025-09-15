@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 
 from parasect.database.build_database import AdenylationDomain, Substrate, DomainSynonym, ProteinDomainAssociation, \
-    ProteinSynonym, Protein
+    ProteinSynonym, Protein, Taxonomy
 from parasect.core.chem import is_same_molecule_fingerprint, smiles_to_fingerprint
+from parasect.core.taxonomy import Rank
 
 
 def get_protein_names(session: Session):
@@ -90,6 +91,20 @@ def get_substrates_from_smiles(session: Session, smiles: str) -> list[Substrate]
             substrates.append(substrate)
 
     return substrates
+
+
+def get_domains_from_taxonomic_rank(session: Session, rank: Rank, rank_name: str) -> list[AdenylationDomain]:
+
+    taxonomy_column = Rank.get_column(rank)
+    query = (
+        select(AdenylationDomain)
+            .join(AdenylationDomain.proteins)
+            .join(ProteinDomainAssociation.protein)
+            .join(Protein.taxonomy)
+            .where(taxonomy_column == rank_name)
+            .distinct()
+    )
+    return list(session.scalars(query).all())
 
 
 def get_substrates_from_name(session: Session, substrate_name: str) -> list[Substrate]:

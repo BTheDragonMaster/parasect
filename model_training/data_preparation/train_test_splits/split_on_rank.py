@@ -5,9 +5,12 @@ from argparse import ArgumentParser, Namespace
 from enum import Enum
 
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine
 
-from parasect.database.build_database import AdenylationDomain, Taxonomy, Substrate
+from parasect.database.build_database import AdenylationDomain, Substrate
+from parasect.core.taxonomy import Rank
+
+from .domain_scope import DomainScope
 
 
 def parse_arguments() -> Namespace:
@@ -16,86 +19,92 @@ def parse_arguments() -> Namespace:
     :return: Arguments
     :rtype: Namespace
     """
-    parser = ArgumentParser(description="Retrieve taxonomy for database domains")
+    parser = ArgumentParser(description="Split domains into train and test set based on taxonomy")
 
     parser.add_argument("-db", "--database", type=str, required=True,
                         help="Path to PARASECT database")
     parser.add_argument("-o", "--output", required=True, type=str,
                         help="Output directory")
-    parser.add_argument("-f", '--first_only', action="store_true",
-                        help="If given, only consider first listed substrate for each domain.")
     parser.add_argument("-c", '--cutoff', default=6, type=int,
                         help="Minimum substrate count for inclusion")
     parser.add_argument("-r", '--test_ratio', default=0.25, type=float,
                         help="Target test set size")
-    parser.add_argument("-m", '--max_attempts', default=200,
+    parser.add_argument("-m", '--max_attempts', default=200, type=int,
                         help="Max attempts made for splitting data")
     parser.add_argument("-t", "--taxonomic_rank", default="family", type=str,
                         help="Taxonomic rank to split on")
+
+    mode_group = parser.add_mutually_exclusive_group()
+    mode_group.add_argument('--first_only', action='store_true',
+                            help="Count only the first substrate per domain")
+    mode_group.add_argument('--first_valid', action='store_true',
+                            help="Count only the first valid substrate per domain")
+
+    domain_group = parser.add_mutually_exclusive_group()
+    domain_group.add_argument('--fungal_only', action='store_true',
+                              help="Only consider fungal domains")
+    domain_group.add_argument('--bacterial_only', action='store_true',
+                              help="Only consider bacterial domains")
 
     arguments = parser.parse_args()
 
     return arguments
 
 
-class SplitMode(Enum):
+class SubstrateSelectionMode(Enum):
     FIRST_ONLY = 1
     FIRST_VALID = 2
     ALL = 3
 
     @staticmethod
-    def get_mode_from_string(string) -> "SplitMode":
-        string_to_split_mode = {s.name: s for s in SplitMode}
+    def get_mode_from_string(string) -> Optional["SubstrateSelectionMode"]:
+        """
+        Convert a string to a SplitMode enum value.
+
+        :param string: String representation of split mode
+        :type string: str
+        :return: Corresponding SplitMode, or None if invalid
+        :rtype: SubstrateSelectionMode
+        """
+        string_to_split_mode = {s.name: s for s in SubstrateSelectionMode}
         return string_to_split_mode.get(string.upper())
 
 
-class Rank(Enum):
-    DOMAIN = 1
-    KINGDOM = 2
-    PHYLUM = 3
-    CLASS = 4
-    ORDER = 5
-    FAMILY = 6
-    GENUS = 7
-    SPECIES = 8
-    STRAIN = 9
+def _count_first_valid_substrate(session: Session, cutoff: int,
+                                 included_domains: DomainScope = DomainScope.ALL) -> dict[Substrate, int]:
+    """
+    Count the first valid substrate for each domain in the database, iteratively filtering
+    substrates that do not meet a minimum occurrence cutoff.
 
-    @staticmethod
-    def get_rank_from_taxonomy(rank: "Rank", taxonomy: Taxonomy) -> Optional[str]:
-        """
-        Return specific rank from full taxonomy
-        :param rank: taxonomic rank
-        :type rank: Rank
-        :param taxonomy: taxonomy from database
-        :type taxonomy: Taxonomy
-        :return: string representing taxonomic rank, None if not in database
-        :rtype: str or None
-        """
-        rank_to_value = {Rank.DOMAIN: taxonomy.domain,
-                         Rank.KINGDOM: taxonomy.kingdom,
-                         Rank.PHYLUM: taxonomy.phylum,
-                         Rank.CLASS: taxonomy.cls,
-                         Rank.ORDER: taxonomy.order,
-                         Rank.FAMILY: taxonomy.family,
-                         Rank.GENUS: taxonomy.genus,
-                         Rank.SPECIES: taxonomy.species,
-                         Rank.STRAIN: taxonomy.strain}
+    This function performs the following steps:
 
-        return rank_to_value[rank]
+    1. Computes the total counts of all substrates across all domains, regardless of order.
+    2. Identifies a set of candidate substrates that meet the specified `cutoff` globally.
+    3. Iteratively assigns to each domain the first substrate (in the domain's list) that
+       is in the set of candidate substrates.
+    4. After each iteration, any substrate whose assigned count falls below the `cutoff`
+       is removed from the candidate set, and the process repeats until no substrates are
+       pruned.
 
-    @staticmethod
-    def get_rank_type_from_string(string: str) -> "Rank":
-        string_to_rank_type = {r.name: r for r in Rank}
-        return string_to_rank_type.get(string.upper())
+    This ensures that the returned counts only include substrates that are both globally
+    and locally valid as "first substrates" for a sufficient number of domains.
 
+    :param session: database session
+    :type session: Session
+    :param cutoff: minimum occurrence cutoff
+    :type cutoff: int
+    :param included_domains: determines which domains are considered (fungal, bacterial, all)
+    :type included_domains: DomainScope
+    :return: mapping of substrate to substrate counts
+    :rtype: dict[Substrate, int]
+    """
 
-def _count_first_valid_substrate(domains: Iterable[AdenylationDomain], cutoff: int):
     # Step 1: start with all substrates meeting cutoff globally
+    domains = DomainScope.get_domains(session, included_domains)
     global_counts = _count_substrates_in_domains(domains, first_only=False)
     valid_substrates = {s for s, c in global_counts.items() if c >= cutoff}
 
     changed = True
-    domain_to_valid = {}
     counts = {}
 
     while changed:
@@ -123,13 +132,43 @@ def _count_first_valid_substrate(domains: Iterable[AdenylationDomain], cutoff: i
     return counts
 
 
-def get_clades(session: Session, rank: Rank) -> dict[tuple[str, ...], set[AdenylationDomain]]:
-    """Return mapping of a group of clades of a certain rank to the domains belonging to that group
+def _map_domains_to_first_valid(domains: Iterable[AdenylationDomain],
+                                included_substrates: set[Substrate]):
+    """
+    Assign to each domain the first substrate from `included_substrates` that appears
+    in its substrate list. Domains with no matching substrate are assigned None.
+
+    :param domains: Domains to process.
+    :type domains: Iterable[AdenylationDomain]
+    :param included_substrates: Substrates considered valid for assignment.
+    :type included_substrates: set[Substrate]
+    :return: Mapping of domains to their first valid substrate or None.
+    :rtype: dict[AdenylationDomain, Optional[Substrate]]
+    """
+    domain_to_first_valid = {}
+
+    for d in domains:
+        for s in d.substrates:
+            if s in included_substrates:
+                domain_to_first_valid[d] = s
+                break
+        else:
+            # No valid substrate found
+            domain_to_first_valid[d] = None
+
+    return domain_to_first_valid
+
+
+def get_clades(session: Session, rank: Rank,
+               included_domains: DomainScope = DomainScope.ALL) -> dict[tuple[str, ...], set[AdenylationDomain]]:
+    """Group domains by clades at the specified taxonomic rank, accounting for overlapping clade memberships.
 
     :param session: database session
     :type session: Session
     :param rank: taxonomic rank
     :type rank: Rank
+    :param included_domains: determines which domains are considered (fungal, bacterial, all)
+    :type included_domains: DomainScope
     :return: dictionary mapping clade groups (e.g. (Burkholderiaceae, Pseudomonadaceae) to domains
     :rtype: dict[tuple[str, ...], set[AdenylationDomain]]
     """
@@ -137,7 +176,7 @@ def get_clades(session: Session, rank: Rank) -> dict[tuple[str, ...], set[Adenyl
     # belong to different taxonomic lineages. E.g., domain ADH01485.1.A1|AIC32693.1.A1 belongs to both the
     # Burkholderiaceae (ADH01485.1.A1) and the Pseudomonadaceae (AIC32693.1.A1) families
 
-    domains = list(session.scalars(select(AdenylationDomain)).all())
+    domains = DomainScope.get_domains(session, included_domains)
     clade_to_domains: dict[str, set[AdenylationDomain]] = {}
     clade_to_clade_group: dict[str, set[str]] = {}
     for domain in domains:
@@ -170,7 +209,7 @@ def get_clades(session: Session, rank: Rank) -> dict[tuple[str, ...], set[Adenyl
 
 def _count_substrates_in_domains(domains: Iterable[AdenylationDomain],
                                  first_only: bool) -> dict[Substrate, int]:
-    """Count substrate specificities of domains
+    """Count substrates in a collection of domains.
 
     :param domains: collection of unique adenylation domains
     :type domains: Iterable[AdenylationDomain]
@@ -193,8 +232,9 @@ def _count_substrates_in_domains(domains: Iterable[AdenylationDomain],
     return counts
 
 
-def count_substrates(session: Session, first_only: bool, cutoff: int = 0) -> dict[Substrate, int]:
-    """Count substrate occurrences in database
+def count_substrates(session: Session, first_only: bool, cutoff: int = 0,
+                     included_domains: DomainScope = DomainScope.ALL) -> dict[Substrate, int]:
+    """Count occurrences of substrates across all domains, optionally filtering by cutoff.
 
     :param session: database session
     :type session: Session
@@ -202,10 +242,13 @@ def count_substrates(session: Session, first_only: bool, cutoff: int = 0) -> dic
     :type first_only: bool
     :param cutoff: only include substrates that occur at least this many times
     :type cutoff: int
+    :param included_domains: determines which domains are considered (fungal, bacterial, all)
+    :type included_domains: DomainScope
     :return: dictionary mapping substrate to substrate counts
     :rtype: dict[Substrate, int]
     """
-    domains = list(session.scalars(select(AdenylationDomain)).all())
+    domains = DomainScope.get_domains(session, included_domains)
+
     substrate_to_count = _count_substrates_in_domains(domains, first_only)
 
     for substrate, count in list(substrate_to_count.items()):
@@ -215,10 +258,33 @@ def count_substrates(session: Session, first_only: bool, cutoff: int = 0) -> dic
     return substrate_to_count
 
 
+def get_counts_per_clade_first_valid(clade_group_to_domains: dict[tuple[str, ...], set[AdenylationDomain]],
+                                     included_substrates: set[Substrate]) -> dict[tuple[str, ...], dict[Substrate, int]]:
+    """
+    Count first valid substrates for each clade group.
+
+    :param clade_group_to_domains: Mapping of clade tuples → domains
+    :type clade_group_to_domains: dict[tuple[str, ...], set[AdenylationDomain]]
+    :param included_substrates: Substrates considered valid
+    :type included_substrates: set[Substrate]
+    :return: Mapping of clade tuples → substrate counts
+    :rtype: dict[tuple[str, ...], dict[Substrate, int]]
+    """
+    counts_per_clade = {}
+    for clade, domains in clade_group_to_domains.items():
+        domain_to_valid = _map_domains_to_first_valid(domains, included_substrates)
+        substrate_counts = {s: 0 for s in included_substrates}
+        for s in domain_to_valid.values():
+            if s is not None:
+                substrate_counts[s] += 1
+        counts_per_clade[clade] = substrate_counts
+    return counts_per_clade
+
+
 def get_counts_per_clade(clade_group_to_domains: dict[tuple[str, ...], set[AdenylationDomain]],
                          included_substrates: set[Substrate],
                          first_only: bool) -> dict[tuple[str, ...], dict[Substrate, int]]:
-    """Return dictionary recording substrate counts for each clade
+    """Count substrates for each clade group, optionally only counting first substrates.
 
     :param clade_group_to_domains: dictionary mapping clade groups to domains
     :type clade_group_to_domains: dict[tuple[str, ...], set[AdenylationDomain]]
@@ -242,13 +308,37 @@ def get_counts_per_clade(clade_group_to_domains: dict[tuple[str, ...], set[Adeny
     return counts_per_clade
 
 
+def check_split_possible(clade_substrate_counts: dict[tuple[str, ...], dict], substrates: set[Substrate]) -> bool:
+    """
+    Check if all substrates appear in at least two clades, required for splitting train/test sets.
+
+    :param clade_substrate_counts: dict mapping clade groups → substrate counts
+    :type clade_substrate_counts: dict[tuple[str, ...], dict]
+    :param substrates: set of substrates to check
+    :type substrates: set[Substrate]
+    :return: True if split possible, False otherwise
+    """
+    for sub in substrates:
+        clades_with_sub = [clade for clade, counts in clade_substrate_counts.items() if counts.get(sub, 0) > 0]
+        if len(clades_with_sub) < 2:
+            print(f"Substrate {sub} occurs in less than 2 clades: {len(clades_with_sub)}")
+            return False
+    return True
+
+
 def split_on_rank(session: Session,
                   rank: Rank,
                   cutoff: int = 6,
                   target_ratio: float = 0.75,
-                  first_only: bool = True,
+                  split_mode: SubstrateSelectionMode = SubstrateSelectionMode.FIRST_ONLY,
+                  included_domains: DomainScope = DomainScope.ALL,
                   max_attempts: int = 200) -> dict[str, dict]:
-    """Split dataset into phylogenetically distinct train and test set based on taxonomic rank
+    """Split domains into train/test sets based on taxonomic rank while balancing substrate representation.
+
+    Ensures:
+      - Each substrate occurs in both train and test sets
+      - Domains from the same clade are assigned to the same set
+      - Substrate counts are as balanced as possible according to target_ratio
 
     :param session: database session
     :type session: Session
@@ -259,19 +349,39 @@ def split_on_rank(session: Session,
     :type cutoff: int
     :param target_ratio: target ratio of datapoints in training set
     :type target_ratio: float
-    :param first_only: if True, consider only the first listed subsrate for each domain. Default: True
-    :type first_only: bool
+    :param split_mode: determines which substrates are considered for splitting the data
+    :type split_mode: SplitMode
+    :param included_domains: determines which domains are considered (fungal, bacterial, all)
+    :type split_mode: DomainScope
     :param max_attempts: maximum number of attempts to try splitting the dataset. Default: 200
     :type max_attempts: int
     :return: dictionary containing clade mappings (assignment) and substrate counts
     :rtype: dict[str, dict]
     """
     rng = random.Random(100125)
-    substrate_to_count = count_substrates(session, first_only, cutoff)
+    # Decide included substrates based on mode
+    if split_mode == SubstrateSelectionMode.ALL:
+        substrate_to_count = count_substrates(session, first_only=False, cutoff=cutoff,
+                                              included_domains=included_domains)
+    elif split_mode == SubstrateSelectionMode.FIRST_ONLY:
+        substrate_to_count = count_substrates(session, first_only=True, cutoff=cutoff,
+                                              included_domains=included_domains)
+    elif split_mode == SubstrateSelectionMode.FIRST_VALID:
+
+        substrate_to_count = _count_first_valid_substrate(session, cutoff, included_domains=included_domains)
+    else:
+        raise ValueError(f"Unknown split mode: {split_mode}")
+
     substrates = list(substrate_to_count.keys())
     substrates.sort(key=lambda x: x.name)
-    grouped_clades = get_clades(session, rank)
-    clade_substrate_counts = get_counts_per_clade(grouped_clades, set(substrate_to_count.keys()), first_only)
+
+    grouped_clades = get_clades(session, rank, included_domains=included_domains)
+
+    if split_mode == SubstrateSelectionMode.FIRST_VALID:
+        clade_substrate_counts = get_counts_per_clade_first_valid(grouped_clades, set(substrates))
+    else:
+        clade_substrate_counts = get_counts_per_clade(grouped_clades, set(substrate_to_count.keys()),
+                                                      first_only=(split_mode == SubstrateSelectionMode.FIRST_ONLY))
 
     # coverage phase: ensure each substrate occurs in both train and test set
     def try_build_coverage():
@@ -306,6 +416,7 @@ def split_on_rank(session: Session,
         return assignment
 
     coverage_assignment = None
+
     for _ in range(max_attempts):
         coverage_assignment = try_build_coverage()
         if coverage_assignment:
@@ -355,16 +466,20 @@ def split_on_rank(session: Session,
     for clade, side in coverage_assignment.items():
         for domain in grouped_clades[clade]:
             if domain in domain_assignment:
-                raise RuntimeError(
-                    f"Domain {domain} assigned twice "
-                    f"({domain_assignment[domain]} and {side})"
-                )
-            if first_only:
-                if domain.substrates[0] in substrates:
-                    domain_assignment[domain] = side
-            else:
+                raise RuntimeError(f"Domain {domain} assigned twice")
+
+            if split_mode == SubstrateSelectionMode.ALL:
                 if any(sub in substrates for sub in domain.substrates):
                     domain_assignment[domain] = side
+            elif split_mode == SubstrateSelectionMode.FIRST_ONLY:
+                if domain.substrates[0] in substrates:
+                    domain_assignment[domain] = side
+            elif split_mode == SubstrateSelectionMode.FIRST_VALID:
+                # assign based on first valid substrate
+                for s in domain.substrates:
+                    if s in substrates:
+                        domain_assignment[domain] = side
+                        break
 
     return {
         "assignment": coverage_assignment,
@@ -375,6 +490,21 @@ def split_on_rank(session: Session,
 
 def main():
     args = parse_arguments()
+
+    if args.first_only:
+        split_mode = SubstrateSelectionMode.FIRST_ONLY
+    elif args.first_valid:
+        split_mode = SubstrateSelectionMode.FIRST_VALID
+    else:
+        split_mode = SubstrateSelectionMode.ALL
+
+    if args.fungal_only:
+        included_domains = DomainScope.FUNGAL_ONLY
+    elif args.bacterial_only:
+        included_domains = DomainScope.BACTERIAL_ONLY
+    else:
+        included_domains = DomainScope.ALL
+
     engine = create_engine(f"sqlite:///{args.database}")
     if not os.path.exists(args.output):
         os.mkdir(args.output)
@@ -392,7 +522,8 @@ def main():
         result = split_on_rank(session, rank_type,
                                cutoff=args.cutoff,
                                target_ratio=1.0 - args.test_ratio,
-                               first_only=args.first_only,
+                               split_mode=split_mode,
+                               included_domains=included_domains,
                                max_attempts=args.max_attempts)
 
         clade_assignment = result["assignment"]
@@ -456,7 +587,7 @@ def main():
                     f"Sanity check failed: test substrate count ({total_test}) "
                     f"!= number of test domains ({num_test_domains})."
                 )
-        else:
+        elif not args.first_valid:
             # 1. No domain assigned twice
             assigned_domains = set()
             for domain, side in domain_assignment.items():
@@ -484,7 +615,7 @@ def main():
 
             # Get all domains that have at least one substrate in the counted list
             legal_domains = set()
-            for domain in session.scalars(select(AdenylationDomain)).all():
+            for domain in DomainScope.get_domains(session, included_domains):
                 if any(sub in substrate_counts for sub in domain.substrates):
                     legal_domains.add(domain)
 
@@ -501,24 +632,49 @@ def main():
                     f"{len(extra)} extra domains assigned"
                 )
 
-            test_substrates = set()
-            train_substrates = set()
-            for domain, assignment in domain_assignment.items():
-                first_valid_substrate = None
-                for substrate in domain.substrates:
-                    if substrate in substrate_counts:
-                        first_valid_substrate = substrate
-                        break
-                assert first_valid_substrate is not None
-                if assignment == 'test':
-                    test_substrates.add(first_valid_substrate)
-                elif assignment == 'train':
-                    train_substrates.add(first_valid_substrate)
+        else:
+            assigned_domains = set()
 
-            if train_substrates != test_substrates:
-                for substrate in train_substrates ^ test_substrates:
-                    print(substrate_counts[substrate])
-                print(train_substrates - test_substrates)
+            # 1. Ensure no domain assigned twice
+            for domain, side in domain_assignment.items():
+                if domain in assigned_domains:
+                    raise RuntimeError(f"Domain {domain} assigned twice")
+                assigned_domains.add(domain)
+
+            # 2. Verify counted substrates match assigned domains
+            for sub, counts in substrate_counts.items():
+                counted_train = sum(1 for d, side in domain_assignment.items()
+                                    if
+                                    side == "train" and sub == next((s for s in d.substrates if s in substrate_counts),
+                                                                    None))
+                counted_test = sum(1 for d, side in domain_assignment.items()
+                                   if side == "test" and sub == next((s for s in d.substrates if s in substrate_counts),
+                                                                     None))
+
+                if counted_train != counts["train"]:
+                    raise RuntimeError(
+                        f"Mismatch for substrate {sub}: train counted {counts['train']}, sum over domains {counted_train}"
+                    )
+                if counted_test != counts["test"]:
+                    raise RuntimeError(
+                        f"Mismatch for substrate {sub}: test counted {counts['test']}, sum over domains {counted_test}"
+                    )
+
+            # 3. Ensure all domains with at least one valid substrate are assigned
+            legal_domains = set()
+            for domain in DomainScope.get_domains(session, included_domains):
+                if any(sub in substrate_counts for sub in domain.substrates):
+                    legal_domains.add(domain)
+
+            missing = legal_domains - assigned_domains
+            extra = assigned_domains - legal_domains
+
+            if missing or extra:
+                raise RuntimeError(
+                    f"Domain assignment mismatch: "
+                    f"{len(missing)} legal domains missing, "
+                    f"{len(extra)} extra domains assigned"
+                )
 
 
 if __name__ == "__main__":
