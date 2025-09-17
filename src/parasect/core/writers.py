@@ -1,3 +1,5 @@
+from typing import Any
+
 from parasect.core.parasect_result import Result
 
 
@@ -49,16 +51,18 @@ def write_fasta_file(fasta_dict: dict[str, str], path_out: str) -> None:
             fo.write(f">{header}\n{sequence}\n")
 
 
-def write_list(list_of_things: list[str], out_file: str) -> None:
+def write_list(list_of_things: list[Any], out_file: str, sort: bool = True) -> None:
     """Write a list of things to a file, one thing per line
 
     :param list_of_things: list of strings
-    :type list_of_things: list[str]
+    :type list_of_things: list[Any]
     :param out_file: path to output file
     :type out_file: str
+    :param sort: if True, sort list of things prior to writing
+    :type sort: bool
     """
-
-    list_of_things.sort()
+    if sort:
+        list_of_things.sort()
 
     with open(out_file, 'w') as out:
         for thing in list_of_things:
