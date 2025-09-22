@@ -86,7 +86,7 @@ def main() -> None:
         raise ValueError("No substrates to test! Either include standard substrates or pass custom substrate SMILES")
 
     model_path = download_and_unpack_or_fetch(
-        r"https://zenodo.org/records/13165500/files/model.parasect?download=1",
+        r"https://zenodo.org/records/17155186/files/model.parasect.gz?download=1",
         temp_dir, logger)
 
     model = load(model_path)
