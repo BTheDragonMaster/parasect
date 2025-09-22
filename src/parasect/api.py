@@ -11,11 +11,8 @@ from parasect.core.constants import FINGERPRINTS_FILE, INCLUDED_SUBSTRATES_FILE,
 from parasect.core.domain import AdenylationDomain
 from parasect.database.build_database import AdenylationDomain as ADomain
 from parasect.core.featurisation import get_domain_features, get_domains
-from parasect.core.parsing import (
-    bitvector_from_smiles,
-    data_from_substrate_names,
-    parse_substrate_list,
-)
+from parasect.core.parsing import bitvector_from_smiles, data_from_substrate_names, parse_list
+
 from parasect.core.genbank import fetch_from_genbank
 from parasect.core.tabular import Tabular
 from parasect.core.parasect_result import Result
@@ -209,7 +206,7 @@ def run_parasect(
     :raises RuntimeError: If no feature vectors are found.
     """
     # get names of included substrates
-    included_subs = parse_substrate_list(INCLUDED_SUBSTRATES_FILE)
+    included_subs = parse_list(INCLUDED_SUBSTRATES_FILE)
 
     # get smiles and fingerprints for the included substrates
     if not only_custom:
