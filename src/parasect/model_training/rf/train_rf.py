@@ -401,6 +401,23 @@ def main():
 
         if hashes:
             write_list(hashes, os.path.join(args.out, "hashes.txt"), sort=False)
+            fingerprints_file = os.path.join(args.out, "fingerprints.txt")
+            included_substrate_names = parse_list(included_substrates_file)
+            included_substrates = []
+            for name in included_substrate_names:
+                included_substrates.append(get_substrates_from_name(session, name)[0])
+
+            with open(fingerprints_file, 'w') as fingerprints:
+                fingerprints.write("substrate_name\tsmiles")
+                for fp_hash in hashes:
+                    fingerprints.write(f"\t{fp_hash}")
+                fingerprints.write('\n')
+                for substrate in included_substrates:
+                    fingerprints.write(f"{substrate.name}\t{substrate.smiles}")
+                    bitvector = fingerprint_to_bitvector(hashes, set(substrate.fingerprint))
+                    for value in bitvector:
+                        fingerprints.write(f"\t{value}")
+                    fingerprints.write('\n')
 
         if args.test:
             test_dir = os.path.join(args.out, f"test_all")
