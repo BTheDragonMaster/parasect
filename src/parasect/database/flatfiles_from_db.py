@@ -5,6 +5,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from parasect.database.build_database import AdenylationDomain, Protein, Substrate
+from parasect.core.writers import write_list
 
 
 def parse_arguments() -> Namespace:
@@ -18,6 +19,16 @@ def parse_arguments() -> Namespace:
 
     args = parser.parse_args()
     return args
+
+
+def write_substrate_names(session: Session, out_path: str) -> None:
+    all_substrates = list(session.scalars(select(Substrate)).all())
+    write_list([s.name for s in all_substrates], out_path)
+
+
+def write_domain_names(session: Session, out_path: str) -> None:
+    all_domains = list(session.scalars(select(AdenylationDomain)).all())
+    write_list([d.get_name() for d in all_domains], out_path)
 
 
 def db_to_flatfiles(database_path: str, out_dir: str) -> None:

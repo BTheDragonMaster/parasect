@@ -84,12 +84,16 @@ def parse_raw_taxonomy(taxonomy_file: str) -> dict[str, list[str]]:
     return protein_to_taxonomy
 
 
-def parse_list(list_file: str) -> list[str]:
+def parse_list(list_file: str, sort: bool = True, unique: bool = True) -> list[str]:
     """Return list of things from file containing one item per line
 
     :param list_file: path to file containing one string per line
     :type list_file: str
-    :return: list of unique strings
+    :param sort: if True, sort output list
+    :type sort: bool
+    :param unique: if True, return only unique items
+    :type unique: bool
+    :return: list of things
     :rtype: list[str]
     """
     string_list: list[str] = []
@@ -99,7 +103,13 @@ def parse_list(list_file: str) -> list[str]:
             if line:
                 string_list.append(line)
 
-    return sorted(list(set(string_list)))
+    if unique:
+        string_list = list(set(string_list))
+
+    if sort:
+        string_list.sort()
+
+    return string_list
 
 
 def parse_pcs(pca_file: str) -> tuple[list[str], NDArray[np.float64]]:
@@ -108,7 +118,7 @@ def parse_pcs(pca_file: str) -> tuple[list[str], NDArray[np.float64]]:
     :param pca_file: file containing precomputed principal components
     :type pca_file: str
     :return: list of domain names and array of precomputed principal components for each domain
-    :rtype: tuple[list[str, NDArray[NDArray[np.float64]]]]
+    :rtype: tuple[list[str], NDArray[np.float64]]
     """
 
     with open(pca_file, 'r') as pca_data:
@@ -130,9 +140,10 @@ def parse_pcs(pca_file: str) -> tuple[list[str], NDArray[np.float64]]:
             line = line.strip()
             if line:
                 line_data = line.split('\t')
-                pcs = line_data[1:]
+                pcs = list(map(float, line_data[1:]))
                 array[counter] = pcs
                 domains.append(line_data[0])
+                counter += 1
 
     return domains, array
 
