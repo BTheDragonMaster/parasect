@@ -1,0 +1,30 @@
+2,3-diaminopropionic acid
+2,3-dihydroxybenzoic acid
+2,4-diaminobutyric acid
+3,5-dihydroxyphenylglycine
+4-hydroxyphenylglycine
+N5-formyl-N5-hydroxyornithine
+N5-hydroxyornithine
+R-beta-hydroxytyrosine
+alanine
+arginine
+asparagine
+aspartic acid
+beta-alanine
+cysteine
+glutamic acid
+glutamine
+glycine
+histidine
+isoleucine
+leucine
+lysine
+ornithine
+phenylalanine
+pipecolic acid
+proline
+serine
+threonine
+tryptophan
+tyrosine
+valine

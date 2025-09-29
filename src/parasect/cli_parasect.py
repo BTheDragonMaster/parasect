@@ -40,6 +40,8 @@ def cli() -> argparse.Namespace:
                         help="Save short 10 amino acid signatures to file ('Stachelhaus code')")
     parser.add_argument('-save_domains', action='store_true',
                         help="Save full a domain sequences to file ('Stachelhaus code')")
+    parser.add_argument('-bacterial', action='store_true',
+                        help="If given, run bacterial-only model")
 
     parser.add_argument('-s1', type=str, default=SEPARATOR_1, help="Symbol used as separator")
     parser.add_argument('-s2', type=str, default=SEPARATOR_2, help="Symbol used as separator")
@@ -84,10 +86,14 @@ def main() -> None:
 
     if not substrate_names and args.exclude_standard_substrates:
         raise ValueError("No substrates to test! Either include standard substrates or pass custom substrate SMILES")
-
-    model_path = download_and_unpack_or_fetch(
-        r"https://zenodo.org/records/17155186/files/model.parasect.gz?download=1",
-        temp_dir, logger)
+    if not args.bacterial:
+        model_path = download_and_unpack_or_fetch(
+            r"https://zenodo.org/records/17224548/files/model.parasect.gz?download=1",
+            temp_dir, logger)
+    else:
+        model_path = download_and_unpack_or_fetch(
+            r"https://zenodo.org/records/17224548/files/bacterial_model.parasect.gz?download=1",
+            temp_dir, logger)
 
     model = load(model_path)
 
@@ -98,7 +104,8 @@ def main() -> None:
                            custom_substrate_names=substrate_names,
                            custom_substrate_smiles=substrate_smiles,
                            only_custom=args.exclude_standard_substrates,
-                           use_structure_guided_alignment=args.profile_alignment)
+                           use_structure_guided_alignment=args.profile_alignment,
+                           bacterial_only=args.bacterial)
 
     id_to_sig = {}
     id_to_ext = {}
