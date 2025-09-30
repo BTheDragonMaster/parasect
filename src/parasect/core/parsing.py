@@ -12,7 +12,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from parasect.core.chem import smiles_to_fingerprint
-from parasect.core.constants import FINGERPRINTS_FILE
+from parasect.core.constants import FINGERPRINTS_FILE, BACTERIAL_FINGERPRINTS_FILE
 from parasect.core.tabular import Tabular
 
 
@@ -290,13 +290,14 @@ def parse_fasta_file(path_in: str) -> Dict[str, str]:
 
 
 def data_from_substrate_names(
-    substrate_names: List[str],
-) -> Tuple[List[str], List[str], List[List[int]]]:
+    substrate_names: List[str], bacterial_only: bool = False) -> Tuple[List[str], List[str], List[List[int]]]:
     """Return substrate names and fingerprints for all substrate names for which a fingerprint could be found.
 
     :param substrate_names: Substrate names. If the
         substrate name is not in the fingerprint file, a warning will be logged.
     :type substrate_names: List[str]
+    :param bacterial_only: Only use fingerprints from bacterial model
+    :type bacterial_only: bool
     :return: Substrate names, SMILES strings, and fingerprints.
     :rtype: Tuple[List[str], List[str], List[List[int]]]
 
@@ -305,7 +306,12 @@ def data_from_substrate_names(
     """
     logger = logging.getLogger(__name__)
 
-    data = Tabular(path_in=FINGERPRINTS_FILE, separator="\t")
+    if bacterial_only:
+        fingerprints_file = BACTERIAL_FINGERPRINTS_FILE
+    else:
+        fingerprints_file = FINGERPRINTS_FILE
+
+    data = Tabular(path_in=fingerprints_file, separator="\t")
 
     ordered_substrate_names = []
     ordered_substrate_smiles = []

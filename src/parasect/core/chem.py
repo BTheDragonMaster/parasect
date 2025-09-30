@@ -73,6 +73,22 @@ def is_same_molecule_fingerprint(fingerprint_1: set[int], fingerprint_2: set[int
     return False
 
 
+def get_jaccard_distance_from_fingerprint(fingerprint_1: set[int], fingerprint_2: set[int]) -> float:
+    """Return the jaccard distance between fingerprint_1 and fingerprint_2
+
+    :param fingerprint_1: ECFP fingerprint of molecule 1
+    :type fingerprint_1: set[int]
+    :param fingerprint_2: ECFP fingerprint of molecule 2
+    :type fingerprint_2: set[int]
+    :return: jaccard distance
+    :rtype: float
+    """
+
+    jaccard_index = len(fingerprint_1.intersection(fingerprint_2)) / len(fingerprint_1.union(fingerprint_2))
+    jaccard_distance = 1 - jaccard_index
+    return jaccard_distance
+
+
 def smiles_to_fingerprint(smiles: str) -> set[int]:
     """Convert SMILES string to ECFP fingerprint.
 
@@ -103,6 +119,7 @@ def get_fingerprint_hashes(substrates: set[Substrate], fingerprint_size: int) ->
     :rtype: list[int]
     """
     hashes = []
+    substrates = sorted(substrates, key=lambda x: x.name)
 
     for substrate in substrates:
         for chem_hash in substrate.fingerprint:
@@ -110,12 +127,9 @@ def get_fingerprint_hashes(substrates: set[Substrate], fingerprint_size: int) ->
 
     counts = Counter(hashes)
 
-    hashes = []
+    sorted_hashes = sorted(counts.items(), key=lambda x: (-x[1], x[0]))
 
-    for fingerprint_hash, count in counts.most_common(fingerprint_size):
-        hashes.append(fingerprint_hash)
-
-    return hashes
+    return [fingerprint_hash for fingerprint_hash, _ in sorted_hashes[:fingerprint_size]]
 
 
 def fingerprint_to_bitvector(hashes: list[int], fingerprint: set[int]) -> list[int]:

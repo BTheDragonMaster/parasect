@@ -86,7 +86,9 @@ A_POSITION_FILE_34_HMM2 = get_path("active_site_hmm2.txt")
 SMILES_FILE = get_path("database_files/smiles.tsv")
 
 FINGERPRINTS_FILE = get_path("fingerprints.txt")
+BACTERIAL_FINGERPRINTS_FILE = get_path("fingerprints_bacterial.txt")
 INCLUDED_SUBSTRATES_FILE = get_path("included_substrates.txt")
+INCLUDED_SUBSTRATES_FILE_BACTERIAL = get_path("included_substrates_bacterial.txt")
 
 HMM2_POSITIONS_SIGNATURE = _read_positions(A_POSITION_FILE_HMM2, 0)
 HMM2_POSITIONS_EXTENDED_SIGNATURE = _read_positions(A_POSITION_FILE_34_HMM2, 0)
