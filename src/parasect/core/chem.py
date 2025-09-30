@@ -5,11 +5,14 @@
 import os
 from typing import List, Dict
 from math import isclose
+from collections import Counter
 
 from pikachu.fingerprinting.ecfp_4 import ECFP
 from pikachu.general import read_smiles
 from pikachu.fingerprinting.similarity import get_jaccard_index
 from pikachu.errors import StructureError
+
+from parasect.database.build_database import Substrate
 
 
 def parse_smiles_mapping(path_in: str) -> Dict[str, str]:
@@ -87,3 +90,66 @@ def smiles_to_fingerprint(smiles: str) -> set[int]:
     fingerprint = ecfp.fingerprint
 
     return fingerprint
+
+
+def get_fingerprint_hashes(substrates: set[Substrate], fingerprint_size: int) -> list[int]:
+    """Return list of fingerprint hashes sorted by count
+
+    :param substrates: set of substrates from the PARASECT database
+    :type substrates: set[Substrate]
+    :param fingerprint_size: size of fingerprint
+    :type fingerprint_size: int
+    :return: list of hashes
+    :rtype: list[int]
+    """
+    hashes = []
+
+    for substrate in substrates:
+        for chem_hash in substrate.fingerprint:
+            hashes.append(chem_hash)
+
+    counts = Counter(hashes)
+
+    hashes = []
+
+    for fingerprint_hash, count in counts.most_common(fingerprint_size):
+        hashes.append(fingerprint_hash)
+
+    return hashes
+
+
+def fingerprint_to_bitvector(hashes: list[int], fingerprint: set[int]) -> list[int]:
+    """Return bitvector from fingerprint and list of included hashes
+
+    :param hashes: list of included hashes representing substrate training set
+    :type hashes: list[int]
+    :param fingerprint: fingerprint for substrate of interest
+    :type fingerprint: set[int]
+    :return: bitvector representing substrate of interest
+    :rtype: list[int]
+    """
+    bitvector = []
+    for fingerprint_hash in hashes:
+        if fingerprint_hash in fingerprint:
+            bitvector.append(1)
+        else:
+            bitvector.append(0)
+
+    return bitvector
+
+
+def smiles_to_bitvector(hashes: list[int], smiles: str) -> list[int]:
+    """Return bitvector from SMILES string
+
+    :param hashes: list[int]
+    :type hashes: list
+    :param smiles: SMILES string
+    :type smiles: str
+    :return: bitvector
+    :rtype: list[int]
+    """
+
+    fingerprint = smiles_to_fingerprint(smiles)
+    bitvector = fingerprint_to_bitvector(hashes, fingerprint)
+
+    return bitvector

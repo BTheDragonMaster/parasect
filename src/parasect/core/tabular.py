@@ -44,12 +44,12 @@ def write_tabular(dictionaries: list[dict[str, Any]], header: list[str], out_fil
 class Tabular:
     """Class for reading and storing tabular data files."""
 
-    def __init__(self, path_in: str, separator: str) -> None:
+    def __init__(self, path_in: str, separator: str = '\t') -> None:
         """Initialize the Tabular class.
 
         :param path_in: Path to tabular file.
         :type path_in: str
-        :param separator: Separator used in the tabular file.
+        :param separator: Separator used in the tabular file. Default: tab
         :type separator: str
         :raises FileNotFoundError: If the file at the specified path does not exist.
         :raises ValueError: If the number of columns in a row does not match the

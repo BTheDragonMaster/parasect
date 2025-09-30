@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 from sys import argv
 
 from sqlalchemy import create_engine, Column, ForeignKey, Table, String, JSON
@@ -31,6 +31,9 @@ class ProteinDomainAssociation(Base):
     protein: Mapped["Protein"] = relationship(back_populates="domains")
     domain: Mapped["AdenylationDomain"] = relationship(back_populates="proteins")
 
+    def __repr__(self):
+        return f"{self.protein.get_name()} <-> {self.domain.get_name()}"
+
 
 class Substrate(Base):
     __tablename__ = "substrate"
@@ -41,6 +44,22 @@ class Substrate(Base):
     domains: Mapped[list["AdenylationDomain"]] = relationship(secondary=substrate_domain_association,
                                                               back_populates="substrates")
 
+    def __repr__(self):
+        return self.name
+
+    def __eq__(self, other):
+        if not isinstance(other, Substrate):
+            return NotImplemented
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def __lt__(self, other):
+        if not isinstance(other, Substrate):
+            return NotImplemented
+        return self.name < other.name
+
     def to_json(self) -> dict[str, Any]:
         return {
             "name": self.name,
@@ -49,15 +68,42 @@ class Substrate(Base):
         }
 
 
+class Taxonomy(Base):
+    __tablename__ = "taxonomy"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    domain: Mapped[str]
+    kingdom: Mapped[str]
+    phylum: Mapped[str]
+    cls: Mapped[str]
+    order: Mapped[str]
+    family: Mapped[str]
+    genus: Mapped[str]
+    species: Mapped[str]
+    strain: Mapped[Optional[str]] = mapped_column(nullable=True)
+
+    proteins: Mapped[list["Protein"]] = relationship(back_populates="taxonomy")
+
+    def __repr__(self):
+        return f"{self.species} {self.strain}"
+
+
 class Protein(Base):
     __tablename__ = "protein"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+
+    taxonomy_id: Mapped[int] = mapped_column(ForeignKey("taxonomy.id"))
+    taxonomy: Mapped["Taxonomy"] = relationship(back_populates="proteins")
+
     sequence: Mapped[str]
     synonyms: Mapped[list["ProteinSynonym"]] = relationship(back_populates="protein")
     domains: Mapped[list["ProteinDomainAssociation"]] = relationship(
         back_populates="protein",
         cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return self.get_name()
 
     def get_name(self) -> str:
         """
@@ -76,6 +122,9 @@ class ProteinSynonym(Base):
     synonym: Mapped[str]
 
     protein: Mapped[Protein] = relationship(back_populates="synonyms")
+
+    def __repr__(self):
+        return self.synonym
 
 
 class AdenylationDomain(Base):
@@ -98,6 +147,9 @@ class AdenylationDomain(Base):
     sequence: Mapped[str]
     signature: Mapped[str]
     extended_signature: Mapped[str]
+
+    def __repr__(self):
+        return self.get_name()
 
     def get_name(self) -> str:
         """
@@ -126,6 +178,9 @@ class DomainSynonym(Base):
     synonym: Mapped[str]
 
     domain: Mapped[AdenylationDomain] = relationship(back_populates="synonyms")
+
+    def __repr__(self):
+        return self.synonym
 
     def to_json(self) -> dict[str, Any]:
         return {

@@ -11,13 +11,11 @@ from parasect.core.constants import FINGERPRINTS_FILE, INCLUDED_SUBSTRATES_FILE,
 from parasect.core.domain import AdenylationDomain
 from parasect.database.build_database import AdenylationDomain as ADomain
 from parasect.core.featurisation import get_domain_features, get_domains
-from parasect.core.parsing import (
-    bitvector_from_smiles,
-    data_from_substrate_names,
-    parse_substrate_list,
-)
-from parasect.core.fetch_from_genbank import fetch_from_genbank
+from parasect.core.parsing import bitvector_from_smiles, data_from_substrate_names, parse_list
+
+from parasect.core.genbank import fetch_from_genbank
 from parasect.core.tabular import Tabular
+from parasect.core.parasect_result import Result
 
 
 def sort_results(results: List["AnnotationResult"]) -> List["ProteinResult"]:
@@ -82,64 +80,6 @@ class AnnotationResult:
             paras_result=self.paras_result.to_json(),
             sequence_matches=self.sequence_matches,
             synonym_matches=self.synonym_matches
-        )
-
-
-class Result:
-    """Result class."""
-
-    def __init__(
-        self,
-        domain: AdenylationDomain,
-        predictions: List[float],
-        prediction_labels: List[str],
-        prediction_smiles: List[str],
-    ) -> None:
-        """Initialise the Result class.
-
-        :param domain: Adenylation domain.
-        :type domain: AdenylationDomain
-        :param predictions: Predictions.
-        :type predictions: List[float]
-        :param prediction_labels: Prediction labels.
-        :type prediction_labels: List[str]
-        :param prediction_smiles: Prediction SMILES.
-        :type prediction_smiles: List[str]
-        """
-        self.domain = domain
-        self._predictions = predictions
-        self._prediction_labels = prediction_labels
-        self._prediction_smiles = prediction_smiles
-
-    def sort(self):
-        pred_label_smiles = list(zip(self._predictions, self._prediction_labels, self._prediction_smiles))
-        pred_label_smiles.sort(key=lambda x: x[0], reverse=True)
-        self._predictions = [data[0] for data in pred_label_smiles]
-        self._prediction_labels = [data[1] for data in pred_label_smiles]
-        self._prediction_smiles = [data[2] for data in pred_label_smiles]
-
-    def to_json(self) -> Dict[str, Union[str, int, List[Dict[str, Union[str, float]]]]]:
-        """Return the Result as a JSON serialisable dictionary.
-
-        :return: JSON serialisable dictionary.
-        :rtype: Dict[str, Union[str, List[(float, str)]]
-        """
-        return dict(
-            domain_name=self.domain.protein_name,
-            domain_nr=self.domain.domain_nr,
-            domain_start=self.domain.start,
-            domain_end=self.domain.end,
-            domain_sequence=self.domain.sequence,
-            domain_signature=self.domain.signature,
-            domain_extended_signature=self.domain.extended_signature,
-            predictions=[
-                dict(substrate_name=sub_name, substrate_smiles=sub_smiles, probability=prob)
-                for sub_name, sub_smiles, prob in zip(
-                    self._prediction_labels,
-                    self._prediction_smiles,
-                    self._predictions,
-                )
-            ],
         )
 
 
@@ -266,7 +206,7 @@ def run_parasect(
     :raises RuntimeError: If no feature vectors are found.
     """
     # get names of included substrates
-    included_subs = parse_substrate_list(INCLUDED_SUBSTRATES_FILE)
+    included_subs = parse_list(INCLUDED_SUBSTRATES_FILE)
 
     # get smiles and fingerprints for the included substrates
     if not only_custom:

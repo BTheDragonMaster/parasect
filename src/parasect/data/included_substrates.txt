@@ -1,10 +1,13 @@
+2,3-diaminopropionic acid
 2,3-dihydroxybenzoic acid
 2,4-diaminobutyric acid
 2-aminoadipic acid
 2-aminoisobutyric acid
 3,5-dihydroxyphenylglycine
 4-hydroxyphenylglycine
+4R-hydroxyproline
 D-alanine
+N5-acetyl-N5-hydroxyornithine
 N5-formyl-N5-hydroxyornithine
 N5-hydroxyornithine
 R-beta-hydroxytyrosine
@@ -13,12 +16,14 @@ anthranilic acid
 arginine
 asparagine
 aspartic acid
+benzoic acid
 beta-alanine
 cysteine
 glutamic acid
 glutamine
 glycine
 histidine
+homoserine
 isoleucine
 leucine
 lysine
@@ -26,7 +31,6 @@ ornithine
 phenylalanine
 pipecolic acid
 proline
-salicylic acid
 serine
 threonine
 tryptophan
