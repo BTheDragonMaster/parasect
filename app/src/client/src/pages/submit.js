@@ -240,7 +240,7 @@ const Submit = () => {
                             label={
                                 <RadioLabel 
                                     imageSrc={'/parasect.png'} 
-                                    label={'PARASECT: predict if a list of pre-defined and/or user-supplied substrates interact with the adenylation domains. This model is traned on fungal and bacterial data.'}
+                                    label={'PARASECT: predict if a list of pre-defined and/or user-supplied substrates interact with the adenylation domains. This model is trained on fungal and bacterial data.'}
                                 />}
                         />
                         <FormControlLabel 
@@ -249,7 +249,7 @@ const Submit = () => {
                             label={
                                 <RadioLabel 
                                     imageSrc={'/parasect.png'} 
-                                    label={'PARASECT (bacterial): predict if a list of pre-defined and/or user-supplied substrates interact with the adenylation domains. This model is traned on bacterial data only.'}
+                                    label={'PARASECT (bacterial): predict if a list of pre-defined and/or user-supplied substrates interact with the adenylation domains. This model is trained on bacterial data only.'}
                                 />
                             }
                         />
