@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { Box, Button, Divider, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, CircularProgress, Typography, Input } from '@mui/material';
-import { MdSettings } from 'react-icons/md';
+import { MdSettings, MdBugReport } from 'react-icons/md';
 
 import SettingsModal from '../components/SettingsModal';
 
@@ -240,8 +240,18 @@ const Submit = () => {
                             label={
                                 <RadioLabel 
                                     imageSrc={'/parasect.png'} 
-                                    label={'PARASECT: predict if a list of pre-defined and/or user-supplied substrates interact with the adenylation domains'}
+                                    label={'PARASECT: predict if a list of pre-defined and/or user-supplied substrates interact with the adenylation domains. This model is traned on fungal and bacterial data.'}
                                 />}
+                        />
+                        <FormControlLabel 
+                            value='parasectBacterial' 
+                            control={<Radio />} 
+                            label={
+                                <RadioLabel 
+                                    imageSrc={'/parasect.png'} 
+                                    label={'PARASECT (bacterial): predict if a list of pre-defined and/or user-supplied substrates interact with the adenylation domains. This model is traned on bacterial data only.'}
+                                />
+                            }
                         />
                     </RadioGroup>
                 </FormControl>
