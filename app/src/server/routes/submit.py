@@ -166,6 +166,7 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
                     custom_substrate_smiles=custom_substrate_smiles,
                     only_custom=use_only_uploaded_substrates,
                     use_structure_guided_alignment=use_structure_guided_alignment,
+                    bacterial_only=(selected_model == "parasectBacterial"),
                 )
 
             else:
