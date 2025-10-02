@@ -296,8 +296,12 @@ def fetch_substrate_corrections(out_dir: str):
     issues_to_files(out_dir, "Domain corrections")
 
 
+def fetch_domain_revisions(out_dir: str):
+    issues_to_files(out_dir, "Domain sequence revision")
+
+
 if __name__ == "__main__":
-    fetch_substrate_corrections(argv[1])
+    fetch_domain_revisions(argv[1])
 
 
 
