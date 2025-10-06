@@ -9,6 +9,7 @@ import UploadIcon from '@mui/icons-material/Upload';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import RetrieveIcon from '@mui/icons-material/GetApp';
 import DatasetIcon from '@mui/icons-material/Dataset'
+import QueryStatsIcon from '@mui/icons-material/QueryStats';
 
 import './style/main.css';
 
@@ -20,6 +21,7 @@ import Results from './pages/results';
 import NotFound from './pages/not_found';
 import DataAnnotation from './pages/data_annotation'
 import AnnotationEditor from './pages/annotation_editor'
+import QueryDatabase from './pages/query_database'
 
 /**
  * Custom theme for the app.
@@ -139,6 +141,10 @@ const CustomToolbar = () => {
                         <DatasetIcon sx={{ marginRight: '10px' }} />
                         Data annotation
                     </MenuItem>
+                    <MenuItem onClick={() => handleMenuItemClick('/query_database')}>
+                        <QueryStatsIcon sx={{ marginRight: '10px' }} />
+                        Query database
+                    </MenuItem>
                     <MenuItem onClick={() => handleExternalLinkClick('https://github.com/BTheDragonMaster/parasect/issues')}>
                         <GitHubIcon sx={{ marginRight: '10px' }} />
                         Report an issue
@@ -191,6 +197,10 @@ function AppRoutes () {
                 <Route
                     path='/data_annotation'
                     element={<DataAnnotation />}
+                />
+                <Route
+                    path='/query_database'
+                    element={<QueryDatabase />}
                 />
                 <Route 
                     path='*' 
