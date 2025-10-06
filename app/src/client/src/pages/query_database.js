@@ -157,13 +157,13 @@ const QUERYOPTIONS = [
   SELECT
     d.id                       AS domain_id,
     p.id                       AS protein_id,
-    group_concat(ps.synonym, ', ') AS protein_synonyms
+    group_concat(ps.synonym, ', ') AS protein_synonyms,
     pda.domain_number,
     ad.signature,
     ad.extended_signature,
     s.name                     AS substrate_name,
     s.smiles                   AS substrate_smiles,
-    d.hamming,
+    d.hamming
   FROM d
   JOIN adenylation_domain           ad  ON ad.id = d.id
   JOIN protein_domain_association   pda ON pda.domain_id = ad.id
