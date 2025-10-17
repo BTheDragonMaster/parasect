@@ -15,6 +15,19 @@ from parasect.core.featurisation import get_domain_features
 from parasect.model_training.data_processing.plotting.confusion_matrix import plot_matrix, write_matrix
 
 
+def write_parasect_results(domain_to_sorted_predictions, included_substrates, out_file):
+    with open(out_file, 'w') as out:
+        out.write('domain_name')
+        for i in range(len(included_substrates)):
+            out.write(f"\tprediction_{i}\tinteraction_probability_{i}")
+        out.write('\n')
+        for domain, sorted_predictions in domain_to_sorted_predictions.items():
+            out.write(domain.get_name())
+            for prediction in sorted_predictions:
+                out.write(f"\t{prediction[1].name}\t{prediction[0]}")
+            out.write('\n')
+
+
 def write_parasect_metrics(tp, tp_probs, fp, fp_probs, tn, tn_probs, fn, fn_probs,
                            correct_ranks, incorrect_ranks, substrate_metrics, out_file):
     with open(out_file, 'w') as out:
@@ -404,12 +417,14 @@ def write_predictions_parasect(domains: list[AdenylationDomain], substrate_to_pr
     domain_to_best: dict[AdenylationDomain, Optional[Substrate]] = {}
     domain_to_probs: dict[AdenylationDomain, dict[str, list[float]]] = {}
     domain_to_predictions: dict[AdenylationDomain, list[float]] = {}
+    domain_to_sorted_predictions: dict[AdenylationDomain, list[tuple[float, Substrate]]] = {}
     for domain in domains:
         domain_to_best_prob[domain] = 0.0
         domain_to_best[domain] = None
         domain_to_probs[domain] = {"correct": [],
                                    "incorrect": []}
         domain_to_predictions[domain] = []
+        domain_to_sorted_predictions[domain] = []
 
     substrates = sorted(substrate_to_predictions.keys())
 
@@ -430,6 +445,7 @@ def write_predictions_parasect(domains: list[AdenylationDomain], substrate_to_pr
         for i, interaction_probability in enumerate(predictions):
             domain = domains[i]
             domain_to_predictions[domain].append(interaction_probability)
+            domain_to_sorted_predictions[domain].append((interaction_probability, substrate))
             if interaction_probability > domain_to_best_prob[domain]:
                 domain_to_best[domain] = substrate
                 domain_to_best_prob[domain] = interaction_probability
@@ -437,6 +453,12 @@ def write_predictions_parasect(domains: list[AdenylationDomain], substrate_to_pr
                 domain_to_probs[domain]["correct"].append(interaction_probability)
             else:
                 domain_to_probs[domain]["incorrect"].append(interaction_probability)
+
+    for domain in domains:
+        domain_to_sorted_predictions[domain].sort(reverse=True)
+
+    sorted_out = os.path.join(out_dir, "parasect_predictions.txt")
+    write_parasect_results(domain_to_sorted_predictions, substrates, sorted_out)
 
     correct_ranks = []
     incorrect_ranks = []
