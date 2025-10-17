@@ -33,8 +33,5 @@ def retrieve_gbk_record(fasta_file, out_file):
     print(set(seq_ids) - set(found_sequences))
 
 
-
-
-
 if __name__ == "__main__":
     retrieve_gbk_record(argv[1], argv[2])

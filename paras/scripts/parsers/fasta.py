@@ -86,6 +86,10 @@ def write_fasta(id_to_seq, out_file):
     id_to_seq: dict of {id: seq, ->}, with id and seq str
     out_file: str, file location of output .fasta file
     """
+    seq_ids = list(id_to_seq.keys())
+    seq_ids.sort()
+
     with open(out_file, 'w') as out:
-        for id, seq in id_to_seq.items():
-            out.write(f'>{id}\n{seq}\n')
+        for seq_id in seq_ids:
+            seq = id_to_seq[seq_id]
+            out.write(f'>{seq_id}\n{seq}\n')

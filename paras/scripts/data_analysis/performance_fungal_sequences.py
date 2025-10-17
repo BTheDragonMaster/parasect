@@ -10,6 +10,7 @@ import paras.data
 SUBSTRATE_FILE = os.path.join(os.path.dirname(paras.data.compound_data.__file__), 'all_substrates.txt')
 TAXONOMY_FILE = os.path.join(os.path.dirname(paras.data.__file__), 'taxonomy.txt')
 
+
 def plot_histogram_fungal(summary_file, out_plot, sequence_only=True, paras_only=False):
     summary = Tabular(summary_file, [0])
     predictor_to_metrics = {}

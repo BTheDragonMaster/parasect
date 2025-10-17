@@ -10,8 +10,10 @@ def parse_arguments():
     parser.add_argument('-o', type=str, required=True, help="Output directory.")
     parser.add_argument('-d', type=str, required=True, help="Path to domain list.")
     parser.add_argument('-t', type=float, default=0.1, help="Test size")
-    parser.add_argument('-f', type=int, default=10, help="Fold crossvalidation")
-    parser.add_argument('-l', type=int, default=20, help="Minimum number of positive examples for a substrate to build a predictor.")
+    parser.add_argument('-f', type=int, default=10,
+                        help="Fold crossvalidation")
+    parser.add_argument('-l', type=int, default=20,
+                        help="Minimum number of positive examples for a substrate to build a predictor.")
 
     args = parser.parse_args()
     return args

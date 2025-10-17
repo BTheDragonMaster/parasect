@@ -1,5 +1,6 @@
 import math
 from sys import argv
+from statistics import mean, stdev
 
 from Bio.Align import substitution_matrices
 from Bio.Align import PairwiseAligner
@@ -51,6 +52,7 @@ def find_closest_identity(fasta_file, test_domain_list, train_domain_list, out_f
     domains.sort()
 
     overall_highest_identity = 0.0
+    identities = []
 
     with open(out_file, 'w') as out:
 
@@ -73,12 +75,14 @@ def find_closest_identity(fasta_file, test_domain_list, train_domain_list, out_f
 
                 if identity > overall_highest_identity:
                     overall_highest_identity = identity
+            identities.append(highest_identity)
 
             print(f"Processed {domain_1}. Highest overall identity: {highest_identity}")
 
             out.write(f"{domain_1}\t{highest_identity:.2f}\n")
 
     print(overall_highest_identity)
+    print(f"Mean: {mean(identities)}, Stdev: {stdev(identities)}")
 
 
 def pairwise_identity(fasta_file, domain_list, out_file):

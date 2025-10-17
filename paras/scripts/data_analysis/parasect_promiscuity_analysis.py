@@ -21,10 +21,10 @@ def autolabel(rects, ax):
 
 def plot_promiscuity(out_file):
 
-    labels = ['class', 'phylogeny']
-    correct = [12, 12]
-    partially_correct = [7, 10]
-    incorrect = [0, 2]
+    labels = ['substrate-stratified', 'taxonomy-stratified']
+    correct = [13, 10]
+    partially_correct = [4, 11]
+    incorrect = [1, 1]
 
     x = np.arange(len(labels))  # the label locations
     width = 0.2  # the width of the bars
