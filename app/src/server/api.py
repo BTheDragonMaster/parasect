@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """API for PARSECT."""
 
 from flask import Response, jsonify
@@ -7,9 +6,15 @@ from routes.app import app
 from routes.retrieval import blueprint_retrieve
 from routes.submit import blueprint_submit_raw, blueprint_submit_quick
 from routes.data_annotation import blueprint_annotate_data
-from routes.annotation_editor import blueprint_check_smiles, blueprint_check_substrate_name, blueprint_get_substrates, \
-    blueprint_submit_annotations, blueprint_check_protein_name, blueprint_check_domain_name
-from routes.database import engine
+from routes.annotation_editor import (
+    blueprint_check_smiles,
+    blueprint_check_substrate_name,
+    blueprint_get_substrates,
+    blueprint_submit_annotations,
+    blueprint_check_protein_name,
+    blueprint_check_domain_name,
+)
+from routes.sql import blueprint_sql
 
 from parasect.version import get_version
 
@@ -23,6 +28,7 @@ app.register_blueprint(blueprint_check_substrate_name)
 app.register_blueprint(blueprint_get_substrates)
 app.register_blueprint(blueprint_submit_annotations)
 app.register_blueprint(blueprint_check_protein_name)
+app.register_blueprint(blueprint_sql)
 
 
 @app.errorhandler(404)

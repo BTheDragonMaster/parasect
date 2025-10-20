@@ -104,7 +104,7 @@ const ProteinTile = ({proteinResult, onUpdateAnnotation}) => {
                 sx={{
                     backgroundColor: 'secondary.main',
                     color: 'black.main',
-                    padding: '14px 8px',
+                    padding: '21px 16px',
                     display: 'flex',
                     marginBottom: 1,
                     borderTopLeftRadius: '10px',
@@ -116,7 +116,7 @@ const ProteinTile = ({proteinResult, onUpdateAnnotation}) => {
             </Box>
 
             {/* Protein name input field */}
-            <Box sx={{px: 2, mb: 1}}>
+            <Box sx={{px: 2, mb: 1, mt: 1}}>
                 <TextField
                     fullWidth
                     label="Protein name"

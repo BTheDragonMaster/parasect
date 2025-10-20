@@ -7,11 +7,12 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from parasect.core.parsing import parse_fasta_file, SubstrateData, \
-    parse_smiles_mapping, parse_parasect_data
+    parse_smiles_mapping, parse_parasect_data, TaxonomyData, parse_taxonomy_file
 from parasect.database.build_database import AdenylationDomain, Substrate, DomainSynonym, ProteinSynonym, Protein, \
-    ProteinDomainAssociation
+    ProteinDomainAssociation, Taxonomy
 from parasect.database.query_database import sequences_are_equivalent
 from parasect.core.chem import smiles_to_fingerprint, is_same_molecule_fingerprint
+from parasect.core.tabular import Tabular
 
 
 def parse_args() -> Namespace:
@@ -29,10 +30,69 @@ def parse_args() -> Namespace:
                         help="Path to fasta containing A-domain extended signatures")
     parser.add_argument("--protein", required=True, type=str,
                         help="Path to fasta file containing full protein sequences")
+    parser.add_argument("--taxonomy", required=True, type=str,
+                        help="Path to tab-separated file mapping proteins to taxonomy")
     args = parser.parse_args()
 
     return args
 
+
+def create_taxonomy_entries(session: Session, protein_entries: list[Protein], taxonomy_file: str) -> None:
+    """Create taxonomy entries
+
+    :param session: database session
+    :type session: Session
+    :param protein_entries: list of existing protein entries
+    :type protein_entries: list[Protein]
+    :param taxonomy_file: path to taxonomy file
+    :type taxonomy_file: str
+    """
+    raw_taxonomy_mapping = parse_taxonomy_file(taxonomy_file)
+    taxonomy_mapping: dict[str, TaxonomyData] = {}
+
+    for raw_key, tax_data in raw_taxonomy_mapping.items():
+        # Split pipe-separated protein names
+        for protein_synonym in raw_key.split('|'):
+            taxonomy_mapping[protein_synonym] = tax_data
+
+    existing_taxonomies = list(session.scalars(select(Taxonomy)).all())
+
+    # Keyed by full taxonomy
+    taxonomy_lookup: dict[TaxonomyData, Taxonomy] = {TaxonomyData(t.domain, t.kingdom, t.phylum, t.cls,
+                                                                  t.order, t.family, t.genus, t.species,
+                                                                  t.strain): t for t in existing_taxonomies
+    }
+
+    for protein in protein_entries:
+        matched_tax: Optional[TaxonomyData] = None
+
+        # Check all synonyms for a taxonomy mapping
+        for synonym_entry in protein.synonyms:
+            syn = synonym_entry.synonym
+            if syn in taxonomy_mapping:
+                matched_tax = taxonomy_mapping[syn]
+                break
+
+        if matched_tax is None:
+            # No mapping found for any synonym; skip linking
+            continue
+
+        if matched_tax in taxonomy_lookup:
+            taxonomy = taxonomy_lookup[matched_tax]
+        else:
+            taxonomy = Taxonomy(domain=matched_tax.domain,
+                                kingdom=matched_tax.kingdom,
+                                phylum=matched_tax.phylum,
+                                cls=matched_tax.cls,
+                                order=matched_tax.order,
+                                family=matched_tax.family,
+                                genus=matched_tax.genus,
+                                species=matched_tax.species,
+                                strain=matched_tax.strain)
+            taxonomy_lookup[matched_tax] = taxonomy
+            session.add(taxonomy)
+
+        protein.taxonomy = taxonomy
 
 def create_protein_entries(session: Session, protein_path: str) -> tuple[list[Protein], list[ProteinSynonym]]:
     """Create new protein database entries from a protein.fasta file
@@ -380,9 +440,11 @@ def link_domains_and_proteins(domain_entries: list[AdenylationDomain],
 
 
 def populate_db(session: Session, parasect_data_path: str, smiles_path: Optional[str], signature_path: str,
-                extended_path: str, protein_path: str):
+                extended_path: str, protein_path: str, taxonomy_path: str):
 
     protein_entries, protein_synonyms = create_protein_entries(session, protein_path)
+
+    create_taxonomy_entries(session, protein_entries, taxonomy_path)
 
     if smiles_path is not None:
         new_substrate_entries = create_substrate_entries(session, smiles_path)
@@ -412,7 +474,7 @@ def main():
     engine = create_engine(f"sqlite:///{args.database}")
     with Session(engine) as session:
         try:
-            populate_db(session, args.parasect, args.smiles, args.signature, args.extended, args.protein)
+            populate_db(session, args.parasect, args.smiles, args.signature, args.extended, args.protein, args.taxonomy)
             session.commit()
         except Exception as e:
             print(f"[ERROR] {type(e).__name__}: {e}")

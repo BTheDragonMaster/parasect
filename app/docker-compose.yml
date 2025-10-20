@@ -7,25 +7,44 @@ services:
       dockerfile: Dockerfile.server
     image: paras-server
     restart: always
+    env_file:
+      - .env  # Need secrets for submitting newly annotated domains
     container_name: paras-server
     volumes:
-      - ./models:/app/models
+      - ./models:/app/models:ro
     environment:
       - MODEL_DIR=/app/models
-    networks:
-      - paras-network
+      - LOG_LEVEL=INFO
+      # Also set in Dockerfile, can override here
+      - OMP_NUM_THREADS=1
+      - OPENBLAS_NUM_THREADS=1
+      - MKL_NUM_THREADS=1
+      - NUMEXPR_NUM_THREADS=1
+      - JOBLIB_MMAP_MODE=r
+    networks: [paras-network]
+    healthcheck:
+      # Use base Python; no curl/wget dependency needed
+      test: [ "CMD", "/opt/conda/bin/python", "-c",
+              "import urllib.request,sys; urllib.request.urlopen('http://localhost:4009/health', timeout=2); sys.exit(0)" ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
   paras-client:
     build: 
       context: . 
       dockerfile: Dockerfile.client 
+      args:
+        - REACT_APP_TURNSTILE_SITE_KEY=${REACT_APP_TURNSTILE_SITE_KEY}
     image: paras-client
     ports:
       - "4010:80"
     restart: always
     container_name: paras-client
-    networks:
-      - paras-network
+    networks: [paras-network]
+    depends_on:
+      - paras-server
 
 networks:
   paras-network:

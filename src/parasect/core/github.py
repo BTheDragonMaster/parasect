@@ -6,6 +6,7 @@ import requests
 from dotenv import load_dotenv
 from dataclasses import dataclass
 from enum import Enum
+import re
 
 from sqlalchemy.orm import Session
 
@@ -76,12 +77,21 @@ class DomainEntry:
     entry_type: EntryType
 
 
-def submit_github_issue_protein(protein_entry, domains, new_substrates, annotation_type: EntryType):
+def submit_github_issue_protein(
+    protein_entry, 
+    domains, 
+    new_substrates, 
+    annotation_type: EntryType,
+    orcid: str = "",
+    references: list[dict[str, str]] = []
+):
     url = f"https://api.github.com/repos/{REPO}/issues"
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
 
     title = f"[{EntryType.to_header(annotation_type)}] {protein_entry.name}"
     body_dict = {
+        "orcid": orcid,
+        "references": references,
         "protein_name": protein_entry.name,
         "protein_sequence": protein_entry.sequence,
         "new_substrates": [{"name": substrate.name, "smiles": substrate.smiles} for substrate in new_substrates],
@@ -92,23 +102,35 @@ def submit_github_issue_protein(protein_entry, domains, new_substrates, annotati
                      "substrates": [s.name for s in domain.substrates]} for domain in domains]
     }
 
-    body = json.dumps(body_dict, indent=2)
+    body_md = f"```json\n{json.dumps(body_dict, indent=2)}\n```"
+    payload = {"title": title, "body": body_md}
 
-    issue = {"title": title, "body": body}
-    response = requests.post(url, json=issue, headers=headers)
-    print(response.status_code)
-    return response.json()
+    resp = requests.post(url, json=payload, headers=headers)
+
+    if resp.status_code != 201:
+        # include response body to help debugging
+        raise ValueError(f"Failed to create GitHub issue ({resp.status_code}): {resp.text}")
+
+    return resp.json()
 
 
-def submit_github_issues(session: Session, protein_to_entry: dict[str, dict[str, Any]]) -> None:
+def submit_github_issues(
+    session: Session, 
+    protein_to_entry: dict[str, dict[str, Any]],
+    orcid: str,
+    references: list[dict[str, str]]
+) -> None:
     """Submit GitHub new annotations, one per protein per annotation type, to BTheDragonMaster/parasect as issues
 
     :param session: Database session
     :type session: Session
     :param protein_to_entry: dictionary of protein names as keys and protein and domain annotations as (nested) values
     :type protein_to_entry: dict[str, dict[str, Any]]
+    :param orcid: ORCID ID of the user submitting the annotations
+    :type orcid: str
+    :param references: list of references to include in the issue
+    :type references: list[dict[str, str]]
     """
-
     for protein_name, protein_info in protein_to_entry.items():
         protein_entry = ProteinEntry(protein_name, protein_info["sequence"])
 
@@ -166,21 +188,39 @@ def submit_github_issues(session: Session, protein_to_entry: dict[str, dict[str,
                 raise ValueError(f"Unrecognised entry type: {domain_entry.entry_type.name}")
 
         if corrections:
-            submit_github_issue_protein(protein_entry, corrections, substrates_corrections, EntryType.CORRECTION)
+            submit_github_issue_protein(protein_entry, corrections, substrates_corrections, EntryType.CORRECTION, orcid, references)
         if new_entries:
-            submit_github_issue_protein(protein_entry, new_entries, substrates_new_entries, EntryType.NEW)
+            submit_github_issue_protein(protein_entry, new_entries, substrates_new_entries, EntryType.NEW, orcid, references)
         if duplicate_entries:
-            submit_github_issue_protein(protein_entry, duplicate_entries, substrates_duplicates, EntryType.DUPLICATE)
+            submit_github_issue_protein(protein_entry, duplicate_entries, substrates_duplicates, EntryType.DUPLICATE, orcid, references)
+
+
+def _parse_issue_body_to_json(body: str) -> dict:
+    """
+    Accepts either raw JSON or a Markdown code block containing JSON.
+    Returns the parsed dict or raises a helpful error.
+    """
+    if not body:
+        raise ValueError("Empty issue body; nothing to parse.")
+
+    # Try raw JSON first
+    try:
+        return json.loads(body)
+    except json.JSONDecodeError:
+        pass
+
+    # Try to extract the first fenced code block (```json ... ```)
+    m = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", body)
+    if not m:
+        raise ValueError("No JSON code block found in issue body.")
+    json_text = m.group(1)
+    return json.loads(json_text)
 
 
 def fetch_github_issues(token, filter_strings=None, state="all"):
     """
     Fetches all issues from the repo and filters by title content.
-
-    :param token: GitHub personal access token
-    :param filter_strings: list of substrings to match in the title
-    :param state: 'open', 'closed', or 'all'
-    :return: list of matching issue dicts
+    Excludes pull requests (GitHub returns PRs in the /issues API).
     """
     headers = {"Authorization": f"token {token}"}
     page = 1
@@ -196,65 +236,89 @@ def fetch_github_issues(token, filter_strings=None, state="all"):
         if not issues:
             break  # No more pages
 
-        if filter_strings:
-            for issue in issues:
-                title = issue["title"]
-                if any(f in title for f in filter_strings):
-                    all_matches.append(issue)
-        else:
-            all_matches.extend(issues)
+        for issue in issues:
+            # Skip PRs
+            if "pull_request" in issue:
+                continue
+            if not filter_strings or any(f in issue.get("title", "") for f in filter_strings):
+                all_matches.append(issue)
 
         page += 1
 
     return all_matches
 
 
-def issues_to_files(out_dir: str) -> None:
-    """Write GitHub issues to folder structure for database processing
+def issues_to_files(out_dir: str, keyword: str = None) -> None:
+    """Write GitHub issues to folder structure for database processing"""
+    if keyword is None:
+        keywords = ["New domain entries",
+                    "Domain corrections",
+                    "Domain sequence revision"]
+    else:
+        keywords = [keyword]
+    issues = fetch_github_issues(GITHUB_TOKEN, filter_strings=keywords, state="open")
 
-    :param out_dir: output directory
-    :type out_dir: str
-    """
-    keywords = ["New domain entries", "Domain corrections", "Domain sequence revision"]
-    issues = fetch_github_issues(GITHUB_TOKEN, filter_strings=keywords)
+    if not issues:
+        return
 
-    if issues:
-        if not os.path.exists(out_dir):
-            os.mkdir(out_dir)
+    os.makedirs(out_dir, exist_ok=True)
 
-        for issue in issues:
-            folder_title = f"issue_{issue['number']}"
-            issue_folder = os.path.join(out_dir, folder_title)
-            if not os.path.exists(issue_folder):
-                os.mkdir(issue_folder)
+    for issue in issues:
+        folder_title = f"issue_{issue['number']}"
+        issue_folder = os.path.join(out_dir, folder_title)
+        os.makedirs(issue_folder, exist_ok=True)
 
-            data = json.loads(issue["body"])
+        try:
+            data = _parse_issue_body_to_json(issue.get("body") or "")
+        except Exception as e:
+            raise RuntimeError(f"Failed to parse issue #{issue['number']}: {e}")
+
+        # new_substrates may be absent; default to empty list
+        new_substrates = data.get("new_substrates", []) or []
+
+        if new_substrates:
+            smiles_path = os.path.join(issue_folder, 'smiles.tsv')
+            with open(smiles_path, 'w') as smiles_out:
+                smiles_out.write("substrate\tsmiles\n")
+                for substrate in new_substrates:
+                    smiles_out.write(f"{substrate['name']}\t{substrate['smiles']}\n")
+
+        protein_path = os.path.join(issue_folder, "proteins.fasta")
+        with open(protein_path, 'w') as protein_out:
+            protein_out.write(f">{data['protein_name']}\n{data['protein_sequence']}\n")
+
+        domain_path = os.path.join(issue_folder, "domains.fasta")
+        signature_path = os.path.join(issue_folder, "signatures.fasta")
+        extended_path = os.path.join(issue_folder, "extended_signatures.fasta")
+        parasect_path = os.path.join(issue_folder, "parasect_dataset.txt")
+        smiles_path = os.path.join(issue_folder, "smiles.tsv")
+
+        with open(domain_path, 'w') as domains_out, \
+             open(parasect_path, 'w') as parasect_out, \
+             open(signature_path, 'w') as signatures_out, \
+             open(extended_path, 'w') as extended_out:
+
+            parasect_out.write("domain_id\tsequence\tspecificity\n")
+            for domain in data["domains"]:
+                domains_out.write(f">{domain['name']}\n{domain['sequence']}\n")
+                signatures_out.write(f">{domain['name']}\n{domain['signature']}\n")
+                extended_out.write(f">{domain['name']}\n{domain['extended_signature']}\n")
+                parasect_out.write(
+                    f"{domain['name']}\t{domain['sequence']}\t{'|'.join(domain['substrates'])}\n"
+                )
             if data["new_substrates"]:
-                smiles_path = os.path.join(issue_folder, 'smiles.tsv')
                 with open(smiles_path, 'w') as smiles_out:
                     smiles_out.write("substrate\tsmiles\n")
-                    for substrate in data["new_substrates"]:
+                    for substrate in new_substrates:
                         smiles_out.write(f"{substrate['name']}\t{substrate['smiles']}\n")
-            protein_path = os.path.join(issue_folder, "proteins.fasta")
-            with open(protein_path, 'w') as protein_out:
-                protein_out.write(f">{data['protein_name']}\n{data['protein_sequence']}\n")
 
-            domain_path = os.path.join(issue_folder, "domains.fasta")
-            signature_path = os.path.join(issue_folder, "signatures.fasta")
-            extended_path = os.path.join(issue_folder, "extended_signatures.fasta")
-            parasect_path = os.path.join(issue_folder, "parasect_dataset.txt")
-            with open(domain_path, 'w') as domains_out, open(parasect_path, 'w') as parasect_out, \
-                    open(signature_path, 'w') as signatures_out, open(extended_path, 'w') as extended_out:
-                parasect_out.write("domain_id\tsequence\tspecificity\n")
-                for domain in data["domains"]:
-                    domains_out.write(f">{domain['name']}\n{domain['sequence']}\n")
-                    signatures_out.write(f">{domain['name']}\n{domain['signature']}\n")
-                    extended_out.write(f">{domain['name']}\n{domain['extended_signature']}\n")
-                    parasect_out.write(f"{domain['name']}\t{domain['sequence']}\t{'|'.join(domain['substrates'])}\n")
+
+def fetch_substrate_corrections(out_dir: str):
+    issues_to_files(out_dir, "Domain corrections")
 
 
 if __name__ == "__main__":
-    issues_to_files(argv[1])
+    fetch_substrate_corrections(argv[1])
 
 
 

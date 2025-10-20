@@ -3,15 +3,38 @@
 """Module for defining the Flask app."""
 
 import atexit
+import logging
 import os
 import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
-from flask import Flask
+from flask import Flask, request
+
+
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 
 
 app = Flask(__name__)
+
+
+@app.before_request
+def _t0():
+    request._t0 = time.time()
+
+
+@app.after_request
+def _log(resp):
+    dt = (time.time() - getattr(request, "_t0", time.time())) * 1000
+    app.logger.info("method=%s path=%s status=%s dt_ms=%.1f", request.method, request.path, resp.status_code, dt)
+    return resp
+
+
+@app.get("/health")
+def health():
+    return {"ok": True}, 200
+
+
 app.config["JOB_RESULTS"] = dict()
 app.config["SMILES"] = dict()
 

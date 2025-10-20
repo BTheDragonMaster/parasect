@@ -5,14 +5,13 @@ import traceback
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from parasect.core.parsing import iterate_over_dir, parse_fasta_file, write_fasta_file
+from parasect.core.parsing import iterate_over_dir, parse_fasta_file
+from parasect.core.writers import write_fasta_file
 from parasect.core.tabular import Tabular
 
 from parasect.database.populate_database import populate_db
 
 # TODO: Refactor such that entries are auto-added as pending to the database
-# TODO: Create a table for proteins in the database
-# TODO: Create a coordinate field for A-domains in the database
 
 
 def parse_arguments() -> Namespace:
@@ -126,7 +125,6 @@ def remap_strings(id_to_string: dict[str, str], mapping: dict[str, str]) -> dict
 
     return new_id_to_string
 
-#TODO: Add correction handling
 
 def add_user_submissions(submission_dir: str, database_path: str) -> None:
     """

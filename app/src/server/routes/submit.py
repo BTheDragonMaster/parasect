@@ -18,6 +18,23 @@ from pikachu.general import read_smiles
 from .app import app
 from .common import ResponseData, Status
 from .constants import MODEL_DIR, TEMP_DIR
+from .model_loader import ModelSpec, MultiModelLoader
+
+
+# Model registry
+MODEL_PARAS_ALL_SUBSTRATES = os.path.join(MODEL_DIR, "all_substrates_model.paras")
+MODEL_PARAS_COMMON_SUBSTRATES = os.path.join(MODEL_DIR, "model.paras")
+MODEL_PARASECT = os.path.join(MODEL_DIR, "model.parasect")
+MODEL_PARASECT_BACTERIAL = os.path.join(MODEL_DIR, "bacterial_model.parasect")
+
+
+loader = MultiModelLoader({
+    "parasAllSubstrates": ModelSpec(name="PARAS (all substrates)", path=MODEL_PARAS_ALL_SUBSTRATES, mmap=True),
+    "parasCommonSubstrates": ModelSpec(name="PARAS (common substrates)", path=MODEL_PARAS_COMMON_SUBSTRATES, mmap=True),
+    "parasect": ModelSpec(name="PARASECT", path=MODEL_PARASECT, mmap=True),
+    "parasectBacterial": ModelSpec(name="PARASECT (bacterial)", path=MODEL_PARASECT_BACTERIAL, mmap=True),
+})
+
 
 blueprint_submit_raw = Blueprint("submit_raw", __name__)
 blueprint_submit_quick = Blueprint("submit_quick", __name__)
@@ -49,7 +66,7 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
             selected_input = data["selectedInput"]  # fasta src or gbk src
             selected_model = data[
                 "selectedModel"
-            ]  # parasAllSubstrates, parasCommonSubstrates, or parasect
+            ]  # parasAllSubstrates, parasCommonSubstrates, parasect, or parasectBacterial
             use_structure_guided_alignment = data["useStructureGuidedAlignment"]
             smiles_file_content = data["smilesFileContent"]
             use_only_uploaded_substrates = data["useOnlyUploadedSubstrates"]
@@ -68,7 +85,7 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
         # sanity check selected model
         # return with message if invalid
         selected_model = selected_model.strip()
-        if selected_model not in ["parasAllSubstrates", "parasCommonSubstrates", "parasect"]:
+        if selected_model not in ["parasAllSubstrates", "parasCommonSubstrates", "parasect", "parasectBacterial"]:
             msg = f"invalid model: {selected_model}"
             raise Exception(msg)
 
@@ -83,20 +100,7 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
         # load model
         # return error if not successful
         try:
-            if selected_model == "parasAllSubstrates":
-                model = joblib.load(os.path.join(MODEL_DIR, "all_substrates_model.paras"))
-                model.set_params(n_jobs=1)
-                assert model is not None
-            elif selected_model == "parasCommonSubstrates":
-                model = joblib.load(os.path.join(MODEL_DIR, "model.paras"))
-                model.set_params(n_jobs=1)
-                assert model is not None
-            elif selected_model == "parasect":
-                model = joblib.load(os.path.join(MODEL_DIR, "model.parasect"))
-                model.set_params(n_jobs=1)
-                assert model is not None
-            else:
-                raise Exception("not successful loading model")
+            model = loader.get(selected_model)
         except Exception as e:
             msg = f"failed to load model: {str(e)}"
             raise Exception(msg)
@@ -114,7 +118,7 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
                     use_structure_guided_alignment=use_structure_guided_alignment,
                 )
 
-            elif selected_model == "parasect":
+            elif selected_model in ["parasect", "parasectBacterial"]:
                 # parse user-provided SMILES strings (if provided in frontend)
                 # return error if failed
                 custom_substrate_names = []
@@ -148,6 +152,9 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
                 # return with error message that at least one custom substrate must be provided in that case
                 if len(custom_substrate_names) == 0 and use_only_uploaded_substrates:
                     raise Exception("at least one custom substrate must be provided if 'Use only uploaded substrates' is selected.")
+                
+                # Print excpected feature vector length for debugging
+                print(f"Using model {selected_model} with expected feature vector length {model.n_features_in_}")
 
                 # run PARASECT
                 results = run_parasect(
@@ -159,6 +166,7 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
                     custom_substrate_smiles=custom_substrate_smiles,
                     only_custom=use_only_uploaded_substrates,
                     use_structure_guided_alignment=use_structure_guided_alignment,
+                    bacterial_only=(selected_model == "parasectBacterial"),
                 )
 
             else:
@@ -295,9 +303,7 @@ def run_prediction_signature(job_id: str, data: Dict[str, str]) -> None:
         # load model
         # return error if not successful
         try:
-            model = joblib.load(os.path.join(MODEL_DIR, "model.paras"))
-            model.set_params(n_jobs=1)
-            assert model is not None
+            model = loader.get("parasCommonSubstrates")
         except Exception as e:
             msg = f"failed to load model: {str(e)}"
             raise Exception(msg)

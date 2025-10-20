@@ -1,25 +1,51 @@
-# This Dockerfile builds API only
-FROM python:3.9 
+# Use Mambaforge for fast, reliable conda solves (includes mamba)
+FROM condaforge/mambaforge:24.9.2-0
 
-WORKDIR /app 
-COPY ./src/server/ ./
-RUN pip install -r ./requirements.txt 
-ENV FLASK_ENV production 
+# Make non-interactive shells load conda env nicely
+SHELL ["/bin/bash", "-lc"]
 
-EXPOSE 4009
+# Create a non-root user for saner file permissions
+ARG USERNAME=app
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+RUN groupadd --gid $USER_GID $USERNAME \
+ && useradd  --uid $USER_UID --gid $USER_GID -m $USERNAME
 
-# Install HMMER2
-RUN apt-get update 
-RUN apt-get install -y hmmer2
-
-# Install MUSCLE
-RUN mkdir muscle
-WORKDIR /app/muscle
-RUN wget https://drive5.com/muscle/muscle_src_3.8.1551.tar.gz
-RUN tar -xvzf muscle_src_3.8.1551.tar.gz
-RUN make
-RUN cp muscle /usr/local/bin/muscle
-
+# Workdir
 WORKDIR /app
 
-CMD ["sh", "-c", "gunicorn -b :4009 --timeout 120 api:app"]
+# Copy env first to leverage Docker layer caching
+COPY server-environment.yml /app/
+COPY server-requirements.txt /app/
+
+# Create Conda env with mamba (faster) and clean caches
+RUN mamba env create -n web -f server-environment.yml \
+ && conda clean -afy
+
+# Ensure `conda run -n web ...` works for ENTRYPOINT/CMD
+RUN echo "conda activate web" >> /etc/bash.bashrc
+
+# Copy the app code and give ownership to the non-root user
+COPY --chown=${USER_UID}:${USER_GID} ./src/server/ /app/
+
+# Ensure temp dir exists and is writable
+RUN mkdir -p /app/temp && chown -R ${USER_UID}:${USER_GID} /app
+
+# Runtime env: unbuffered logs, mmap for joblib, cap math threads
+ENV PYTHONUNBUFFERED=1 \
+    LOG_LEVEL=INFO \
+    OMP_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1 \
+    MKL_NUM_THREADS=1 \
+    NUMEXPR_NUM_THREADS=1 \
+    JOBLIB_MMAP_MODE=r
+
+# Use the unprivileged user at runtime
+USER $USERNAME
+
+# Expose your service port
+EXPOSE 4009
+
+# Run everything inside the conda env without needing manual activation
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "web"]
+CMD ["gunicorn", "-b", ":4009", "--worker-class", "gthread", "--workers", "1", "--threads", "4", "--preload", "--timeout", "120", "api:app"]

@@ -133,7 +133,9 @@ const SettingsModal = ({
                                 variant='body1' 
                                 gutterBottom
                                 style={{
-                                    color: selectedModel !== 'parasect' ? 'rgba(0, 0, 0, 0.26)' : 'rgba(0, 0, 0, 0.87)'
+                                    color: (selectedModel !== 'parasect' || selectedModel !== 'parasectBacterial')
+                                        ? 'rgba(0, 0, 0, 0.26)'
+                                        : 'rgba(0, 0, 0, 0.87)'
                                 }}
                             >
                                 Upload custom list of substrates (TSV format as 'name\tSMILES' per line):
@@ -142,7 +144,7 @@ const SettingsModal = ({
                                 type='file'
                                 inputProps={{ accept: '.tsv' }}
                                 onChange={handleSmilesFileUpload}
-                                disabled={selectedModel !== 'parasect'}
+                                disabled={!(selectedModel === 'parasect' || selectedModel === 'parasectBacterial')}
                             />
                         </Box>
                         
