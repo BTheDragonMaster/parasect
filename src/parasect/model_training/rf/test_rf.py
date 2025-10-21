@@ -28,6 +28,18 @@ def write_parasect_results(domain_to_sorted_predictions, included_substrates, ou
             out.write('\n')
 
 
+def write_paras_results(domain_to_prediction, out_file):
+    with open(out_file, 'w') as out:
+        out.write("domain_name\tprediction\tconfidence\tcorrect\n")
+        for domain, prediction in domain_to_prediction.items():
+            if prediction[1] in [s.name for s in domain.substrates]:
+                correct = 'yes'
+            else:
+                correct = 'no'
+
+            out.write(f"{domain.get_name()}\t{prediction[1]}\t{prediction[0]}\t{correct}\n")
+
+
 def write_parasect_metrics(tp, tp_probs, fp, fp_probs, tn, tn_probs, fn, fn_probs,
                            correct_ranks, incorrect_ranks, substrate_metrics, out_file):
     with open(out_file, 'w') as out:
@@ -342,6 +354,7 @@ def write_predictions_paras(domains: list[AdenylationDomain], predictions: list,
 
     correct_confidences = []
     incorrect_confidences = []
+    domain_to_prediction = {}
 
     for i, prediction_matrix in enumerate(predictions):
         prediction = prediction_matrix[0][1]
@@ -366,6 +379,8 @@ def write_predictions_paras(domains: list[AdenylationDomain], predictions: list,
             incorrect_confidences.append(confidence)
             per_substrate_confidences[prediction]["incorrect"].append(confidence)
 
+        domain_to_prediction[domains[i]] = (confidence, prediction)
+
         for substrate in substrate_names:
             if substrate in included_substrate_names:
                 per_substrate_counts[substrate][1] += 1  # total
@@ -385,11 +400,13 @@ def write_predictions_paras(domains: list[AdenylationDomain], predictions: list,
     out_matrix = os.path.join(out_dir, "confusion_matrix.txt")
     out_accuracy = os.path.join(out_dir, "accuracy.txt")
     out_confidence = os.path.join(out_dir, "confidence.txt")
+    out_results = os.path.join(out_dir, "paras_predictions.txt")
 
     plot_matrix(confusion_matrix, included_substrate_names, out_plot)
     write_matrix(confusion_matrix, included_substrate_names, out_matrix)
     write_confidences(correct_confidences, incorrect_confidences, per_substrate_confidences, out_confidence)
     write_accuracy(overall_accuracy, per_substrate_accuracy, out_accuracy)
+    write_paras_results(domain_to_prediction, out_results)
 
 
 def reverse_rank(values: list[float], idx: int) -> int:
