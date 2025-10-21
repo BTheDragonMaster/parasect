@@ -7,4 +7,4 @@ gunicorn
 joblib
 apscheduler
 psutil
-git+https://github.com/BTheDragonMaster/parasect@webapp_dev_docker
+git+https://github.com/BTheDragonMaster/parasect
