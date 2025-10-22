@@ -43,6 +43,8 @@ def genbank_to_fasta(path_in: str, path_out: str) -> None:
                 # check if the feature has a translation
                 if "translation" in feature.qualifiers:
                     sequence = feature.qualifiers["translation"]
+                    if type(sequence) == list:
+                        sequence = sequence[0]
 
                     # check if the feature has a protein ID, gene ID, or locus tag
                     # to use as the sequence ID. If not, generate a gene ID
