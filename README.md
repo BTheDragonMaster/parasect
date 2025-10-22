@@ -16,7 +16,7 @@ Do you have new datapoints that you think PARAS/PARASECT could benefit from in f
 
 ## Trained models
 
-The trained models for PARAS and PARASECT can be found on Zenodo [here](https://zenodo.org/records/13165500).
+The trained models for PARAS and PARASECT can be found on Zenodo [here](https://zenodo.org/records/17224548).
 
 ## Command line installation
 
