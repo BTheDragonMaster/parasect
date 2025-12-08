@@ -7,3 +7,5 @@ src/server/temp/*
 # Model files with extensions .paras and .parasect
 *.paras
 *.parasect
+*.paras.gz
+*.parasect.gz

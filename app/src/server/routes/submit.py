@@ -303,7 +303,7 @@ def run_prediction_signature(job_id: str, data: Dict[str, str]) -> None:
         # load model
         # return error if not successful
         try:
-            model = loader.get("parasCommonSubstrates")
+            model = loader.get("parasAllSubstrates")
         except Exception as e:
             msg = f"failed to load model: {str(e)}"
             raise Exception(msg)
