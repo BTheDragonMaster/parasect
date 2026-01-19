@@ -11,6 +11,8 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  Autocomplete,
+  CircularProgress
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -39,6 +41,108 @@ const QUERYOPTIONS = [
   //     />
   //   ),
   // },
+{
+  key: 'substrate',
+  label: 'A-domains by substrate',
+  kind: 'preset',
+  defaultQuery: "SELECT name, smiles FROM substrate LIMIT 500",
+  Editor: ({ setQuery }) => {
+    const [options, setOptions] = useState([]);
+    const [value, setValue] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    // Fetch substrate names once
+    useEffect(() => {
+      let mounted = true;
+      setLoading(true);
+      fetch('/api/sql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: 'SELECT name FROM substrate ORDER BY name',
+          page: 0,
+          pageSize: 5000,
+        }),
+      })
+        .then((r) => r.json())
+        .then((d) => {
+          if (mounted) {
+            setOptions(d.rows?.map((r) => r.name) || []);
+          }
+        })
+        .catch(() => setOptions([]))
+        .finally(() => setLoading(false));
+
+      return () => {
+        mounted = false;
+      };
+    }, []);
+
+    // Compile SQL when a substrate is chosen
+    useEffect(() => {
+      if (!value) {
+        setQuery('');
+        return;
+      }
+
+      const sql = `
+SELECT
+  ad.id                          AS domain_id,
+  p.id                           AS protein_id,
+  group_concat(ps.synonym, ', ') AS protein_synonyms,
+  pda.domain_number,
+  ad.signature,
+  ad.extended_signature,
+  s.name                         AS substrate_name,
+  s.smiles                       AS substrate_smiles
+FROM substrate_domain_association sda
+JOIN substrate                    s   ON s.name = sda.substrate_name
+JOIN adenylation_domain           ad  ON ad.id = sda.domain_id
+JOIN protein_domain_association   pda ON pda.domain_id = ad.id
+JOIN protein                      p   ON p.id = pda.protein_id
+LEFT JOIN protein_synonym         ps  ON ps.protein_id = p.id
+WHERE s.name = '${value}' COLLATE NOCASE
+GROUP BY
+  ad.id, p.id, pda.domain_number,
+  ad.signature, ad.extended_signature,
+  s.name, s.smiles
+ORDER BY
+  p.id, pda.domain_number
+LIMIT 500
+      `.replace(/\s+/g, ' ').trim();
+
+      setQuery(sql);
+    }, [value, setQuery]);
+
+    return (
+      <Autocomplete
+        options={options}
+        value={value}
+        onChange={(_, newValue) => setValue(newValue)}
+        loading={loading}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Substrate"
+            placeholder="Start typing a substrate name…"
+            InputProps={{
+              ...params.InputProps,
+              endAdornment: (
+                <>
+                  {loading ? <CircularProgress size={18} /> : null}
+                  {params.InputProps.endAdornment}
+                </>
+              ),
+            }}
+          />
+        )}
+        fullWidth
+        autoHighlight
+        clearOnEscape
+      />
+    );
+  },
+},
   {
     key: 'proteinId',
     label: 'Substrate specificities by protein ID',
