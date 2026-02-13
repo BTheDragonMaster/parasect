@@ -6,12 +6,16 @@ import os
 import argparse
 import logging
 from joblib import load
+from shutil import copy
 
 from parasect.core.constants import SEPARATOR_1, SEPARATOR_2, SEPARATOR_3
 from parasect.api import run_parasect
 from parasect.core.helpers import download_and_unpack_or_fetch
 from parasect.core.writers import write_fasta_file, write_results
 from parasect.core.parsing import parse_smiles_mapping
+from parasect.core.retrain_models import retrain_model, model_needs_retraining, update_metadata_file
+from parasect.core.models import ModelType
+from parasect.core.constants import MODEL_METADATA_FILE
 
 
 def cli() -> argparse.Namespace:
@@ -60,7 +64,6 @@ def cli() -> argparse.Namespace:
 
 def main() -> None:
     """Run CLI for PARASECT."""
-    """Run CLI for PARAS."""
     args = cli()
     logger = logging.getLogger(__name__)
     logging.basicConfig(level="INFO")
@@ -76,6 +79,10 @@ def main() -> None:
     else:
         temp_dir = args.temp
 
+    metadata_path = os.path.join(temp_dir, "model_metadata.txt")
+    if not os.path.exists(metadata_path):
+        copy(MODEL_METADATA_FILE, metadata_path)
+
     if args.smiles is not None:
         substrates = parse_smiles_mapping(args.smiles)
         substrate_names = [s.name for s in substrates]
@@ -86,14 +93,32 @@ def main() -> None:
 
     if not substrate_names and args.exclude_standard_substrates:
         raise ValueError("No substrates to test! Either include standard substrates or pass custom substrate SMILES")
+
     if not args.bacterial:
-        model_path = download_and_unpack_or_fetch(
-            r"https://zenodo.org/records/17224548/files/model.parasect.gz?download=1",
-            temp_dir, logger)
+        if model_needs_retraining(metadata_path, ModelType.PARASECT):
+            print("Found incompatible version of scikit-learn. Retraining..")
+            model = retrain_model(ModelType.PARASECT)
+            model_path = os.path.join(temp_dir, model.file_name)
+            model.save(temp_dir)
+            update_metadata_file(ModelType.PARASECT, metadata_path)
+
+        else:
+            model_path = download_and_unpack_or_fetch(
+                r"https://zenodo.org/records/17224548/files/model.parasect.gz?download=1",
+                temp_dir, logger)
+
+
     else:
-        model_path = download_and_unpack_or_fetch(
-            r"https://zenodo.org/records/17224548/files/bacterial_model.parasect.gz?download=1",
-            temp_dir, logger)
+        if model_needs_retraining(metadata_path, ModelType.PARASECT_BACTERIAL):
+            print("Found incompatible version of scikit-learn. Retraining..")
+            model = retrain_model(ModelType.PARASECT_BACTERIAL)
+            model_path = os.path.join(temp_dir, model.file_name)
+            model.save(temp_dir)
+            update_metadata_file(ModelType.PARASECT_BACTERIAL, metadata_path)
+        else:
+            model_path = download_and_unpack_or_fetch(
+                r"https://zenodo.org/records/17224548/files/bacterial_model.parasect.gz?download=1",
+                temp_dir, logger)
 
     model = load(model_path)
 
@@ -129,6 +154,7 @@ def main() -> None:
 
     results_out = os.path.join(args.output, f"{args.job_name}_parasect_results.txt")
     write_results(results, results_out, args.number_predictions)
+
 
 
 if __name__ == "__main__":

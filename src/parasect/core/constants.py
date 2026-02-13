@@ -87,8 +87,20 @@ SMILES_FILE = get_path("database_files/smiles.tsv")
 
 FINGERPRINTS_FILE = get_path("fingerprints.txt")
 BACTERIAL_FINGERPRINTS_FILE = get_path("fingerprints_bacterial.txt")
-INCLUDED_SUBSTRATES_FILE = get_path("included_substrates.txt")
-INCLUDED_SUBSTRATES_FILE_BACTERIAL = get_path("included_substrates_bacterial.txt")
+
+INCLUDED_SUBSTRATES_FILE_PARASECT = get_path("included_substrates/parasect.txt")
+INCLUDED_SUBSTRATES_FILE_PARASECT_BACTERIAL = get_path("included_substrates/parasect_bacterial.txt")
+INCLUDED_SUBSTRATES_FILE_PARAS = get_path("included_substrates/paras.txt")
+INCLUDED_SUBSTRATES_FILE_PARAS_ALL_SUBSTRATES = get_path("included_substrates/paras_all_substrates.txt")
+
+TRAIN_DOMAINS_FILE_PARASECT = get_path("train_domains/parasect.txt")
+TRAIN_DOMAINS_FILE_PARASECT_BACTERIAL = get_path("train_domains/parasect_bacterial.txt")
+TRAIN_DOMAINS_FILE_PARAS = get_path("train_domains/paras.txt")
+TRAIN_DOMAINS_FILE_PARAS_ALL_SUBSTRATES = get_path("train_domains/paras_all_substrates.txt")
+
+DATABASE_FILE = get_path("parasect.db")
+
+MODEL_METADATA_FILE = get_path("model_metadata.txt")
 
 HMM2_POSITIONS_SIGNATURE = _read_positions(A_POSITION_FILE_HMM2, 0)
 HMM2_POSITIONS_EXTENDED_SIGNATURE = _read_positions(A_POSITION_FILE_34_HMM2, 0)

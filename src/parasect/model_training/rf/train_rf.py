@@ -57,7 +57,7 @@ def parse_arguments() -> Namespace:
     return args
 
 
-def train_random_forest(features: NDArray[np.float64], labels: NDArray[np.str],
+def train_random_forest(features: NDArray[np.float64], labels: NDArray[str],
                         out_path: Optional[str] = None) -> RandomForestClassifier:
     """
 

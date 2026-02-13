@@ -1,6 +1,13 @@
 from typing import Any
 
 from parasect.core.parasect_result import Result
+from parasect.core.models import ModelType
+
+
+def write_model_metadata_file(model_to_version: dict[ModelType, str], out_file: str) -> None:
+    with open(out_file, 'w') as out:
+        for model, version in model_to_version.items():
+            out.write(f"sklearn_version_{model.name.lower()}\t{version}\n")
 
 
 def write_results(results: list[Result], out_file: str, number_predictions: int) -> None:
