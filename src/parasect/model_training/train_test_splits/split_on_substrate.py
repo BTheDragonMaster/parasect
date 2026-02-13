@@ -154,7 +154,7 @@ def split_on_substrate(session: Session,
         for substrate, counts in substrate_counts.items():
             substrates_out.write(f"{substrate.name}\t{counts['train']}\t{counts['test']}\n")
 
-    included_substrates_file = os.path.join(out_dir, "included_substrates.txt")
+    included_substrates_file = os.path.join(out_dir, "parasect.txt")
     included_substrates = list(substrate_counts.keys())
     included_substrates.sort()
     write_list(included_substrates, included_substrates_file)

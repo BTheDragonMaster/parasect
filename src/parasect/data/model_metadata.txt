@@ -1,0 +1,4 @@
+sklearn_version_paras	1.2.0
+sklearn_version_parasect	1.2.0
+sklearn_version_paras_all_substrates	1.2.0
+sklearn_version_parasect_bacterial	1.2.0

@@ -6,11 +6,15 @@ import os
 import argparse
 import logging
 from joblib import load
+from shutil import copy
 
 from parasect.core.constants import SEPARATOR_1, SEPARATOR_2, SEPARATOR_3
 from parasect.api import run_paras
 from parasect.core.helpers import download_and_unpack_or_fetch
 from parasect.core.writers import write_fasta_file, write_results
+from parasect.core.retrain_models import retrain_model, model_needs_retraining, update_metadata_file
+from parasect.core.models import ModelType
+from parasect.core.constants import MODEL_METADATA_FILE
 
 
 def cli() -> argparse.Namespace:
@@ -64,16 +68,40 @@ def main() -> None:
         if not os.path.exists(temp_dir):
             os.mkdir(temp_dir)
 
+
     else:
         temp_dir = args.temp
 
+    metadata_path = os.path.join(temp_dir, "model_metadata.txt")
+    if not os.path.exists(metadata_path):
+        copy(MODEL_METADATA_FILE, metadata_path)
+
     if args.all_substrates:
-        model_path = download_and_unpack_or_fetch(r"https://zenodo.org/records/17224548/files/all_substrates_model.paras.gz?download=1",
-                                                  temp_dir, logger)
+        if model_needs_retraining(metadata_path, ModelType.PARAS_ALL_SUBSTRATES):
+            print("Found incompatible version of scikit-learn. Retraining..")
+            model = retrain_model(ModelType.PARAS_ALL_SUBSTRATES)
+            model_path = os.path.join(temp_dir, model.file_name)
+            model.save(temp_dir)
+            update_metadata_file(ModelType.PARAS_ALL_SUBSTRATES, metadata_path)
+
+        else:
+
+            model_path = download_and_unpack_or_fetch(r"https://zenodo.org/records/17224548/files/all_substrates_model.paras.gz?download=1",
+                                                      temp_dir, logger)
 
     else:
-        model_path = download_and_unpack_or_fetch(r"https://zenodo.org/records/17224548/files/model.paras.gz?download=1",
-                                                  temp_dir, logger)
+
+        if model_needs_retraining(metadata_path, ModelType.PARAS):
+            print("Found incompatible version of scikit-learn. Retraining..")
+            model = retrain_model(ModelType.PARAS)
+            model_path = os.path.join(temp_dir, model.file_name)
+            model.save(temp_dir)
+            update_metadata_file(ModelType.PARAS, metadata_path)
+
+        else:
+            model_path = download_and_unpack_or_fetch(
+                r"https://zenodo.org/records/17224548/files/model.paras.gz?download=1",
+                temp_dir, logger)
 
     model = load(model_path)
 

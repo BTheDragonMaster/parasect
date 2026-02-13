@@ -74,7 +74,7 @@ def do_crossvalidation(session: Session, crossvalidation_folder: str, out_dir: s
     """
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
-    included_substrates_file = os.path.join(crossvalidation_folder, "included_substrates.txt")
+    included_substrates_file = os.path.join(crossvalidation_folder, "parasect.txt")
     crossvalidation_train_files = []
     crossvalidation_test_files = []
     if "_valid" in crossvalidation_folder:
