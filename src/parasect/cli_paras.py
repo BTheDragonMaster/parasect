@@ -86,7 +86,7 @@ def main() -> None:
 
         else:
 
-            model_path = download_and_unpack_or_fetch(r"https://zenodo.org/records/17224548/files/all_substrates_model.paras.gz?download=1",
+            model_path = download_and_unpack_or_fetch(r"https://zenodo.org/records/18682178/files/all_substrates_model.paras.gz",
                                                       temp_dir, logger)
 
     else:
@@ -100,7 +100,7 @@ def main() -> None:
 
         else:
             model_path = download_and_unpack_or_fetch(
-                r"https://zenodo.org/records/17224548/files/model.paras.gz?download=1",
+                r"https://zenodo.org/records/18682178/files/model.paras.gz",
                 temp_dir, logger)
 
     model = load(model_path)

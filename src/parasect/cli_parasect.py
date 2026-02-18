@@ -104,7 +104,7 @@ def main() -> None:
 
         else:
             model_path = download_and_unpack_or_fetch(
-                r"https://zenodo.org/records/17224548/files/model.parasect.gz?download=1",
+                r"https://zenodo.org/records/18682178/files/model.parasect.gz",
                 temp_dir, logger)
 
 
@@ -117,7 +117,7 @@ def main() -> None:
             update_metadata_file(ModelType.PARASECT_BACTERIAL, metadata_path)
         else:
             model_path = download_and_unpack_or_fetch(
-                r"https://zenodo.org/records/17224548/files/bacterial_model.parasect.gz?download=1",
+                r"https://zenodo.org/records/18682178/files/bacterial_model.parasect.gz",
                 temp_dir, logger)
 
     model = load(model_path)
