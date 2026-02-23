@@ -84,3 +84,48 @@ class Result:
                 )
             ],
         )
+
+class MinimalResult:
+    """Minimal result class"""
+    def __init__(self,
+                 domain_name: str,
+                 signature: str,
+                 predictions: list[float],
+                 prediction_labels: list[str],
+    ) -> None:
+        """Initialise the MinimalResult class.
+
+        :param predictions: Predictions.
+        :type predictions: List[float]
+        :param prediction_labels: Prediction labels.
+        :type prediction_labels: List[str]
+        """
+        self._domain_name = domain_name
+        self._signature = signature
+        self._predictions = list(map(float, predictions))
+        self._prediction_labels = prediction_labels
+        self.sort()
+
+    @property
+    def domain_name(self):
+        return self._domain_name
+
+    @property
+    def predictions(self):
+        return self._predictions
+
+    @property
+    def prediction_labels(self):
+        return self._prediction_labels
+
+    @property
+    def signature(self):
+        return self._signature
+
+    def sort(self):
+        pred_label = list(zip(self._predictions, self._prediction_labels))
+        pred_label.sort(key=lambda x: x[0], reverse=True)
+        self._predictions = [data[0] for data in pred_label]
+        self._prediction_labels = [data[1] for data in pred_label]
+
+
