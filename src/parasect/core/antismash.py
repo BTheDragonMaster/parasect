@@ -23,9 +23,12 @@ def run_paras_minimal(model: RandomForestClassifier, signatures: list[str], name
             valid_domain_names.append(names[i])
             valid_signatures.append(signature)
 
-    prediction_matrix = model.predict_proba(features)
-
     results: list[MinimalResult] = []
+
+    if not features:
+        return results
+
+    prediction_matrix = model.predict_proba(features)
 
     for i, predictions in enumerate(prediction_matrix):
         result = MinimalResult(valid_domain_names[i], valid_signatures[i], predictions, model.classes_)
@@ -64,6 +67,9 @@ def run_parasect_minimal(model: RandomForestClassifier, signatures: list[str], n
             valid_signatures.append(signature)
 
     results: list[MinimalResult] = []
+
+    if not valid_signatures:
+        return results
 
     for i, domain_features in enumerate(valid_domain_features):
         domain_name = valid_domain_names[i]
