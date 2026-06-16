@@ -58,7 +58,7 @@ def merge_hits(hits: list[tuple[str, int, int, str]]) -> tuple[str, int, int, st
         raise ValueError("No hits to merge!")
 
 
-def group_n_terminal_hits(hit_list: list[tuple[str, int, int, str]]) -> list[tuple[str, int, int, str]]:
+def group_n_terminal_hits(hit_list: list[tuple[str, int, int, str]]) -> tuple[list[tuple[str, int, int, str]], dict[str, list[str]]]:
     """
     Group and merge N-terminal AMP-binding hits within a single protein
 
@@ -102,12 +102,16 @@ def group_n_terminal_hits(hit_list: list[tuple[str, int, int, str]]) -> list[tup
                 group = []
 
     merged_n_terminal = []
+    merged_to_original = {}
 
     for group in grouped_hits:
         merged_hit = merge_hits(group)
         merged_n_terminal.append(merged_hit)
+        merged_to_original[merged_hit[3]] = []
+        for hit in group:
+            merged_to_original[merged_hit[3]].append(hit[3])
 
-    return merged_n_terminal + c_terminal_hits
+    return merged_n_terminal + c_terminal_hits, merged_to_original
 
 
 def _hits_to_domains(
@@ -154,10 +158,14 @@ def _hits_to_domains(
     counter = 0
     seq_id_to_domains: Dict[str, List[AdenylationDomain]] = {}
     seq_id_to_hits = {}
+    seq_id_to_merged_to_original = {}
     for seq_id, hits in hits_by_seq_id.items():
-        seq_id_to_hits[seq_id] = group_n_terminal_hits(hits)
+        merged_hits, merged_to_original = group_n_terminal_hits(hits)
+        seq_id_to_hits[seq_id] = merged_hits
+        seq_id_to_merged_to_original[merged_to_original] = merged_to_original
 
     for seq_id, hits in seq_id_to_hits.items():
+        merged_to_original = seq_id_to_merged_to_original[seq_id]
         counter += 1
 
         for hit_id_1, hit_start_1, hit_end_1, hit_key_1 in hits:
@@ -178,7 +186,7 @@ def _hits_to_domains(
 
                             if hmm_version == 2 and not use_profile_alignment:
                                 a_domain.set_domain_signatures_hmm(
-                                    hit_n_terminal=id_to_hit[hit_key_1],
+                                    n_terminal_hits=[id_to_hit[h] for h in merged_to_original[hit_key_1]],
                                     hit_c_terminal=id_to_hit[hit_key_2],
                                 )
 
@@ -194,7 +202,7 @@ def _hits_to_domains(
                     if hmm_version == 2 and not use_profile_alignment:
 
                         a_domain.set_domain_signatures_hmm(
-                            hit_n_terminal=id_to_hit[hit_key_1],
+                            n_terminal_hits=[id_to_hit[h] for h in merged_to_original[hit_key_1]],
                             hit_c_terminal=None,
                         )
                     seq_id_to_domains[seq_id].append(a_domain)

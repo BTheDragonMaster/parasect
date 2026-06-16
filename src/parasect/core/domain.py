@@ -143,6 +143,40 @@ def _align_adenylation_domain(
     return aligned_domain, aligned_reference
 
 
+def _merge_signatures(signatures: list[list[str]], positions: list[list[int]]) -> tuple[str, list[int]]:
+    """Merge signature fragments extracted from multiple HSPs into a single signature
+
+    :param signatures: list of signatures, represented as a list of amino acids (including gaps)
+    :type signatures: list[list[str]]
+
+    :return: signature and list of signature positions
+    :rtype: str
+
+    """
+    if not signatures:
+        raise ValueError("No signatures provided")
+
+    signature_length = len(signatures[0])
+    merged_signature: list[str] = []
+    merged_positions: list[int] = []
+
+    for i in range(signature_length):
+        position = None
+        aa = '-'
+        for j, signature in enumerate(signatures):
+            aa_cand = signature[i]
+            if aa == '-' and aa_cand != '-':
+                aa = aa_cand
+                position = positions[j][i]
+                assert position is not None
+                break
+
+        merged_signature.append(aa)
+        merged_positions.append(position)
+
+    return ''.join(merged_signature), merged_positions
+
+
 def _get_gap_adjusted_positions(query: str, positions: list[int], offset: int) -> list[Optional[int]]:
     """Return sequence positions adjusted for gaps
 
@@ -244,12 +278,12 @@ class AdenylationDomain:
         self.sequence = sequence
 
     def set_domain_signatures_hmm(
-        self, hit_n_terminal: HSP, hit_c_terminal: Optional[HSP] = None
+        self, n_terminal_hits: list[HSP], hit_c_terminal: Optional[HSP] = None
     ) -> None:
         """Extract (extended) signatures from adenylation domains using HMM profile.
 
-        :param hit_n_terminal: The hit object for the N-terminal domain.
-        :type hit_n_terminal: HSP
+        :param n_terminal_hits: List of hit objects for the N-terminal domain.
+        :type n_terminal_hits: list[HSP]
         :param hit_c_terminal: The hit object for the C-terminal domain.
         :type hit_c_terminal: Optional[HSP]
 
@@ -283,23 +317,46 @@ class AdenylationDomain:
         extended_signature_positions = HMM2_POSITIONS_EXTENDED_SIGNATURE
         position_k = [36]  # hmm2 position k
 
-        profile = hit_n_terminal.aln[1].seq
-        query = hit_n_terminal.aln[0].seq
-        offset = hit_n_terminal.hit_start
-        query_offset = hit_n_terminal.query_start
+        signature_per_hit: list[list[str]] = []
+        positions_per_hit: list[list[int]] = []
+        extended_signature_per_hit: list[list[str]] = []
+        extended_positions_per_hit: list[list[int]] = []
 
-        signature_location = _get_reference_positions_hmm(
-            query_sequence=query,
-            reference_sequence=profile,
-            reference_positions=[p - offset for p in signature_positions],
-        )
+        for hit_n_terminal in n_terminal_hits:
 
-        if signature_location:
-            signature = "".join([query[i] for i in signature_location])
-            if all([char in valid for char in signature]):
-                self.signature = signature
-                self.signature_positions = _get_gap_adjusted_positions(query, signature_location, query_offset)
+            profile = hit_n_terminal.aln[1].seq
+            query = hit_n_terminal.aln[0].seq
+            offset = hit_n_terminal.hit_start
+            query_offset = hit_n_terminal.query_start
 
+            signature_location = _get_reference_positions_hmm(
+                query_sequence=query,
+                reference_sequence=profile,
+                reference_positions=[p - offset for p in signature_positions],
+            )
+
+            extended_signature_location = _get_reference_positions_hmm(
+                query_sequence=query,
+                reference_sequence=profile,
+                reference_positions=[p - offset for p in extended_signature_positions],
+            )
+
+            if signature_location:
+                signature = [query[i] for i in signature_location]
+                if all([char in valid for char in signature]):
+                    signature_per_hit.append(signature)
+                    positions_per_hit.append(_get_gap_adjusted_positions(query, signature_location, query_offset))
+
+            if extended_signature_location:
+                extended_signature = [query[i] for i in extended_signature_location]
+                if all([char in valid for char in extended_signature]):
+                    extended_positions_per_hit.append(extended_signature)
+                    extended_positions_per_hit.append(_get_gap_adjusted_positions(query, extended_signature,
+                                                                                  query_offset))
+
+        self.signature, self.signature_positions = _merge_signatures(signature_per_hit, positions_per_hit)
+        self.extended_signature, self.extended_signature_positions = _merge_signatures(extended_signature_per_hit,
+                                                                                       extended_positions_per_hit)
         lysine = None
         lysine_position = None
         query_c = None
@@ -317,22 +374,12 @@ class AdenylationDomain:
         if self.signature:
             if lysine_position and query_c:
                 lysine = query_c[lysine_position[0]]
+
             if lysine and lysine in valid and lysine != "-":
                 self.signature += lysine
             else:
                 self.signature += "K"
 
-        extended_signature_location = _get_reference_positions_hmm(
-            query_sequence=query,
-            reference_sequence=profile,
-            reference_positions=[p - offset for p in extended_signature_positions],
-        )
-        if extended_signature_location:
-            extended_signature = "".join([query[i] for i in extended_signature_location])
-            if all([char in valid for char in extended_signature]):
-                self.extended_signature = extended_signature
-                self.extended_signature_positions = _get_gap_adjusted_positions(query, extended_signature_location,
-                                                                                query_offset)
 
     def set_domain_signatures_profile(self, path_temp_dir: str) -> None:
         """Extract (extended) signatures from adenylation domains using profile alignment.
