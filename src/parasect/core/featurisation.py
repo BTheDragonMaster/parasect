@@ -162,7 +162,7 @@ def _hits_to_domains(
     for seq_id, hits in hits_by_seq_id.items():
         merged_hits, merged_to_original = group_n_terminal_hits(hits)
         seq_id_to_hits[seq_id] = merged_hits
-        seq_id_to_merged_to_original[merged_to_original] = merged_to_original
+        seq_id_to_merged_to_original[seq_id] = merged_to_original
 
     for seq_id, hits in seq_id_to_hits.items():
         merged_to_original = seq_id_to_merged_to_original[seq_id]

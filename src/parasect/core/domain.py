@@ -350,13 +350,15 @@ class AdenylationDomain:
             if extended_signature_location:
                 extended_signature = [query[i] for i in extended_signature_location]
                 if all([char in valid for char in extended_signature]):
-                    extended_positions_per_hit.append(extended_signature)
-                    extended_positions_per_hit.append(_get_gap_adjusted_positions(query, extended_signature,
+                    extended_signature_per_hit.append(extended_signature)
+                    extended_positions_per_hit.append(_get_gap_adjusted_positions(query, extended_signature_location,
                                                                                   query_offset))
 
         self.signature, self.signature_positions = _merge_signatures(signature_per_hit, positions_per_hit)
         self.extended_signature, self.extended_signature_positions = _merge_signatures(extended_signature_per_hit,
                                                                                        extended_positions_per_hit)
+
+        print(self.signature, self.extended_signature)
         lysine = None
         lysine_position = None
         query_c = None
