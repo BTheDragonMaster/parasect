@@ -358,7 +358,6 @@ class AdenylationDomain:
         self.extended_signature, self.extended_signature_positions = _merge_signatures(extended_signature_per_hit,
                                                                                        extended_positions_per_hit)
 
-        print(self.signature, self.extended_signature)
         lysine = None
         lysine_position = None
         query_c = None
