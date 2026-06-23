@@ -10,11 +10,10 @@ from shutil import copy
 
 from parasect.core.constants import SEPARATOR_1, SEPARATOR_2, SEPARATOR_3
 from parasect.api import run_paras
-from parasect.core.helpers import download_and_unpack_or_fetch
+from parasect.download_models import prepare_model
 from parasect.core.writers import write_fasta_file, write_results
-from parasect.core.retrain_models import retrain_model, model_needs_retraining, update_metadata_file
 from parasect.core.models import ModelType
-from parasect.core.constants import MODEL_METADATA_FILE
+
 
 
 def cli() -> argparse.Namespace:
@@ -34,6 +33,7 @@ def cli() -> argparse.Namespace:
                         help="Job name")
     parser.add_argument('-n', "--number_predictions", type=int, default=3, help="Number of top predictions to report.")
     parser.add_argument('-t', "--temp", type=str, default=None, help="Temp dir. If not given, create temp folder in output dir")
+    parser.add_argument('-m', "--model_dir", type=str, default=None, help="Path to model directory. If not given, use temp folder")
     parser.add_argument('-p', "--profile_alignment", action='store_true',
                         help="Use profile alignment instead of HMM for active site extraction")
     parser.add_argument('-save_extended', action='store_true',
@@ -65,44 +65,25 @@ def main() -> None:
 
     if args.temp is None:
         temp_dir = os.path.join(args.output, "temp")
-        if not os.path.exists(temp_dir):
-            os.mkdir(temp_dir)
-
-
     else:
         temp_dir = args.temp
 
-    metadata_path = os.path.join(temp_dir, "model_metadata.txt")
-    if not os.path.exists(metadata_path):
-        copy(MODEL_METADATA_FILE, metadata_path)
+    if not os.path.exists(temp_dir):
+        os.mkdir(temp_dir)
+
+    if args.model_dir is None:
+        model_dir = temp_dir
+    else:
+        model_dir = args.model_dir
+        if not os.path.exists(model_dir):
+            os.mkdir(model_dir)
 
     if args.all_substrates:
-        if model_needs_retraining(metadata_path, ModelType.PARAS_ALL_SUBSTRATES):
-            print("Found incompatible version of scikit-learn. Retraining..")
-            model = retrain_model(ModelType.PARAS_ALL_SUBSTRATES)
-            model_path = os.path.join(temp_dir, model.file_name)
-            model.save(temp_dir)
-            update_metadata_file(ModelType.PARAS_ALL_SUBSTRATES, metadata_path)
-
-        else:
-
-            model_path = download_and_unpack_or_fetch(r"https://zenodo.org/records/17224548/files/all_substrates_model.paras.gz?download=1",
-                                                      temp_dir, logger)
-
+        model_type = ModelType.PARAS_ALL_SUBSTRATES
     else:
+        model_type = ModelType.PARAS
 
-        if model_needs_retraining(metadata_path, ModelType.PARAS):
-            print("Found incompatible version of scikit-learn. Retraining..")
-            model = retrain_model(ModelType.PARAS)
-            model_path = os.path.join(temp_dir, model.file_name)
-            model.save(temp_dir)
-            update_metadata_file(ModelType.PARAS, metadata_path)
-
-        else:
-            model_path = download_and_unpack_or_fetch(
-                r"https://zenodo.org/records/17224548/files/model.paras.gz?download=1",
-                temp_dir, logger)
-
+    model_path = prepare_model(model_type, model_dir, logger)
     model = load(model_path)
 
     with open(args.input, 'r') as input_file:
