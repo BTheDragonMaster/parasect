@@ -225,8 +225,8 @@ class AdenylationDomain:
         self.protein_sequence = ""
         self.signature = ""
         self.extended_signature = ""
-        self.signature_positions: list[int] = []
-        self.extended_signature_positions: list[int] = []
+        self.signature_positions: list[Optional[int]] = []
+        self.extended_signature_positions: list[Optional[int]] = []
 
     def domains_overlap(self, other: "AdenylationDomain", threshold: int = 50) -> bool:
         """
@@ -311,6 +311,7 @@ class AdenylationDomain:
             "W",
             "Y",
             "-",
+            "X"
         }
 
         signature_positions = HMM2_POSITIONS_SIGNATURE
@@ -318,9 +319,9 @@ class AdenylationDomain:
         position_k = [36]  # hmm2 position k
 
         signature_per_hit: list[list[str]] = []
-        positions_per_hit: list[list[int]] = []
+        positions_per_hit: list[list[Optional[int]]] = []
         extended_signature_per_hit: list[list[str]] = []
-        extended_positions_per_hit: list[list[int]] = []
+        extended_positions_per_hit: list[list[Optional[int]]] = []
 
         for hit_n_terminal in n_terminal_hits:
 
@@ -348,19 +349,28 @@ class AdenylationDomain:
                     positions_per_hit.append(_get_gap_adjusted_positions(query, signature_location, query_offset))
 
             if extended_signature_location:
+
                 extended_signature = [query[i] for i in extended_signature_location]
                 if all([char in valid for char in extended_signature]):
                     extended_signature_per_hit.append(extended_signature)
                     extended_positions_per_hit.append(_get_gap_adjusted_positions(query, extended_signature_location,
                                                                                   query_offset))
-
-        self.signature, self.signature_positions = _merge_signatures(signature_per_hit, positions_per_hit)
-        self.extended_signature, self.extended_signature_positions = _merge_signatures(extended_signature_per_hit,
-                                                                                       extended_positions_per_hit)
+        if signature_per_hit:
+            self.signature, self.signature_positions = _merge_signatures(signature_per_hit, positions_per_hit)
+        else:
+            self.signature = '-' * len(signature_positions)
+            self.signature_positions = [None] * len(signature_positions)
+        if extended_signature_per_hit:
+            self.extended_signature, self.extended_signature_positions = _merge_signatures(extended_signature_per_hit,
+                                                                                           extended_positions_per_hit)
+        else:
+            self.signature = '-' * len(extended_signature_positions)
+            self.signature_positions = [None] * len(extended_signature_positions)
 
         lysine = None
         lysine_position = None
         query_c = None
+
         if hit_c_terminal:
             profile_c = hit_c_terminal.aln[1].seq
             query_c = hit_c_terminal.aln[0].seq
@@ -378,8 +388,10 @@ class AdenylationDomain:
 
             if lysine and lysine in valid and lysine != "-":
                 self.signature += lysine
+                self.signature_positions.append(lysine_position)
             else:
                 self.signature += "K"
+                self.signature_positions.append(None)
 
 
     def set_domain_signatures_profile(self, path_temp_dir: str) -> None:
