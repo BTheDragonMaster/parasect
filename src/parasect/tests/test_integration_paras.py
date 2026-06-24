@@ -10,7 +10,7 @@ from tempfile import TemporaryDirectory
 from joblib import load
 
 from parasect.api import run_paras, run_parasect, Result
-from parasect.core.helpers import prepare_model, prepare_substrates
+from parasect.core.helpers import prepare_model
 from parasect.core.writers import write_results
 from parasect.core.models import ModelType
 
@@ -103,6 +103,18 @@ class TestParas(ParasBaseTest):
         self.assertEqual(len(results), 5)
         self._assert_output_exists(job_name)
 
+    def testFragmentedHit(self):
+        job_name = "fragmented_hit"
+        results = self._run_and_save(job_name)
+        self.assertEqual(len(results), 1)
+        self._assert_output_exists(job_name)
+
+    def testPoorQualityDomain(self):
+        job_name = "poor_quality_domain"
+        results = self._run_and_save(job_name)
+        self.assertEqual(len(results), 1)
+        self._assert_output_exists(job_name)
+
 
 @pytest.mark.integration
 class TestParasAllSubstrates(ParasBaseTest):
@@ -113,6 +125,18 @@ class TestParasAllSubstrates(ParasBaseTest):
         job_name = "DptA"
         results = self._run_and_save(job_name)
         self.assertEqual(len(results), 5)
+        self._assert_output_exists(job_name)
+
+    def testFragmentedHit(self):
+        job_name = "fragmented_hit"
+        results = self._run_and_save(job_name)
+        self.assertEqual(len(results), 1)
+        self._assert_output_exists(job_name)
+
+    def testPoorQualityDomain(self):
+        job_name = "poor_quality_domain"
+        results = self._run_and_save(job_name)
+        self.assertEqual(len(results), 1)
         self._assert_output_exists(job_name)
 
 class TestParasect(ParasectBaseTest):
