@@ -39,7 +39,7 @@ class TestFeaturisation(unittest.TestCase):
         merged_hit_1 = ("AMP-binding", 0, 500, "seq_1|AMP-binding|0-500")
         merged_hit_2 = ("AMP-binding", 560, 900, "seq_1|AMP-binding|560-900")
 
-        self.assertEqual(group_n_terminal_hits([hit_1, hit_2, hit_3, hit_5, hit_6]),
+        self.assertEqual(group_n_terminal_hits([hit_1, hit_2, hit_3, hit_5, hit_6])[0],
                          [merged_hit_1, merged_hit_2, hit_3])
 
         with self.assertRaises(ValueError):
