@@ -1,4 +1,5 @@
 import os
+import logging
 from enum import Enum
 from typing import Optional
 
@@ -15,6 +16,8 @@ from parasect.model_training.rf.test_rf import test_paras_signatures, test_paras
     test_parasect_esm
 from parasect.model_training.train_test_splits.domain_scope import DomainScope
 from parasect.model_training.train_test_splits.substrate_selection import SubstrateSelectionMode
+
+logger = logging.getLogger(__name__)
 
 
 def parse_arguments() -> Namespace:
@@ -116,7 +119,7 @@ def do_crossvalidation(session: Session, crossvalidation_folder: str, out_dir: s
                 model, hashes = train_parasect_signatures(session, train_file, included_substrates_file,
                                                           bitvector_size)
 
-                print(f"Number of hashes: {len(hashes)}")
+                logger.info(f"Number of hashes: {len(hashes)}")
         else:
             if not parasect:
                 model = train_paras_esm(session, train_file, selection_mode, included_substrates_file,
@@ -125,13 +128,13 @@ def do_crossvalidation(session: Session, crossvalidation_folder: str, out_dir: s
                 model, hashes = train_parasect_esm(session, train_file, included_substrates_file, esm_embeddings,
                                                    n_components, bitvector_size)
 
-                print(f"Number of hashes: {len(hashes)}")
+                logger.info(f"Number of hashes: {len(hashes)}")
 
         crossval_dir = os.path.join(out_dir, f"crossvalidation_{i + 1}_all")
         crossval_dir_fungal = os.path.join(out_dir, f"crossvalidation_{i + 1}_fungal")
         crossval_dir_bacterial = os.path.join(out_dir, f"crossvalidation_{i + 1}_bacterial")
 
-        print(f"\nTesting all domains... (crossvalidation set {i + 1})")
+        logger.info(f"\nTesting all domains... (crossvalidation set {i + 1})")
 
         if esm_embeddings is None:
             if not parasect:
@@ -149,7 +152,7 @@ def do_crossvalidation(session: Session, crossvalidation_folder: str, out_dir: s
                                   hashes, n_components=n_components)
 
         if fungal_domains and set(fungal_domains) != set(domains):
-            print(f"\nTesting fungal domains... (crossvalidation set {i + 1})")
+            logger.info(f"\nTesting fungal domains... (crossvalidation set {i + 1})")
             if esm_embeddings is None:
                 if not parasect:
                     test_paras_signatures(model, fungal_domains, included_substrates_file, crossval_dir_fungal)
@@ -163,7 +166,7 @@ def do_crossvalidation(session: Session, crossvalidation_folder: str, out_dir: s
                     test_parasect_esm(session, model, fungal_domains, included_substrates_file, esm_embeddings,
                                       crossval_dir_fungal, hashes, n_components=n_components)
         if bacterial_domains and set(bacterial_domains) != set(domains):
-            print(f"\nTesting bacterial domains... (crossvalidation set {i + 1})")
+            logger.info(f"\nTesting bacterial domains... (crossvalidation set {i + 1})")
             if esm_embeddings is None:
                 if not parasect:
                     test_paras_signatures(model, bacterial_domains, included_substrates_file, crossval_dir_bacterial)

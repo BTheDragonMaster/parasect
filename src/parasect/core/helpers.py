@@ -7,14 +7,14 @@ from typing import Optional
 from parasect.core.parsing import parse_smiles_mapping
 import os
 from shutil import copy
-from logging import Logger
 
 from parasect.core.models import ModelType
 from parasect.core.constants import MODEL_METADATA_FILE
 from parasect.core.retrain_models import retrain_model, model_needs_retraining, update_metadata_file
 
+logger = logging.getLogger(__name__)
 
-def prepare_model(model_type: ModelType, model_dir: str, logger: Logger) -> str:
+def prepare_model(model_type: ModelType, model_dir: str) -> str:
     """Download or retrain PARAS/PARASECT model"""
     metadata_path = os.path.join(model_dir, "model_metadata.txt")
     if not os.path.exists(metadata_path):

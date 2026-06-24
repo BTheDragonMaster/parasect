@@ -55,9 +55,8 @@ def cli() -> argparse.Namespace:
 
 def main() -> None:
     """Run CLI for PARAS."""
-    args = cli()
-    logger = logging.getLogger(__name__)
     logging.basicConfig(level="INFO")
+    args = cli()
 
     temp_dir, model_dir = prepare_folders(args.output, args.temp, args.model_dir)
 
@@ -66,7 +65,7 @@ def main() -> None:
     else:
         model_type = ModelType.PARAS
 
-    model_path = prepare_model(model_type, model_dir, logger)
+    model_path = prepare_model(model_type, model_dir)
     model = load(model_path)
 
     with open(args.input, 'r') as input_file:

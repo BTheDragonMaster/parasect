@@ -2,7 +2,6 @@
 
 """CLI for PARASECT."""
 
-import os
 import argparse
 import logging
 from joblib import load
@@ -11,7 +10,7 @@ from shutil import rmtree
 from parasect.core.constants import SEPARATOR_1, SEPARATOR_2, SEPARATOR_3
 from parasect.api import run_parasect
 from parasect.core.helpers import prepare_folders, prepare_substrates, prepare_model
-from parasect.core.writers import write_fasta_file, write_results
+from parasect.core.writers import write_results
 from parasect.core.models import ModelType
 
 
@@ -64,9 +63,8 @@ def cli() -> argparse.Namespace:
 
 def main() -> None:
     """Run CLI for PARASECT."""
-    args = cli()
-    logger = logging.getLogger(__name__)
     logging.basicConfig(level="INFO")
+    args = cli()
 
     temp_dir, model_dir = prepare_folders(args.output, args.temp, args.model_dir)
 
@@ -80,7 +78,7 @@ def main() -> None:
     if not substrate_names and args.exclude_standard_substrates:
         raise ValueError("No substrates to test! Either include standard substrates or pass custom substrate SMILES")
 
-    model_path = prepare_model(model_type, model_dir, logger)
+    model_path = prepare_model(model_type, model_dir)
     model = load(model_path)
 
     with open(args.input, 'r') as input_file:
