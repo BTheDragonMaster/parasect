@@ -3,6 +3,7 @@ Integration tests for PARAS/PARASECT models. Only use with pytest.
 """
 
 import unittest
+import pytest
 
 import os
 from tempfile import TemporaryDirectory
@@ -62,7 +63,7 @@ class BaseModelTest(unittest.TestCase):
     def _assert_output_exists(self, job_name: str,
                               suffixes=("signatures", "extended_signatures", "sequences")):
         for suffix in suffixes:
-            path = os.path.join(self.output_dir.name, f"{job_name}_{self.MODEL_TYPE.lower()}_{suffix}.fasta")
+            path = os.path.join(self.output_dir.name, f"{job_name}_{suffix}.fasta")
             self.assertTrue(os.path.exists(path), f"Missing expected output: {path}")
 
     def _run_model(self, domain_data: str):
@@ -91,6 +92,7 @@ class ParasectBaseTest(BaseModelTest):
         return results
 
 
+@pytest.mark.integration
 class TestParas(ParasBaseTest):
     __test__ = True
     MODEL_TYPE = ModelType.PARAS
@@ -102,6 +104,7 @@ class TestParas(ParasBaseTest):
         self._assert_output_exists(job_name)
 
 
+@pytest.mark.integration
 class TestParasAllSubstrates(ParasBaseTest):
     __test__ = True
     MODEL_TYPE = ModelType.PARAS_ALL_SUBSTRATES
