@@ -6,17 +6,13 @@ import os
 import argparse
 import logging
 from joblib import load
-from shutil import copy
+from shutil import rmtree
 
 from parasect.core.constants import SEPARATOR_1, SEPARATOR_2, SEPARATOR_3
 from parasect.api import run_parasect
-from parasect.core.helpers import download_and_unpack_or_fetch
+from parasect.core.helpers import prepare_folders, prepare_substrates, prepare_model
 from parasect.core.writers import write_fasta_file, write_results
-from parasect.core.parsing import parse_smiles_mapping
-from parasect.core.retrain_models import retrain_model, model_needs_retraining, update_metadata_file
 from parasect.core.models import ModelType
-from parasect.core.constants import MODEL_METADATA_FILE
-from parasect.download_models import prepare_model
 
 
 def cli() -> argparse.Namespace:
@@ -72,36 +68,14 @@ def main() -> None:
     logger = logging.getLogger(__name__)
     logging.basicConfig(level="INFO")
 
-    if not os.path.exists(args.output):
-        os.mkdir(args.output)
-
-    if args.temp is None:
-        temp_dir = os.path.join(args.output, "temp")
-    else:
-        temp_dir = args.temp
-
-    if not os.path.exists(temp_dir):
-        os.mkdir(temp_dir)
-
-    if args.model_dir is None:
-        model_dir = temp_dir
-    else:
-        model_dir = args.model_dir
-        if not os.path.exists(model_dir):
-            os.mkdir(model_dir)
+    temp_dir, model_dir = prepare_folders(args.output, args.temp, args.model_dir)
 
     if args.bacterial:
         model_type = ModelType.PARASECT_BACTERIAL
     else:
         model_type = ModelType.PARASECT
 
-    if args.smiles is not None:
-        substrates = parse_smiles_mapping(args.smiles)
-        substrate_names = [s.name for s in substrates]
-        substrate_smiles = [s.smiles for s in substrates]
-    else:
-        substrate_names = None
-        substrate_smiles = None
+    substrate_names, substrate_smiles = prepare_substrates(args.smiles)
 
     if not substrate_names and args.exclude_standard_substrates:
         raise ValueError("No substrates to test! Either include standard substrates or pass custom substrate SMILES")
@@ -119,29 +93,14 @@ def main() -> None:
                            use_structure_guided_alignment=args.profile_alignment,
                            bacterial_only=args.bacterial)
 
-    id_to_sig = {}
-    id_to_ext = {}
-    id_to_seq = {}
+    write_results(results, args.output, args.number_predictions, model_type,
+                  args.s1, args.s2, args.s3,
+                  args.job_name,
+                  args.save_signatures,
+                  args.save_extended,
+                  args.save_domains)
 
-    for result in results:
-        domain_header = result.get_domain_header(args.s1, args.s2, args.s3)
-        if args.save_signatures:
-            id_to_sig[domain_header] = result.to_json()['domain_signature']
-        if args.save_extended:
-            id_to_ext[domain_header] = result.to_json()['domain_extended_signature']
-        if args.save_domains:
-            id_to_seq[domain_header] = result.to_json()['domain_sequence']
-
-    if args.save_signatures:
-        write_fasta_file(id_to_sig, os.path.join(args.output, f"{args.job_name}_signatures.fasta"))
-    if args.save_extended:
-        write_fasta_file(id_to_ext, os.path.join(args.output, f"{args.job_name}_extended_signatures.fasta"))
-    if args.save_domains:
-        write_fasta_file(id_to_seq, os.path.join(args.output, f"{args.job_name}_sequences.fasta"))
-
-    results_out = os.path.join(args.output, f"{args.job_name}_parasect_results.txt")
-    write_results(results, results_out, args.number_predictions)
-
+    rmtree(temp_dir)
 
 
 if __name__ == "__main__":
