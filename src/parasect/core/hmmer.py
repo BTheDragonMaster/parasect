@@ -67,7 +67,7 @@ def parse_hmm_results(path_in: str, hmmer_version: int = 2) -> Dict[str, HSP]:
 
             # filter hits based on bitscore and hit_id
             if hsp.bitscore > 20:
-                if hsp.hit_id == "AMP-binding" or hsp.hit_id == "AMP-binding_C":
+                if hsp.hit_id in ["AMP-binding", "AMP-binding_C" "A-OX"]:
 
                     header = f"{result.id}|{hsp.hit_id}|{hsp.query_start}-{hsp.query_end}"
                     filtered_hits[header] = hsp
