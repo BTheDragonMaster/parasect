@@ -115,6 +115,12 @@ class TestParas(ParasBaseTest):
         self.assertEqual(len(results), 1)
         self._assert_output_exists(job_name)
 
+    def testAoxDomain(self):
+        job_name = "a_ox"
+        results = self._run_and_save(job_name)
+        self.assertEqual(len(results), 1)
+        self._assert_output_exists(job_name)
+
 
 @pytest.mark.integration
 class TestParasAllSubstrates(ParasBaseTest):
@@ -135,6 +141,12 @@ class TestParasAllSubstrates(ParasBaseTest):
 
     def testPoorQualityDomain(self):
         job_name = "poor_quality_domain"
+        results = self._run_and_save(job_name)
+        self.assertEqual(len(results), 1)
+        self._assert_output_exists(job_name)
+
+    def testAoxDomain(self):
+        job_name = "a_ox"
         results = self._run_and_save(job_name)
         self.assertEqual(len(results), 1)
         self._assert_output_exists(job_name)

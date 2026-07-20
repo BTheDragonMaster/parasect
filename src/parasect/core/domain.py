@@ -3,6 +3,7 @@
 """Module for defining abstract classes and interfaces."""
 
 import os
+import logging
 from typing import List, Optional, Tuple
 
 from parasect.core.constants import (
@@ -17,6 +18,8 @@ from parasect.core.constants import (
 from parasect.core.muscle import run_muscle
 from parasect.core.parsing import parse_fasta_file
 from parasect.core.hit import HmmHit, DomainType
+
+logger = logging.getLogger(__name__)
 
 
 def _get_reference_positions(positions: List[int], aligned_reference: str) -> List[int]:
@@ -427,6 +430,7 @@ class AdenylationDomain:
         )
 
         if self.type == DomainType.A_OX:
+            logger.debug("Setting reference positions for A-OX domain")
             positions_signature = AOX_POSITIONS_SIGNATURE
             positions_extended_signature = AOX_POSITIONS_EXTENDED_SIGNATURE
         else:

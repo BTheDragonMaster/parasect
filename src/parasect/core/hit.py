@@ -1,6 +1,9 @@
 from typing import Optional
 from dataclasses import dataclass
 from enum import IntFlag
+import logging
+
+logger = logging.getLogger(__name__)
 
 from Bio.SearchIO._model.hsp import HSP
 
@@ -125,6 +128,7 @@ def _resolve_n_terminal_hits(group: list[HmmHit]) -> list[HmmHit]:
 
 
     if ox_cover / AOX_HMM.get_ox_length() >= AOX_HMM.ox_threshold:
+        logger.debug("A-OX domain found")
         has_ox = True
 
     if amp_cover / AOX_HMM.get_amp_length() >= AOX_HMM.amp_threshold:

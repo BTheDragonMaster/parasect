@@ -15,6 +15,8 @@ from parasect.core.parsing import parse_fasta_file
 from parasect.core.genbank import genbank_to_fasta
 from parasect.core.hit import group_n_terminal_hits, HmmHit, DomainType
 
+logger = logging.getLogger(__name__)
+
 
 def get_domain_features(amino_acid_sequence: str) -> List[float]:
     """Return a feature list of NRPSPredictor features from a sequence.
@@ -54,7 +56,6 @@ def _hits_to_domains(
     :rtype: List[AdenylationDomain]
     :raises ValueError: If protein name mismatch.
     """
-    logger = logging.getLogger(__name__)
 
     logger.debug("sorting hits by sequence ...")
 
@@ -275,6 +276,7 @@ def update_hmmer2_domain_sequences(hmmer2_domains: list[AdenylationDomain],
                         raise ValueError("Mismatching protein names")
                     domain_1.set_sequence(fasta[domain_1.protein_name][domain_1.start:domain_1.end])
                 if domain_2.type == DomainType.A_OX:
+                    logger.debug("Overwriting AMP-binding domain with A-OX domain")
                     domain_1.type = DomainType.A_OX
                     domain_1.set_domain_signatures_profile(path_temp_dir)
 
