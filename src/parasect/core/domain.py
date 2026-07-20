@@ -5,17 +5,18 @@
 import os
 from typing import List, Optional, Tuple
 
-from Bio.SearchIO._model.hsp import HSP
-
 from parasect.core.constants import (
     ALIGNMENT_FILE,
     HMM2_POSITIONS_EXTENDED_SIGNATURE,
     HMM2_POSITIONS_SIGNATURE,
     POSITIONS_EXTENDED_SIGNATURE,
     POSITIONS_SIGNATURE,
+    AOX_POSITIONS_SIGNATURE,
+    AOX_POSITIONS_EXTENDED_SIGNATURE
 )
 from parasect.core.muscle import run_muscle
 from parasect.core.parsing import parse_fasta_file
+from parasect.core.hit import HmmHit, DomainType
 
 
 def _get_reference_positions(positions: List[int], aligned_reference: str) -> List[int]:
@@ -109,8 +110,9 @@ def _align_adenylation_domain(
     domain_sequence: str,
     alignment_file: str,
     path_temp_dir: str,
+    domain_type: DomainType = DomainType.AMP_BINDING
 ) -> Tuple[str, str]:
-    """Align adanylation domain to database of adenylation domains.
+    """Align adenylation domain to database of adenylation domains.
 
     :param domain_name: The name of the domain.
     :type domain_name: str
@@ -127,6 +129,13 @@ def _align_adenylation_domain(
     temp_in = os.path.join(path_temp_dir, "temp_in_alignment.fasta")
     temp_out = os.path.join(path_temp_dir, "temp_out_alignment.fasta")
 
+    if domain_type == DomainType.AMP_BINDING:
+        reference = "BAA00406.1.A1"
+    elif domain_type == DomainType.A_OX:
+        reference = "CAD89778.1.A1"
+    else:
+        raise ValueError(f"Unknown domain type: {domain_type}")
+
     with open(temp_in, "w") as temp:
         temp.write(f">{domain_name}\n{domain_sequence}")
 
@@ -137,8 +146,8 @@ def _align_adenylation_domain(
     # aligned sequence of domain
     aligned_domain = aligned_domains[domain_name]
 
-    # aligned sequence of 1AMU reference sequence
-    aligned_reference = aligned_domains["BAA00406.1.A1"]
+    # aligned sequence of 1AMU reference sequence or A-OX domain
+    aligned_reference = aligned_domains[reference]
 
     return aligned_domain, aligned_reference
 
@@ -206,7 +215,7 @@ def _get_gap_adjusted_positions(query: str, positions: list[int], offset: int) -
 class AdenylationDomain:
     """Class for representing adenylation domains."""
 
-    def __init__(self, protein_name: str, domain_start: int, domain_end: int) -> None:
+    def __init__(self, protein_name: str, domain_type: DomainType, domain_start: int, domain_end: int) -> None:
         """Initialize an AdenylationDomain object.
 
         :param protein_name: The name of the protein.
@@ -217,6 +226,7 @@ class AdenylationDomain:
         :type domain_end: int
         """
         self.protein_name = protein_name
+        self.type = domain_type
         self.domain_nr = 0
         self.start = domain_start
         self.end = domain_end
@@ -278,14 +288,14 @@ class AdenylationDomain:
         self.sequence = sequence
 
     def set_domain_signatures_hmm(
-        self, n_terminal_hits: list[HSP], hit_c_terminal: Optional[HSP] = None
+        self, n_terminal_hit: HmmHit, c_terminal_hit: Optional[HmmHit] = None
     ) -> None:
         """Extract (extended) signatures from adenylation domains using HMM profile.
 
-        :param n_terminal_hits: List of hit objects for the N-terminal domain.
-        :type n_terminal_hits: list[HSP]
-        :param hit_c_terminal: The hit object for the C-terminal domain.
-        :type hit_c_terminal: Optional[HSP]
+        :param n_terminal_hit: HMM hit for N-terminal A or A-OX domain
+        :type n_terminal_hit: HmmHit
+        :param c_terminal_hit: The hit object for the C-terminal domain.
+        :type c_terminal_hit: HmmHit
 
         .. note:: This function modifies the signature and extended signature attributes.
         """
@@ -323,7 +333,7 @@ class AdenylationDomain:
         extended_signature_per_hit: list[list[str]] = []
         extended_positions_per_hit: list[list[Optional[int]]] = []
 
-        for hit_n_terminal in n_terminal_hits:
+        for hit_n_terminal in n_terminal_hit.hsps:
 
             profile = hit_n_terminal.aln[1].seq
             query = hit_n_terminal.aln[0].seq
@@ -371,10 +381,11 @@ class AdenylationDomain:
         lysine_position = None
         query_c = None
 
-        if hit_c_terminal:
-            profile_c = hit_c_terminal.aln[1].seq
-            query_c = hit_c_terminal.aln[0].seq
-            offset_c = hit_c_terminal.hit_start
+        if c_terminal_hit:
+            c_terminal_hsp = c_terminal_hit.hsps[0]
+            profile_c = c_terminal_hsp.aln[1].seq
+            query_c = c_terminal_hsp.aln[0].seq
+            offset_c = c_terminal_hsp.hit_start
 
             lysine_position = _get_reference_positions_hmm(
                 query_sequence=query_c,
@@ -412,14 +423,22 @@ class AdenylationDomain:
             domain_sequence=self.sequence,
             alignment_file=ALIGNMENT_FILE,
             path_temp_dir=path_temp_dir,
+            domain_type=self.type
         )
 
+        if self.type == DomainType.A_OX:
+            positions_signature = AOX_POSITIONS_SIGNATURE
+            positions_extended_signature = AOX_POSITIONS_EXTENDED_SIGNATURE
+        else:
+            positions_signature = POSITIONS_SIGNATURE
+            positions_extended_signature = POSITIONS_EXTENDED_SIGNATURE
+
         aligned_positions_signature = _get_reference_positions(
-            positions=POSITIONS_SIGNATURE, aligned_reference=aligned_reference
+            positions=positions_signature, aligned_reference=aligned_reference
         )
 
         aligned_positions_extended_signature = _get_reference_positions(
-            positions=POSITIONS_EXTENDED_SIGNATURE, aligned_reference=aligned_reference
+            positions=positions_extended_signature, aligned_reference=aligned_reference
         )
 
         signature = []
