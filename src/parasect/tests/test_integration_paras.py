@@ -121,6 +121,12 @@ class TestParas(ParasBaseTest):
         self.assertEqual(len(results), 1)
         self._assert_output_exists(job_name)
 
+    def testOxDomain(self):
+        job_name = "ox"
+        with self.assertRaises(Exception) as error:
+            self._run_and_save(job_name)
+        self.assertEqual(str(error.exception), "no adenylation domains found")
+
 
 @pytest.mark.integration
 class TestParasAllSubstrates(ParasBaseTest):
@@ -150,6 +156,12 @@ class TestParasAllSubstrates(ParasBaseTest):
         results = self._run_and_save(job_name)
         self.assertEqual(len(results), 1)
         self._assert_output_exists(job_name)
+
+    def testOxDomain(self):
+        job_name = "ox"
+        with self.assertRaises(Exception) as error:
+            self._run_and_save(job_name)
+        self.assertEqual(str(error.exception), "no adenylation domains found")
 
 class TestParasect(ParasectBaseTest):
     pass
