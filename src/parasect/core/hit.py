@@ -1,18 +1,41 @@
 from typing import Optional
 from dataclasses import dataclass
-from enum import Enum
+from enum import IntFlag
 
 from Bio.SearchIO._model.hsp import HSP
 
-from parasect.core.constants import (OX_START_POSITION, OX_END_POSITION, AMP_UP_START_POSITION, AMP_UP_END_POSITION,
-                                     AMP_DOWN_START_POSITION, AMP_DOWN_END_POSITION, OX_THRESHOLD,
-                                     AMP_THRESHOLD, AMP_LENGTH, OX_LENGTH)
+@dataclass
+class AOxHmm:
+    ox_start: int = 215
+    ox_end: int = 572
+    ox_threshold: float = 0.8
 
+    amp_upstream_start: int = 152
+    amp_upstream_end: int = 214
+    amp_downstream_start: int = 577
+    amp_downstream_end: int = 751
+    amp_threshold: float = 0.8
 
-class HitType(Enum):
+    def get_ox_length(self):
+        return self.ox_end - self.ox_start
+
+    def get_amp_length(self):
+        return self.amp_upstream_end - self.amp_upstream_start + self.amp_downstream_end - self.amp_downstream_start
+
+AOX_HMM = AOxHmm()
+
+class DomainType(IntFlag):
     AMP_BINDING = 1
     A_OX = 2
-    AMP_BINDING_C = 3
+    AMP_BINDING_C = 4
+
+    N_TERMINAL = AMP_BINDING | A_OX
+
+    def __str__(self):
+        return self._to_string()
+
+    def __repr__(self):
+        return self._to_string()
 
     @classmethod
     def from_string(cls, string):
@@ -22,67 +45,96 @@ class HitType(Enum):
 
         return from_string[string]
 
+    def _to_string(self):
+        to_string = {self.AMP_BINDING: "AMP-binding",
+                     self.A_OX: "A-OX",
+                     self.AMP_BINDING_C: "AMP-binding_C"}
+
+        return to_string[self]
+
+
 @dataclass
 class HmmHit:
     """Class to store HMM hit"""
-    id: str
-    hsp: HSP
-    hit_type: HitType
+    protein_id: str
+    domain_type: DomainType
+    hsps: list[HSP]
     hmm_version: int
 
+    def __repr__(self):
+        return self._to_string()
+
+    def __str__(self):
+        return self._to_string()
+
+    def _to_string(self):
+        return f"{self.protein_id}|{self.domain_type}|{self.get_seq_start()}-{self.get_seq_end()}"
+
     def get_seq_start(self):
-        return self.hsp.query_start
+        return min(hsp.query_start for hsp in self.hsps)
 
     def get_seq_end(self):
-        return self.hsp.query_end
+        return max(hsp.query_end for hsp in self.hsps)
 
     def get_hmm_start(self):
-        return self.hsp.hit_start
+        return min(hsp.hit_start for hsp in self.hsps)
 
     def get_hmm_end(self):
-        return self.hsp.hit_end
+        return max(hsp.hit_end for hsp in self.hsps)
 
 
 def _get_overlap_length(domain_start, domain_end, h_start, h_end):
     overlap = min([h_end, domain_end]) - max(domain_start, h_start)
     return max([overlap, 0])
 
-def _get_domain_type(group, hit_lookup):
+def _resolve_n_terminal_hits(group: list[HmmHit]) -> list[HmmHit]:
+    """Determine if the group of hits match best to an A-OX domain or an AMP-binding domain,
+    only return those hits corresponding to the best-matching one. If only the OX domain is present,
+    return an empty list.
+
+    :param group: list of Hmm hits
+
+    """
 
     has_amp = False
     has_ox = False
     ox_cover = 0
     amp_cover = 0
 
-    for ox_hit in group:
-        full_hit = hit_lookup[ox_hit[3]]
-        print(full_hit.hit_start, full_hit.hit_end, full_hit.id)
-        ox_cover += _get_overlap_length(full_hit.hit_start,
-                                        full_hit.hit_end,
-                                        OX_START_POSITION,
-                                        OX_END_POSITION)
+    for hit in group:
+        if hit.domain_type == DomainType.A_OX:
+            # Check if the A-OX HMM covers the OX-domain
+            ox_cover += _get_overlap_length(hit.get_seq_start(),
+                                            hit.get_seq_end(),
+                                            AOX_HMM.ox_start,
+                                            AOX_HMM.ox_end)
 
-        amp_cover += _get_overlap_length(full_hit.hit_start,
-                                         full_hit.hit_end,
-                                         AMP_UP_START_POSITION,
-                                         AMP_UP_END_POSITION)
+            # Check if the A-OX HMM covers the AMP-binding domain
+            amp_cover += _get_overlap_length(hit.get_seq_start(),
+                                             hit.get_seq_end(),
+                                             AOX_HMM.amp_upstream_start,
+                                             AOX_HMM.amp_upstream_end)
 
-        amp_cover += _get_overlap_length(full_hit.hit_start,
-                                         full_hit.hit_end,
-                                         AMP_DOWN_START_POSITION,
-                                         AMP_DOWN_END_POSITION)
+            amp_cover += _get_overlap_length(hit.get_seq_start(),
+                                             hit.get_seq_end(),
+                                             AOX_HMM.amp_downstream_start,
+                                             AOX_HMM.amp_downstream_end)
 
-    if ox_cover / OX_LENGTH >= OX_THRESHOLD:
+
+    if ox_cover / AOX_HMM.get_ox_length() >= AOX_HMM.ox_threshold:
         has_ox = True
-    if amp_cover / AMP_LENGTH >= AMP_THRESHOLD:
+
+    if amp_cover / AOX_HMM.get_amp_length() >= AOX_HMM.amp_threshold:
         has_amp = True
 
+    # Return the hits to the A-OX domain if it has both the OX and the AMP-binding domain
     if has_ox and has_amp:
-        return "A-OX"
-    elif has_amp:
-        return "AMP-binding"
+        filtered_group = _filter_by_domain_type(group, DomainType.A_OX)
+    # Return only the AMP-binding domain hits (possibly none, if it is an OX domain) otherwise
     else:
-        return None
+        filtered_group = _filter_by_domain_type(group, DomainType.AMP_BINDING)
+
+    return filtered_group
 
 
 def _group_hits(hits):
@@ -105,86 +157,81 @@ def _group_hits(hits):
 
     return grouped_hits
 
-def _filter_by_domain_type(hits: list[tuple[str, int, int, str]], domain_type: str) -> list[tuple[str, int, int, str]]:
-    if domain_type not in ["AMP-binding", "A-OX"]:
-        raise ValueError(f"Unknown domain type: {domain_type}")
+def _filter_by_domain_type(hits: list[HmmHit], domain_type: DomainType) -> list[HmmHit]:
     filtered_hits = []
-    for n_hit in hits:
-        if n_hit[0] == domain_type:
-            filtered_hits.append(n_hit)
+    for hit in hits:
+        if hit.domain_type == domain_type:
+            filtered_hits.append(hit)
 
     return filtered_hits
 
-def merge_hits(hits: list[tuple[str, int, int, str]], domain_type: str) -> Optional[tuple[str, int, int, str]]:
+def _merge_hits(hits: list[HmmHit]) -> Optional[HmmHit]:
     """
     Merge N-terminal AMP-binding hits
 
     :param hits: list of AMP-binding HMM hits
-    :type hits: list[tuple[str, int, int, str]]
-    :param domain_type: Type of N-terminal AMP-binding domain (AMP-binding or A-OX)
     """
 
-    hits = _filter_by_domain_type(hits, domain_type)
-
     if hits:
-        seq_id, hit_id, _ = hits[0][3].split('|')
-        for hit in hits:
-            seq_id_2, hit_id_2, _ = hit[3].split('|')
-            if seq_id_2 != seq_id:
-                raise ValueError(f"Cannot merge hits from different sequences! {seq_id}, {seq_id_2}")
-            if hit_id_2 != hit_id:
-                raise ValueError(f"Cannot merge different hit types! {hit_id}, {hit_id_2}")
+        protein_id = hits[0].protein_id
+        domain_type = hits[0].domain_type
+        hmm_version = hits[0].hmm_version
+        hsps = []
 
-        hit_start = min([hit[1] for hit in hits])
-        hit_end = max([hit[2] for hit in hits])
-        hit_key = f"{seq_id}|{hit_id}|{hit_start}-{hit_end}"
-        merged_hit = (hit_id, hit_start, hit_end, hit_key)
+        for hit in hits:
+            hsps.extend(hit.hsps)
+            if hit.protein_id != protein_id:
+                raise ValueError(f"Cannot merge hits from different sequences: {hit.protein_id}, {protein_id}")
+            if hit.domain_type != domain_type:
+                raise ValueError(f"Cannot merge different domain types: {hit.domain_type}, {domain_type}")
+            if hit.hmm_version != hmm_version:
+                raise ValueError(f"Cannot merge hits from different HMM versions: {hit.hmm_version}, {hmm_version}")
+
+        merged_hit = HmmHit(protein_id, domain_type, hsps, hmm_version)
         return merged_hit
     else:
-        return None
+        raise ValueError("Need at least one hit for merging.")
 
 
-def group_n_terminal_hits(hit_list: list[tuple[str, int, int, str]],
-                          id_to_hit: dict[str, HSP]) -> tuple[list[tuple[str, int, int, str]], dict[str, list[str]]]:
+def group_n_terminal_hits(hit_list: list[HmmHit]) -> list[HmmHit]:
     """
     Group and merge N-terminal AMP-binding hits within a single protein
 
     :param hit_list: list of AMP-binding HMM hits
-    :type hit_list: list[tuple[str, int, int, str]]
-    :param id_to_hit: dictionary of protein ID to HSPs within that protein
     """
     n_terminal_hits = []
     c_terminal_hits = []
-    seq_ids = set()
+    seq_ids: set[str] = set()
+    hmmer_versions: set[int] = set()
 
     for hit in hit_list:
+        seq_ids.add(hit.protein_id)
+        hmmer_versions.add(hit.hmm_version)
 
-        hit_id, hit_start, hit_end, hit_key = hit
-        seq_id = hit_key.split('|')[0]
-        seq_ids.add(seq_id)
-
-        if hit_id in ["AMP-binding", "A-OX"]:
+        if hit.domain_type & DomainType.N_TERMINAL:
             n_terminal_hits.append(hit)
-        elif hit_id == "AMP-binding_C":
+        elif hit.domain_type == DomainType.AMP_BINDING_C:
             c_terminal_hits.append(hit)
+        else:
+            raise ValueError(f"Unsupported domain type: {hit.domain_type}")
 
     if len(seq_ids) > 1:
         raise ValueError("Cannot group hits from multiple sequences!")
+    if len(hmmer_versions) > 1:
+        raise ValueError("Cannot group hits from multiple hmmer versions!")
 
-    n_terminal_hits.sort(key=lambda x: x[1])
+    n_terminal_hits.sort(key=lambda x: x.get_seq_start())
     c_terminal_hits.sort(key=lambda x: x[1])
 
     grouped_n_terminal_hits = _group_hits(n_terminal_hits)
 
     merged_n_terminal = []
-    merged_to_original = {}
 
-    for n_group in grouped_n_terminal_hits:
-        domain_type = _get_domain_type(n_group, id_to_hit)
-        merged_hit = merge_hits(n_group, domain_type)
-        merged_n_terminal.append(merged_hit)
-        merged_to_original[merged_hit[3]] = []
-        for hit in n_group:
-            merged_to_original[merged_hit[3]].append(hit[3])
+    for group in grouped_n_terminal_hits:
 
-    return merged_n_terminal + c_terminal_hits, merged_to_original
+        resolved_group = _resolve_n_terminal_hits(group)
+        if resolved_group:
+            merged_hit = _merge_hits(resolved_group)
+            merged_n_terminal.append(merged_hit)
+
+    return merged_n_terminal + c_terminal_hits
