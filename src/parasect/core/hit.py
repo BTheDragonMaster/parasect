@@ -67,6 +67,9 @@ class HmmHit:
     def __str__(self):
         return self._to_string()
 
+    def __eq__(self, other):
+        return self.__str__() == other.__str__()
+
     def _to_string(self):
         return f"{self.protein_id}|{self.domain_type}|{self.get_seq_start()}-{self.get_seq_end()}"
 
@@ -137,7 +140,7 @@ def _resolve_n_terminal_hits(group: list[HmmHit]) -> list[HmmHit]:
     return filtered_group
 
 
-def _group_hits(hits):
+def _group_hits(hits: list[HmmHit]) -> list[HmmHit]:
     if not hits:
         return []
     grouped_hits = []
@@ -146,7 +149,7 @@ def _group_hits(hits):
     for i, hit_1 in enumerate(hits):
         if i + 1 < len(hits):
             hit_2 = hits[i + 1]
-            if hit_2[1] - hit_1[2] < 60:
+            if hit_2.get_seq_start() - hit_1.get_seq_end() < 60:
                 group.append(hit_2)
             else:
                 grouped_hits.append(group[:])
@@ -221,7 +224,7 @@ def group_n_terminal_hits(hit_list: list[HmmHit]) -> list[HmmHit]:
         raise ValueError("Cannot group hits from multiple hmmer versions!")
 
     n_terminal_hits.sort(key=lambda x: x.get_seq_start())
-    c_terminal_hits.sort(key=lambda x: x[1])
+    c_terminal_hits.sort(key=lambda x: x.get_seq_start())
 
     grouped_n_terminal_hits = _group_hits(n_terminal_hits)
 
