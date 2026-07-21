@@ -75,8 +75,7 @@ substrate	smiles
 3-hydroxytyrosine	C1=CC(=C(C=C1C[C@@H](C(=O)O)N)O)O
 3-hydroxyvaline	CC(O)(C)[C@@H](C(=O)O)N
 3-methoxyanthranilic acid	COC1=CC=CC(=C1N)C(=O)O
-3-methoxyaspartic acid	N[C@H](C(C(=O)O)OC)(C(=O)O)
-3-methyl-D-aspartic acid wonky	C[C@@H]([C@H](C(=O)O)N)C(=O)O
+3-methoxyaspartic acid	N[C@@H](C(C(=O)O)OC)(C(=O)O)
 3-methylasparagine	CC([C@@H](C(=O)O)N)C(=O)N
 3-methylaspartic acid	CC([C@@H](C(=O)O)N)C(=O)O
 3-methylglutamic acid	CC(CC(=O)O)[C@@H](C(=O)O)N
@@ -90,7 +89,6 @@ substrate	smiles
 3R-hydroxyglutamine	C([C@H]([C@@H](C(=O)O)N)O)C(=O)N
 3R-hydroxyhomotyrosine	C1=CC(=CC=C1C[C@H]([C@@H](C(=O)O)N)O)O
 3R-hydroxyleucine	CC(C)[C@H]([C@@H](C(=O)O)N)O
-3R-methyl-D-aspartic acid wonky	N[C@H]([C@@H](O)C(O)=O)C(O)=O
 3R-methylbeta-alanine	NC[C@@H](C)C(=O)O
 3R-methylglutamic acid	C[C@H](CC(=O)O)[C@@H](C(=O)O)N
 3S,4R-dichloroproline	Cl[C@H]1[C@@H](Cl)[C@H](NC1)C(=O)O
