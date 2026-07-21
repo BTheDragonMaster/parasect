@@ -1,7 +1,7 @@
 substrate	smiles
 (2S,3R)-2-amino-3-hydroxy-4-(4-nitrophenyl)butanoic acid	C1=CC(=CC=C1C[C@H]([C@@H](C(=O)O)N)O)[N+](=O)[O-]
 (2S,6R)-diamino-(5R,7)-dihydroxy-heptanoic acid	C(C[C@@H](C(=O)O)N)[C@H]([C@@H](CO)N)O
-(4S)-5,5,5-trichloroleucine	CCC(=O)CCCCC[C@@H](C(=O)O)N
+(4S)-5,5,5-trichloroleucine	OC(=O)[C@@H](N)C[C@H](C)C(Cl)(Cl)Cl
 (E)-4-methylhex-2-enoic acid	CCC(C)/C=C/C(=O)O
 (S,E)-2-amino-4-decenoic acid	CCCCC/C=C/C[C@@H](C(=O)O)N
 1-(1,1-dimethylallyl)-tryptophan	CC(C)(C=C)N1C=C(C2=CC=CC=C21)C[C@@H](C(=O)O)N
@@ -250,7 +250,7 @@ glutamic acid	C(CC(=O)O)[C@@H](C(=O)O)N
 glutamine	C(CC(=O)N)[C@@H](C(=O)O)N
 glycine	NCC(=O)O
 glycolic acid	C(C(=O)O)O
-graminine	O=NN(O)CCC[C@H](N)(C(=O)O
+graminine	O=NN(O)CCC[C@H](N)(C(=O)O)
 grifolic acid	CC(C)=CCC/C(C)=C/CC/C(C)=C/CC1=C(O)C=C(C)C(C(=O)O)=C(O)1
 guanidinoacetic acid	C(C(=O)O)N=C(N)N
 histidine	C1=C(NC=N1)C[C@@H](C(=O)O)N
