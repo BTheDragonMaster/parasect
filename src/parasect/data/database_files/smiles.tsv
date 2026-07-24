@@ -104,7 +104,6 @@ substrate	smiles
 3S-hydroxypipecolic acid	C1C[C@@H]([C@H](NC1)C(=O)O)O
 3S-hydroxyproline	O[C@@H]1[C@H](NCC1)C(=O)O
 3S-methyl-D-aspartic acid branched	C[C@@H]([C@H](C(=O)O)N)C(=O)O
-3S-methyl-D-aspartic acid wonky	N[C@H]([C@H](O)C(O)=O)C(O)=O
 3S-methylaspartic acid	C[C@@H]([C@@H](C(=O)O)N)C(=O)O
 3S-methylaspartic acid branched	C[C@@H]([C@@H](C(=O)O)N)C(=O)O
 3S-methylleucine	CC(C)[C@H](C)[C@@H](C(=O)O)N
