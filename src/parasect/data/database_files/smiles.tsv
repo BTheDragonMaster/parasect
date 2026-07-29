@@ -176,7 +176,7 @@ N-methyltyrosine	C1=CC(=CC=C1C[C@@H](C(=O)O)NC)O
 N1-methoxytryptophan	C1=CC=C2C(=C1)C(=CN(OC)2)C[C@@H](C(=O)O)N
 N5-acetyl-N5-hydroxyornithine	CC(=O)N(CCC[C@@H](C(=O)O)N)O
 N5-acetyl-hydroxyornithine	CC(=O)N(CCC[C@@H](C(=O)O)N)O
-N5-cis-anhydromevalonyl-N5-hydroxyornithine	C(N(C(=O)/C=C(/CCO)\C)O)CC[C@@H](C(O)=O)N
+N5-cis-anhydromevalonyl-N5-hydroxyornithine	C(N(C(=O)\C=C(/CCO)\C)O)CC[C@@H](C(O)=O)N
 N5-formyl-N5-hydroxyornithine	C(C[C@@H](C(=O)O)N)CN(C=O)O
 N5-hydroxyornithine	C(C[C@@H](C(=O)O)N)CNO
 N5-nitroso-N5-hydroxyornithine	O=NN(CCC[C@@H](C(=O)O)N)O
