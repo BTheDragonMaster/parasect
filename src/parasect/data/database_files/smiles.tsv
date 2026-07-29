@@ -35,12 +35,9 @@ substrate	smiles
 2R-hydroxy-3-methylpentanoic acid	CCC(C)[C@H](C(=O)O)O
 2R-hydroxyisovaleric acid	CC(C)[C@H](C(=O)O)O
 2S,3S-diaminobutyric acid	C[C@@H]([C@@H](C(=O)O)N)N
-2S-amino decanoic acid	CCCCCCCC[C@H](N)C(=O)O
 2S-amino-4-hexenoic acid	C/C=C/CC(C(=O)O)N
 2S-amino-8-oxodecanoic acid	CCC(=O)CCCCC[C@@H](C(=O)O)N
 2S-amino-9,10-epoxy-8-oxodecanoic acid	C1C(O1)C(=O)CCCCC[C@@H](C(=O)O)N
-2S-amino-dodecanoic acid	CCCCCCCCCC[C@@H](C(=O)O)N
-2S-amino-octanoic-acid	CCCCCC[C@@H](C(=O)O)N
 2S-aminodecanoic acid	CCCCCCCC[C@@H](C(=O)O)N
 2S-aminododecanoic acid	CCCCCCCCCC[C@@H](C(=O)O)N
 2S-aminooctanoic acid	CCCCCC[C@@H](C(=O)O)N
@@ -81,7 +78,6 @@ substrate	smiles
 3-methylglutamic acid	CC(CC(=O)O)[C@@H](C(=O)O)N
 3-methylleucine	CC(C)C(C)[C@@H](C(=O)O)N
 3-nitrotyrosine	C1=CC(=C(C=C1C[C@@H](C(=O)O)N)[N+](=O)[O-])O
-3R-aminoisobutyric acid	C[C@H](CN)C(=O)O
 3R-chloroproline	C1[C@@H](Cl)[C@H](NC1)C(=O)O
 3R-hydroxy-2,4-diaminobutyric acid	NC[C@@H](O)[C@@H](C(=O)O)N
 3R-hydroxyasparagine	N[C@H](C(O)=O)[C@@H](O)C(N)=O
@@ -94,7 +90,6 @@ substrate	smiles
 3S,4R-dichloroproline	Cl[C@H]1[C@@H](Cl)[C@H](NC1)C(=O)O
 3S,4S-dihydroxyhomotyrosine	C1=CC(=CC=C1[C@H](O)[C@H]([C@@H](C(=O)O)N)O)O
 3S-aminobutyric acid	C[C@@H](CC(=O)O)N
-3S-carboxypiperazine	C1NN[C@H](C(=O)O)CC1
 3S-cyclohex-2-enylalanine	C1C=C[C@H](CC1)C[C@@H](C(=O)O)N
 3S-hydroxy-4R-methyloctanoic acid	CCCC[C@H]([C@H](CC(O)=O)O)C
 3S-hydroxy-4S-methylproline	C[C@@H]1[C@H](O)[C@H](NC1)C(=O)O
@@ -175,11 +170,9 @@ N-methylphenylalanine	CN[C@@H](CC1=CC=CC=C1)C(=O)O
 N-methyltyrosine	C1=CC(=CC=C1C[C@@H](C(=O)O)NC)O
 N1-methoxytryptophan	C1=CC=C2C(=C1)C(=CN(OC)2)C[C@@H](C(=O)O)N
 N5-acetyl-N5-hydroxyornithine	CC(=O)N(CCC[C@@H](C(=O)O)N)O
-N5-acetyl-hydroxyornithine	CC(=O)N(CCC[C@@H](C(=O)O)N)O
 N5-cis-anhydromevalonyl-N5-hydroxyornithine	C(N(C(=O)\C=C(/CCO)\C)O)CC[C@@H](C(O)=O)N
 N5-formyl-N5-hydroxyornithine	C(C[C@@H](C(=O)O)N)CN(C=O)O
 N5-hydroxyornithine	C(C[C@@H](C(=O)O)N)CNO
-N5-nitroso-N5-hydroxyornithine	O=NN(CCC[C@@H](C(=O)O)N)O
 N5-trans-anhydromevalonyl-N5-hydroxyornithine	C(C[C@@H](C(=O)O)N)CN(O)C(=O)/C=C(C)/CCO
 N6-hydroxylysine	C(CCNO)C[C@@H](C(=O)O)N
 O-dimethylallyl-L-tyrosine	CC(=CCOC1=CC=C(C=C1)C[C@@H](C(=O)O)N)C
@@ -204,7 +197,6 @@ alanine	C[C@@H](C(=O)O)N
 alaninol	C[C@@H](CO)N
 allo-isoleucine	CC[C@@H](C)[C@@H](C(=O)O)N
 allo-threonine	C[C@@H]([C@@H](C(=O)O)N)O
-anthanillic acid	C1=CC=C(C(=C1)C(=O)O)N
 anthranilic acid	C1=CC=C(C(=C1)C(=O)O)N
 arginine	C(C[C@@H](C(=O)O)N)CN=C(N)N
 argininol	N[C@H](CO)CCCN=C(N)N
