@@ -11,6 +11,7 @@ from Bio.SearchIO._model import HSP
 
 from parasect.core.domain import AdenylationDomain
 from parasect.core.parsing import parse_fasta_file
+from parasect.core.hit import HmmHit, DomainType
 
 
 def run_hmmscan(hmm_dir, fasta_file, hmm_out):
@@ -44,7 +45,7 @@ def run_hmmpfam2(hmm_dir: str, fasta_file: str, hmm_out: str) -> None:
         subprocess.call(command, stdout=out)
 
 
-def parse_hmm_results(path_in: str, hmmer_version: int = 2) -> Dict[str, HSP]:
+def parse_hmm_results(path_in: str, hmmer_version: int = 2) -> list[HmmHit]:
     """Parse hmmpfam2 output file and return dictionary of domain identifier to Biopython HSP instance.
 
     :param path_in: path to hmmpfam2 output file (hmmer-2).
@@ -57,7 +58,7 @@ def parse_hmm_results(path_in: str, hmmer_version: int = 2) -> Dict[str, HSP]:
 
     if hmmer_version not in [2, 3]:
         raise ValueError(f"Unknown HMMer version: {hmmer_version}")
-    filtered_hits = {}
+    filtered_hits: list[HmmHit] = []
 
     hmmer_string = f"hmmer{hmmer_version}-text"
 
@@ -67,10 +68,8 @@ def parse_hmm_results(path_in: str, hmmer_version: int = 2) -> Dict[str, HSP]:
 
             # filter hits based on bitscore and hit_id
             if hsp.bitscore > 20:
-                if hsp.hit_id == "AMP-binding" or hsp.hit_id == "AMP-binding_C":
-
-                    header = f"{result.id}|{hsp.hit_id}|{hsp.query_start}-{hsp.query_end}"
-                    filtered_hits[header] = hsp
+                if hsp.hit_id in ["AMP-binding", "AMP-binding_C", "A-OX"]:
+                    filtered_hits.append(HmmHit(result.id, DomainType.from_string(hsp.hit_id), [hsp], hmmer_version))
 
     return filtered_hits
 

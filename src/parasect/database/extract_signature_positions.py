@@ -1,3 +1,4 @@
+import logging
 import os.path
 from argparse import ArgumentParser, Namespace
 
@@ -7,6 +8,7 @@ from sqlalchemy import create_engine, select
 from parasect.database.build_database import AdenylationDomain, Protein, ProteinDomainAssociation, ProteinSynonym
 from parasect.core.featurisation import get_domains
 
+logger = logging.getLogger(__name__)
 
 def parse_arguments() -> Namespace:
     """
@@ -40,7 +42,7 @@ def extract_signatures(session: Session, protein_file: str, tmp_path: str, out_p
 
     """
 
-    print("Extracting domains from protein.fasta...")
+    logger.info("Extracting domains from protein.fasta...")
     domains = get_domains(protein_file, tmp_path, "hmm", "fasta")
 
     # db_domain_to_domain = {}
@@ -84,10 +86,10 @@ def extract_signatures(session: Session, protein_file: str, tmp_path: str, out_p
                             db_domain_to_positions[db_domain][name] = []
 
                         if db_domain.extended_signature != domain.extended_signature:
-                            print(f"Mismatching signatures for domain {db_domain.get_name()}:")
-                            print(f"{db_domain.extended_signature}")
-                            print(f"{domain.extended_signature}")
-                            print(f"{domain.extended_signature_positions}")
+                            logger.warning(f"Mismatching signatures for domain {db_domain.get_name()}:")
+                            logger.warning(f"{db_domain.extended_signature}")
+                            logger.warning(f"{domain.extended_signature}")
+                            logger.warning(f"{domain.extended_signature_positions}")
                         relative_positions = [
                             pos - (association.start - 1) if pos is not None else None
                             for pos in domain.extended_signature_positions
@@ -95,14 +97,14 @@ def extract_signatures(session: Session, protein_file: str, tmp_path: str, out_p
                         db_domain_to_positions[db_domain][name].append(domain.extended_signature_positions)
                         if db_domain in db_domain_to_relative:
                             if db_domain_to_relative[db_domain] != relative_positions:
-                                print(f"Mismatching relative positions for domain {db_domain.get_name()}:")
-                                print(f"{db_domain_to_relative[db_domain]}")
-                                print(f"{relative_positions}")
+                                logger.warning(f"Mismatching relative positions for domain {db_domain.get_name()}:")
+                                logger.warning(f"{db_domain_to_relative[db_domain]}")
+                                logger.warning(f"{relative_positions}")
                         else:
                             db_domain_to_relative[db_domain] = relative_positions
 
     missing_domains = all_db_domains - found_db_domains
-    print(f"Number of mssing domains: {len(missing_domains)}")
+    logger.info(f"Number of mssing domains: {len(missing_domains)}")
 
     if not os.path.exists(out_path):
         os.mkdir(out_path)
@@ -124,6 +126,7 @@ def extract_signatures(session: Session, protein_file: str, tmp_path: str, out_p
 
 
 def main() -> None:
+    logging.basicConfig(level="INFO")
     args = parse_arguments()
     engine = create_engine(f"sqlite:///{args.db}")
     try:

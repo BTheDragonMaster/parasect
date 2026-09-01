@@ -4,7 +4,7 @@
 
 import logging
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 from Bio.SearchIO._model.hsp import HSP
 
@@ -13,6 +13,9 @@ from parasect.core.domain import AdenylationDomain
 from parasect.core.hmmer import parse_hmm_results, rename_sequences, reverse_renaming, run_hmmpfam2, run_hmmscan
 from parasect.core.parsing import parse_fasta_file
 from parasect.core.genbank import genbank_to_fasta
+from parasect.core.hit import group_n_terminal_hits, HmmHit, DomainType
+
+logger = logging.getLogger(__name__)
 
 
 def get_domain_features(amino_acid_sequence: str) -> List[float]:
@@ -32,86 +35,8 @@ def get_domain_features(amino_acid_sequence: str) -> List[float]:
     return features
 
 
-def merge_hits(hits: list[tuple[str, int, int, str]]) -> tuple[str, int, int, str]:
-    """
-    Merge N-terminal AMP-binding hits
-
-    :param hits: list of AMP-binding HMM hits
-    :type hits: list[tuple[str, int, int, str]]
-    """
-
-    if hits:
-        seq_id, hit_id, _ = hits[0][3].split('|')
-        for hit in hits:
-            seq_id_2, hit_id_2, _ = hit[3].split('|')
-            if seq_id_2 != seq_id:
-                raise ValueError(f"Cannot merge hits from different sequences! {seq_id}, {seq_id_2}")
-            if hit_id_2 != hit_id:
-                raise ValueError(f"Cannot merge different hit types! {hit_id}, {hit_id_2}")
-
-        hit_start = min([hit[1] for hit in hits])
-        hit_end = max([hit[2] for hit in hits])
-        hit_key = f"{seq_id}|{hit_id}|{hit_start}-{hit_end}"
-        merged_hit = (hit_id, hit_start, hit_end, hit_key)
-        return merged_hit
-    else:
-        raise ValueError("No hits to merge!")
-
-
-def group_n_terminal_hits(hit_list: list[tuple[str, int, int, str]]) -> list[tuple[str, int, int, str]]:
-    """
-    Group and merge N-terminal AMP-binding hits within a single protein
-
-    :param hit_list: list of AMP-binding HMM hits
-    :type hit_list: list[tuple[str, int, int, str]]
-    """
-    n_terminal_hits = []
-    c_terminal_hits = []
-    seq_ids = set()
-
-    for hit in hit_list:
-
-        hit_id, hit_start, hit_end, hit_key = hit
-        seq_id = hit_key.split('|')[0]
-        seq_ids.add(seq_id)
-        if hit_id == "AMP-binding":
-            n_terminal_hits.append(hit)
-        elif hit_id == "AMP-binding_C":
-            c_terminal_hits.append(hit)
-
-    if len(seq_ids) > 1:
-        raise ValueError("Cannot group hits from multiple sequences!")
-
-    n_terminal_hits.sort(key=lambda x: x[1])
-    c_terminal_hits.sort(key=lambda x: x[1])
-
-    grouped_hits = []
-    if n_terminal_hits:
-        group = [n_terminal_hits[0]]
-
-        for i, hit_1 in enumerate(n_terminal_hits):
-            if i + 1 < len(n_terminal_hits):
-                hit_2 = n_terminal_hits[i + 1]
-                if hit_2[1] - hit_1[2] < 60:
-                    group.append(hit_2)
-                else:
-                    grouped_hits.append(group[:])
-                    group = [hit_2]
-            else:
-                grouped_hits.append(group[:])
-                group = []
-
-    merged_n_terminal = []
-
-    for group in grouped_hits:
-        merged_hit = merge_hits(group)
-        merged_n_terminal.append(merged_hit)
-
-    return merged_n_terminal + c_terminal_hits
-
-
 def _hits_to_domains(
-    id_to_hit: Dict[str, HSP],
+    hmmer_hits: list[HmmHit],
     path_in_fasta_file: str,
     path_temp_dir: str,
     use_profile_alignment: bool = False,
@@ -119,8 +44,8 @@ def _hits_to_domains(
 ) -> List[AdenylationDomain]:
     """Extract adenylation domains from HMM hits.
 
-    :param id_to_hit: Dictionary of HMM hits.
-    :type id_to_hit: Dict[str, HSP]
+    :param hmmer_hits: Dictionary of HMM hits.
+    :type hmmer_hits: Dict[str, HSP]
     :param path_in_fasta_file: Path to fasta file.
     :type path_in_fasta_file: str
     :param path_temp_dir: Path to temporary directory.
@@ -131,79 +56,67 @@ def _hits_to_domains(
     :rtype: List[AdenylationDomain]
     :raises ValueError: If protein name mismatch.
     """
-    logger = logging.getLogger(__name__)
 
     logger.debug("sorting hits by sequence ...")
 
-    hits_by_seq_id: Dict[str, List[Tuple[str, int, int, str]]] = {}
-    for hit_key in id_to_hit.keys():
+    protein_to_hits: dict[str, list[HmmHit]] = {}
+    for hit in hmmer_hits:
 
-        # parse domain ID
-        seq_id, hit_id, hit_location = hit_key.split("|")
-        hit_start_str, hit_end_str = hit_location.split("-")
-        hit_start = int(hit_start_str)
-        hit_end = int(hit_end_str)
+        if hit.protein_id not in protein_to_hits:
+            protein_to_hits[hit.protein_id] = []
 
-        if seq_id not in hits_by_seq_id:
-            hits_by_seq_id[seq_id] = []
-
-        hits_by_seq_id[seq_id].append((hit_id, hit_start, hit_end, hit_key))
+        protein_to_hits[hit.protein_id].append(hit)
 
     logger.debug("extracting domain signatures ...")
 
     counter = 0
-    seq_id_to_domains: Dict[str, List[AdenylationDomain]] = {}
-    seq_id_to_hits = {}
-    for seq_id, hits in hits_by_seq_id.items():
-        seq_id_to_hits[seq_id] = group_n_terminal_hits(hits)
+    protein_to_domains: Dict[str, list[AdenylationDomain]] = {}
 
-    for seq_id, hits in seq_id_to_hits.items():
-        counter += 1
+    for protein in protein_to_hits:
+        merged_hits = group_n_terminal_hits(protein_to_hits[protein])
+        for hit_1 in merged_hits:
 
-        for hit_id_1, hit_start_1, hit_end_1, hit_key_1 in hits:
-
-            if hit_id_1 == "AMP-binding":
-                if seq_id not in seq_id_to_domains:
-                    seq_id_to_domains[seq_id] = []
+            if hit_1.domain_type & DomainType.N_TERMINAL:
+                if protein not in protein_to_domains:
+                    protein_to_domains[protein] = []
 
                 match_found = False
-                for hit_id_2, hit_start_2, hit_end_2, hit_key_2 in hits:
+                for hit_2 in merged_hits:
 
-                    if hit_id_2 == "AMP-binding_C":
-                        if hit_start_2 > hit_end_1 and (hit_start_2 - hit_end_1) < 200:
+                    if hit_2.domain_type == DomainType.AMP_BINDING_C:
+                        if hit_2.get_seq_start() > hit_1.get_seq_end() and (hit_2.get_seq_start() - hit_1.get_seq_end()) < 200:
 
-                            a_domain = AdenylationDomain(
-                                protein_name=seq_id, domain_start=hit_start_1, domain_end=hit_end_2
-                            )
+                            a_domain = AdenylationDomain(protein_name=protein,
+                                                         domain_type=hit_1.domain_type,
+                                                         domain_start=hit_1.get_seq_start(),
+                                                         domain_end=hit_2.get_seq_end()
+                                                         )
 
                             if hmm_version == 2 and not use_profile_alignment:
-                                a_domain.set_domain_signatures_hmm(
-                                    hit_n_terminal=id_to_hit[hit_key_1],
-                                    hit_c_terminal=id_to_hit[hit_key_2],
-                                )
+                                a_domain.set_domain_signatures_hmm(n_terminal_hit=hit_1,
+                                                                   c_terminal_hit=hit_2)
 
-                            seq_id_to_domains[seq_id].append(a_domain)
+                            protein_to_domains[protein].append(a_domain)
                             match_found = True
                             break
 
                 if not match_found:
-                    a_domain = AdenylationDomain(
-                        protein_name=seq_id, domain_start=hit_start_1, domain_end=hit_end_1
-                    )
+                    a_domain = AdenylationDomain(protein_name=protein,
+                                                 domain_type=hit_1.domain_type,
+                                                 domain_start=hit_1.get_seq_start(),
+                                                 domain_end=hit_1.get_seq_end())
 
                     if hmm_version == 2 and not use_profile_alignment:
 
-                        a_domain.set_domain_signatures_hmm(
-                            hit_n_terminal=id_to_hit[hit_key_1],
-                            hit_c_terminal=None,
-                        )
-                    seq_id_to_domains[seq_id].append(a_domain)
+                        a_domain.set_domain_signatures_hmm(n_terminal_hit=hit_1,
+                                                           c_terminal_hit=None)
+                    protein_to_domains[protein].append(a_domain)
 
         if counter % 1000 == 0:
             logger.debug(f"processed {counter} proteins ...")
 
     # sort domains by start position
-    for domains in seq_id_to_domains.values():
+    for domains in protein_to_domains.values():
         domains.sort(key=lambda x: x.start)
 
     fasta = parse_fasta_file(path_in_fasta_file)
@@ -213,8 +126,8 @@ def _hits_to_domains(
     for seq_id, sequence in fasta.items():
         counter = 1
 
-        if seq_id in seq_id_to_domains:
-            for a_domain in seq_id_to_domains[seq_id]:
+        if seq_id in protein_to_domains:
+            for a_domain in protein_to_domains[seq_id]:
 
                 if seq_id != a_domain.protein_name:
                     raise ValueError("Protein name mismatch")
@@ -232,7 +145,7 @@ def _hits_to_domains(
         logger.debug("filtering domains ...")
 
         filtered_a_domains = []
-        for a_domains in seq_id_to_domains.values():
+        for a_domains in protein_to_domains.values():
             for a_domain in a_domains:
                 if (
                     a_domain.sequence
@@ -250,7 +163,7 @@ def _hits_to_domains(
         logger.debug("extracting domain signatures with profile alignment ...")
 
         filtered_a_domains = []
-        for a_domains in seq_id_to_domains.values():
+        for a_domains in protein_to_domains.values():
             for a_domain in a_domains:
                 if use_profile_alignment:
                     a_domain.set_domain_signatures_profile(path_temp_dir)
@@ -319,6 +232,7 @@ def get_hmmer3_unique_domains(hmmer2_domains: list[AdenylationDomain],
         for domain_2 in hmmer2_domains:
             if domain_1.protein_name == domain_2.protein_name and domain_1.domains_overlap(domain_2, threshold=50):
                 match_found = True
+
         if not match_found:
             domain_1.set_domain_signatures_profile(path_temp_dir)
             unique_domains.append(domain_1)
@@ -328,7 +242,8 @@ def get_hmmer3_unique_domains(hmmer2_domains: list[AdenylationDomain],
 
 def update_hmmer2_domain_sequences(hmmer2_domains: list[AdenylationDomain],
                                    hmmer3_domains: list[AdenylationDomain],
-                                   path_in_fasta_file: str) -> None:
+                                   path_in_fasta_file: str,
+                                   path_temp_dir: str) -> None:
     """
     Update hmmer2 domains with hmmer3 domain sequences, such that the longest detected sequence is maintained.
 
@@ -341,6 +256,8 @@ def update_hmmer2_domain_sequences(hmmer2_domains: list[AdenylationDomain],
     :type hmmer3_domains: list[AdenylationDomain]
     :param path_in_fasta_file: Path to fasta file.
     :type path_in_fasta_file: str
+    :param path_temp_dir: Path to temp dir.
+    :type path_temp_dir: str
     """
 
     fasta = parse_fasta_file(path_in_fasta_file)
@@ -358,7 +275,10 @@ def update_hmmer2_domain_sequences(hmmer2_domains: list[AdenylationDomain],
                     if domain_1.protein_name not in fasta:
                         raise ValueError("Mismatching protein names")
                     domain_1.set_sequence(fasta[domain_1.protein_name][domain_1.start:domain_1.end])
-
+                if domain_2.type == DomainType.A_OX:
+                    logger.debug("Overwriting AMP-binding domain with A-OX domain")
+                    domain_1.type = DomainType.A_OX
+                    domain_1.set_domain_signatures_profile(path_temp_dir)
 
 def _domains_from_fasta(
     path_in_fasta_file: str,
@@ -383,13 +303,13 @@ def _domains_from_fasta(
     run_hmmpfam2(HMM2_FILE, path_in_fasta_file, hmm2_out)
     run_hmmscan(HMM3_FILE, path_in_fasta_file, hmm3_out)
 
-    id_to_hit_2 = parse_hmm_results(hmm2_out, 2)
-    id_to_hit_3 = parse_hmm_results(hmm3_out, 3)
+    hmmer2_hits = parse_hmm_results(hmm2_out, 2)
+    hmmer3_hits = parse_hmm_results(hmm3_out, 3)
 
     if use_profile_alignment:
         # processing hits (profile alignment-based active site extraction)
         a_domains = _hits_to_domains(
-            id_to_hit=id_to_hit_3,
+            hmmer_hits=hmmer3_hits,
             path_in_fasta_file=path_in_fasta_file,
             path_temp_dir=path_temp_dir,
             use_profile_alignment=True,
@@ -398,22 +318,22 @@ def _domains_from_fasta(
     else:
         # processing hits (hmm-based active site extraction)
         a_domains = _hits_to_domains(
-            id_to_hit=id_to_hit_2,
+            hmmer_hits=hmmer2_hits,
             path_in_fasta_file=path_in_fasta_file,
             path_temp_dir=path_temp_dir,
             use_profile_alignment=False,
             hmm_version=2
         )
         a_domains_3 = _hits_to_domains(
-            id_to_hit=id_to_hit_3,
+            hmmer_hits=hmmer3_hits,
             path_in_fasta_file=path_in_fasta_file,
             path_temp_dir=path_temp_dir,
             use_profile_alignment=False,
             hmm_version=3)
 
-        update_hmmer2_domain_sequences(a_domains, a_domains_3, path_in_fasta_file)
+        update_hmmer2_domain_sequences(a_domains, a_domains_3, path_in_fasta_file, path_temp_dir)
         unique_hmmer3_domains = get_hmmer3_unique_domains(a_domains, a_domains_3, path_temp_dir)
-        a_domains += unique_hmmer3_domains
+        a_domains.extend(unique_hmmer3_domains)
         a_domains.sort(key=lambda x: (x.protein_name, x.start))
         set_domain_numbers(a_domains)
 

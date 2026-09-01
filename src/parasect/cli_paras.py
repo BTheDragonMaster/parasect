@@ -2,15 +2,17 @@
 
 """CLI for PARAS."""
 
-import os
 import argparse
 import logging
 from joblib import load
+from shutil import rmtree
 
 from parasect.core.constants import SEPARATOR_1, SEPARATOR_2, SEPARATOR_3
 from parasect.api import run_paras
-from parasect.core.helpers import download_and_unpack_or_fetch
-from parasect.core.writers import write_fasta_file, write_results
+from parasect.core.helpers import prepare_folders, prepare_model
+from parasect.core.writers import write_results
+from parasect.core.models import ModelType
+
 
 
 def cli() -> argparse.Namespace:
@@ -30,6 +32,7 @@ def cli() -> argparse.Namespace:
                         help="Job name")
     parser.add_argument('-n', "--number_predictions", type=int, default=3, help="Number of top predictions to report.")
     parser.add_argument('-t', "--temp", type=str, default=None, help="Temp dir. If not given, create temp folder in output dir")
+    parser.add_argument('-m', "--model_dir", type=str, default=None, help="Path to model directory. If not given, use temp folder")
     parser.add_argument('-p', "--profile_alignment", action='store_true',
                         help="Use profile alignment instead of HMM for active site extraction")
     parser.add_argument('-save_extended', action='store_true',
@@ -52,58 +55,31 @@ def cli() -> argparse.Namespace:
 
 def main() -> None:
     """Run CLI for PARAS."""
-    args = cli()
-    logger = logging.getLogger(__name__)
     logging.basicConfig(level="INFO")
+    args = cli()
 
-    if not os.path.exists(args.output):
-        os.mkdir(args.output)
-
-    if args.temp is None:
-        temp_dir = os.path.join(args.output, "temp")
-        if not os.path.exists(temp_dir):
-            os.mkdir(temp_dir)
-
-    else:
-        temp_dir = args.temp
+    temp_dir, model_dir = prepare_folders(args.output, args.temp, args.model_dir)
 
     if args.all_substrates:
-        model_path = download_and_unpack_or_fetch(r"https://zenodo.org/records/17224548/files/all_substrates_model.paras.gz?download=1",
-                                                  temp_dir, logger)
-
+        model_type = ModelType.PARAS_ALL_SUBSTRATES
     else:
-        model_path = download_and_unpack_or_fetch(r"https://zenodo.org/records/17224548/files/model.paras.gz?download=1",
-                                                  temp_dir, logger)
+        model_type = ModelType.PARAS
 
+    model_path = prepare_model(model_type, model_dir)
     model = load(model_path)
 
     with open(args.input, 'r') as input_file:
         protein_data = input_file.read()
 
     results = run_paras(protein_data, args.file_type, temp_dir, model, args.profile_alignment)
+    write_results(results, args.output, args.number_predictions, model_type,
+                  args.s1, args.s2, args.s3,
+                  args.job_name,
+                  args.save_signatures,
+                  args.save_extended,
+                  args.save_domains)
 
-    id_to_sig = {}
-    id_to_ext = {}
-    id_to_seq = {}
-
-    for result in results:
-        domain_header = result.get_domain_header(args.s1, args.s2, args.s3)
-        if args.save_signatures:
-            id_to_sig[domain_header] = result.to_json()['domain_signature']
-        if args.save_extended:
-            id_to_ext[domain_header] = result.to_json()['domain_extended_signature']
-        if args.save_domains:
-            id_to_seq[domain_header] = result.to_json()['domain_sequence']
-
-    if args.save_signatures:
-        write_fasta_file(id_to_sig, os.path.join(args.output, f"{args.job_name}_signatures.fasta"))
-    if args.save_extended:
-        write_fasta_file(id_to_ext, os.path.join(args.output, f"{args.job_name}_extended_signatures.fasta"))
-    if args.save_domains:
-        write_fasta_file(id_to_seq, os.path.join(args.output, f"{args.job_name}_sequences.fasta"))
-
-    results_out = os.path.join(args.output, f"{args.job_name}_paras_results.txt")
-    write_results(results, results_out, args.number_predictions)
+    rmtree(temp_dir)
 
 
 if __name__ == "__main__":

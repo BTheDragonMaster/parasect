@@ -1,0 +1,156 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # Editable install (in legacy-backend "compat" mode, since this project's
+      # setuptools build backend doesn't support PEP 660) so that coverage
+      # records hits against src/parasect/... rather than a site-packages copy.
+      # That keeps paths identical across every matrix entry and the
+      # integration-tests job below, so their coverage data can be combined.
+      - name: Install paras/parasect with test dependencies
+        run: pip install -e ".[tests]" --config-settings editable_mode=compat
+
+      # Integration tests (marked with @pytest.mark.integration in
+      # test_integration_paras.py) are excluded below and run separately in the
+      # integration-tests job instead: they need hmmer, hmmer2 and muscle
+      # installed as external binaries, which this job's plain Python
+      # environment doesn't have.
+      - name: Run unit tests
+        run: >
+          coverage run -p -m pytest -m "not integration" -v --durations=20
+          --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.python-version }}
+          path: junit/test-results-${{ matrix.python-version }}.xml
+
+      - name: Upload coverage data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-data-${{ matrix.python-version }}
+          path: .coverage.*
+          include-hidden-files: true
+          if-no-files-found: ignore
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # PARAS's adenylation-domain extraction shells out to hmmpfam2 (HMMER2),
+      # hmmscan (HMMER3) and, for structure-guided alignment, MUSCLE 3.8.1551 --
+      # the exact versions documented in the README's conda install instructions.
+      # These aren't on PyPI, so they're installed from bioconda via micromamba.
+      - name: Set up hmmer, hmmer2 and muscle (bioconda)
+        uses: mamba-org/setup-micromamba@v3
+        with:
+          environment-name: paras-integration
+          create-args: >-
+            python=3.11
+            hmmer
+            hmmer2
+            muscle=3.8.1551
+          condarc: |
+            channels:
+              - conda-forge
+              - bioconda
+              - defaults
+            channel_priority: strict
+          init-shell: bash
+          cache-environment: true
+
+      - name: Install paras/parasect with test dependencies
+        run: pip install -e ".[tests]" --config-settings editable_mode=compat
+
+      # These tests download the real trained PARAS models from Zenodo on first
+      # run (~80 MB total) and run the actual HMMER/MUSCLE pipeline end to end
+      # against the fixture proteins in src/parasect/tests/data.
+      - name: Run integration tests
+        run: >
+          coverage run -p -m pytest -m integration -v --durations=20
+          --junitxml=junit/integration-test-results.xml
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: junit/integration-test-results.xml
+
+      - name: Upload coverage data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-data-integration
+          path: .coverage.*
+          include-hidden-files: true
+          if-no-files-found: ignore
+
+  coverage:
+    needs: [test, integration-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install coverage
+        run: pip install coverage
+
+      - name: Download coverage data from all jobs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-data-*
+          merge-multiple: true
+
+      - name: Combine and report
+        run: |
+          coverage combine
+          coverage report -m
+          coverage xml
+          coverage html
+          {
+            echo "## Coverage report"
+            echo
+            coverage report --format=markdown
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload combined coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.xml
+            htmlcov/

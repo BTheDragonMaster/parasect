@@ -3577,7 +3577,7 @@ ctg1_orf1265.A3	N5-hydroxyornithine
 ctg1_orf20.A1	N5-acetyl-N5-hydroxyornithine
 ctg1_orf20.A2	arginine
 ctg1_orf20.A3	N5-hydroxyornithine
-ctg1_orf20.A4	N5-acetyl-hydroxyornithine
+ctg1_orf20.A4	N5-acetyl-N5-hydroxyornithine
 esyn1.A1	2S-hydroxyisovaleric acid
 esyn1.A2	valine
 g8718.t1.A1	proline
