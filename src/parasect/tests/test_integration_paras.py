@@ -98,7 +98,7 @@ class TestParas(ParasBaseTest):
     MODEL_TYPE = ModelType.PARAS
 
     def testDptA(self):
-        job_name = "DptA"
+        job_name = "dptA"
         results = self._run_and_save(job_name)
         self.assertEqual(len(results), 5)
         self._assert_output_exists(job_name)
@@ -134,7 +134,7 @@ class TestParasAllSubstrates(ParasBaseTest):
     MODEL_TYPE = ModelType.PARAS_ALL_SUBSTRATES
 
     def testDptA(self):
-        job_name = "DptA"
+        job_name = "dptA"
         results = self._run_and_save(job_name)
         self.assertEqual(len(results), 5)
         self._assert_output_exists(job_name)
