@@ -1,4 +1,5 @@
 import os
+import logging
 from typing import Optional
 from sklearn.decomposition import PCA
 import numpy as np
@@ -6,6 +7,7 @@ from joblib import dump
 
 from parasect.core.parsing import iterate_over_dir, parse_esm_embedding
 
+logger = logging.getLogger(__name__)
 
 def esm_to_pca(esm_dir: str, out_dir: str, n_components: int = 500, store_pca: bool = False,
                prefix: str = "all_domains", domain_names: Optional[list[str]] = None) -> None:
@@ -33,7 +35,7 @@ def esm_to_pca(esm_dir: str, out_dir: str, n_components: int = 500, store_pca: b
 
     counter = 0
     domains: list[str] = []
-    print("Loading data...")
+    logger.info("Loading data...")
     for domain_name, domain_path in iterate_over_dir(esm_dir, "_esm.tsv"):
         if domain_names is None or domain_name in domain_names:
             domains.append(domain_name)
@@ -42,7 +44,7 @@ def esm_to_pca(esm_dir: str, out_dir: str, n_components: int = 500, store_pca: b
             counter += 1
 
     pca = PCA(n_components=n_components, random_state=10012025)
-    print("Transforming data...")
+    logger.info("Transforming data...")
     pca_features = pca.fit_transform(esm_array)
 
     if not os.path.exists(out_dir):

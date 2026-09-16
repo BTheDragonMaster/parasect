@@ -3,6 +3,97 @@ import logging
 from urllib.parse import urlsplit
 from urllib.request import urlopen, Request
 from pathlib import Path
+from typing import Optional
+from parasect.core.parsing import parse_smiles_mapping
+import os
+from shutil import copy
+
+from parasect.core.models import ModelType
+from parasect.core.constants import MODEL_METADATA_FILE
+from parasect.core.retrain_models import retrain_model, model_needs_retraining, update_metadata_file
+
+logger = logging.getLogger(__name__)
+
+def prepare_model(model_type: ModelType, model_dir: str) -> str:
+    """Download or retrain PARAS/PARASECT model"""
+    metadata_path = os.path.join(model_dir, "model_metadata.txt")
+    if not os.path.exists(metadata_path):
+        copy(MODEL_METADATA_FILE, metadata_path)
+
+    if model_needs_retraining(metadata_path, model_type):
+        logger.info("Found incompatible version of scikit-learn. Retraining..")
+        model = retrain_model(model_type)
+        model_path = os.path.join(model_dir, model.file_name)
+        model.save(model_dir)
+        update_metadata_file(model_type, metadata_path)
+
+    else:
+        if model_type == ModelType.PARAS_ALL_SUBSTRATES:
+            model_path = download_and_unpack_or_fetch(
+                r"https://zenodo.org/records/17224548/files/all_substrates_model.paras.gz?download=1",
+                model_dir, logger)
+        elif model_type == ModelType.PARAS:
+            model_path = download_and_unpack_or_fetch(
+                r"https://zenodo.org/records/17224548/files/model.paras.gz?download=1",
+                model_dir, logger)
+        elif model_type == ModelType.PARASECT:
+            model_path = download_and_unpack_or_fetch(
+                r"https://zenodo.org/records/17224548/files/model.parasect.gz?download=1",
+                model_dir, logger)
+        elif model_type == ModelType.PARASECT_BACTERIAL:
+            model_path = download_and_unpack_or_fetch(
+                r"https://zenodo.org/records/17224548/files/bacterial_model.parasect.gz?download=1",
+                model_dir, logger)
+        else:
+            raise ValueError("Unknown model type")
+
+    return model_path
+
+
+def prepare_substrates(smiles_mapping: Optional[str]) -> tuple[Optional[list[str]], Optional[list[str]]]:
+    """Return substrate names and substrate SMILES from SMILES mapping
+
+    :param smiles_mapping: path to file containing substrate names in column 1 and SMILES strings in column 2
+
+    :returns: list of substrate names and list substrate SMILES if SMILES mapping exists, tuple of (None,None) otherwise
+
+    """
+    if smiles_mapping is not None:
+        substrates = parse_smiles_mapping(smiles_mapping)
+        substrate_names = [s.name for s in substrates]
+        substrate_smiles = [s.smiles for s in substrates]
+    else:
+        substrate_names = None
+        substrate_smiles = None
+
+    return substrate_names, substrate_smiles
+
+def prepare_folders(out_dir: str, temp_dir: Optional[str], model_dir: Optional[str]) -> tuple[str, str]:
+    """Prepare folders for output
+
+    :param out_dir: Output directory
+    :param temp_dir: Temporary directory
+    :param model_dir: Model directory
+
+    :returns: paths to temporary directory and model directory
+    """
+
+    if not os.path.exists(out_dir):
+        os.mkdir(out_dir)
+
+    if temp_dir is None:
+        temp_dir = os.path.join(out_dir, "temp")
+
+    if not os.path.exists(temp_dir):
+        os.mkdir(temp_dir)
+
+    if model_dir is None:
+        model_dir = os.path.join(out_dir, "model")
+
+    if not os.path.exists(model_dir):
+        os.mkdir(model_dir)
+
+    return temp_dir, model_dir
 
 
 def download_and_unpack_or_fetch(

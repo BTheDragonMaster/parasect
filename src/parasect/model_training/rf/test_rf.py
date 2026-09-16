@@ -1,4 +1,5 @@
 import os
+import logging
 from typing import Any, Optional
 from statistics import mean, stdev
 
@@ -14,6 +15,8 @@ from parasect.core.parsing import parse_list, parse_pcs
 from parasect.core.featurisation import get_domain_features
 from parasect.model_training.data_processing.plotting.confusion_matrix import plot_matrix, write_matrix
 
+logger = logging.getLogger(__name__)
+
 
 def write_parasect_metrics(tp, tp_probs, fp, fp_probs, tn, tn_probs, fn, fn_probs,
                            correct_ranks, incorrect_ranks, substrate_metrics, out_file):
@@ -26,8 +29,8 @@ def write_parasect_metrics(tp, tp_probs, fp, fp_probs, tn, tn_probs, fn, fn_prob
         precision = tp / (tp + fp) if (tp + fp) > eps else "N/A"
         recall = tp / (tp + fn) if (tp + fn) > eps else "N/A"
 
-        print(f"Overall precision: {precision}")
-        print(f"Overall recall: {recall}")
+        logger.info(f"Overall precision: {precision}")
+        logger.info(f"Overall recall: {recall}")
 
         f1 = 2 * (precision * recall) / (precision + recall) if (precision != 'N/A' and recall != 'N/A' and precision + recall > eps) else 'N/A'
         tp_prob, tp_prob_sd = get_mean_stdev(tp_probs)
@@ -309,7 +312,7 @@ def write_predictions_paras(domains: list[AdenylationDomain], predictions: list,
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
 
-    print("Writing files...")
+    logger.info("Writing files...")
 
     overall_correct = 0
     overall_incorrect = 0
@@ -362,7 +365,7 @@ def write_predictions_paras(domains: list[AdenylationDomain], predictions: list,
 
     # Compute accuracies
     overall_accuracy = overall_correct / (overall_correct + overall_incorrect)
-    print(f"Overall accuracy: {overall_accuracy}")
+    logger.info(f"Overall accuracy: {overall_accuracy}")
     per_substrate_accuracy = {
         s: (correct / total if total > 0 else None)
         for s, (correct, total) in per_substrate_counts.items()
@@ -395,7 +398,7 @@ def write_predictions_parasect(domains: list[AdenylationDomain], substrate_to_pr
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
 
-    print("Writing files..")
+    logger.info("Writing files..")
 
     substrate_to_metrics: dict[Substrate, dict[str, Any]] = {}
     substrate_nr = len(substrate_to_predictions)
