@@ -21,8 +21,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # Editable install (in legacy-backend "compat" mode, since this project's
-      # setuptools build backend doesn't support PEP 660) so that coverage
+      # Editable install in setuptools' "compat" mode (a static .pth-style
+      # layout instead of a PEP 660 import-hook finder) so that coverage
       # records hits against src/parasect/... rather than a site-packages copy.
       # That keeps paths identical across every matrix entry and the
       # integration-tests job below, so their coverage data can be combined.
