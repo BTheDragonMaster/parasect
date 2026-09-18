@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Box, IconButton, Divider, Typography, Button, Modal, Tooltip, TextField, Stack, Chip, CircularProgress } from '@mui/material';
+import { Box, IconButton, Divider, Typography, Button, Modal, Tooltip, TextField, Stack, Chip, CircularProgress, Link } from '@mui/material';
 import { CheckCircle, ErrorOutline } from "@mui/icons-material";
 import { MdClose } from 'react-icons/md';
 
@@ -471,6 +471,14 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                     </Box>
 
                     {/* Turnstile widget */}
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                        This form uses Cloudflare Turnstile to help prevent automated spam submissions,
+                        which may set cookies as part of its verification check. See{' '}
+                        <Link href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">
+                            Cloudflare's privacy policy
+                        </Link>{' '}
+                        for details.
+                    </Typography>
                     <Turnstile
                         key={turnstileKey}
                         sitekey={SITE_KEY}

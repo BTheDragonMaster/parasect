@@ -1,9 +1,21 @@
-version: "3.3"
-
 services:
+  redis:
+    image: redis:7-alpine
+    restart: always
+    container_name: paras-redis
+    # Job results only, not durable app state: an AOF/RDB volume isn't
+    # needed since every key already carries a 7-day TTL (see job_store.py).
+    networks: [paras-network]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
   paras-server:
     build:
-      context: . 
+      context: .
       dockerfile: Dockerfile.server
     image: paras-server
     restart: always
@@ -15,6 +27,12 @@ services:
     environment:
       - MODEL_DIR=/app/models
       - LOG_LEVEL=INFO
+      - REDIS_URL=redis://redis:6379/0
+      # Single host today: worker processes share the model's mmap'd pages
+      # via the OS page cache, so extra workers are cheap in RAM. Job state
+      # now lives in Redis, so this is safe to raise above 1.
+      - GUNICORN_WORKERS=2
+      - GUNICORN_THREADS=4
       # Also set in Dockerfile, can override here
       - OMP_NUM_THREADS=1
       - OPENBLAS_NUM_THREADS=1
@@ -22,6 +40,9 @@ services:
       - NUMEXPR_NUM_THREADS=1
       - JOBLIB_MMAP_MODE=r
     networks: [paras-network]
+    depends_on:
+      redis:
+        condition: service_healthy
     healthcheck:
       # Use base Python; no curl/wget dependency needed
       test: [ "CMD", "/opt/conda/bin/python", "-c",

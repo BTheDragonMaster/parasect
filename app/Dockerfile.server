@@ -38,7 +38,9 @@ ENV PYTHONUNBUFFERED=1 \
     OPENBLAS_NUM_THREADS=1 \
     MKL_NUM_THREADS=1 \
     NUMEXPR_NUM_THREADS=1 \
-    JOBLIB_MMAP_MODE=r
+    JOBLIB_MMAP_MODE=r \
+    GUNICORN_WORKERS=1 \
+    GUNICORN_THREADS=4
 
 # Use the unprivileged user at runtime
 USER $USERNAME
@@ -46,6 +48,9 @@ USER $USERNAME
 # Expose your service port
 EXPOSE 4009
 
-# Run everything inside the conda env without needing manual activation
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "web"]
-CMD ["gunicorn", "-b", ":4009", "--worker-class", "gthread", "--workers", "1", "--threads", "4", "--preload", "--timeout", "120", "api:app"]
+# Shell form (not exec-array) so $GUNICORN_WORKERS/$GUNICORN_THREADS are
+# expanded at container start: lets docker-compose/orchestrator override
+# worker count per-deployment without rebuilding the image. Job state lives
+# in Redis (see routes/job_store.py), so GUNICORN_WORKERS can safely be > 1.
+ENTRYPOINT ["/bin/bash", "-lc"]
+CMD ["exec conda run --no-capture-output -n web gunicorn -b :4009 --worker-class gthread --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} --preload --timeout 120 api:app"]
