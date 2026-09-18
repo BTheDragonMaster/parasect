@@ -17,7 +17,8 @@ from pikachu.general import read_smiles
 
 from .app import app
 from .common import ResponseData, Status
-from .constants import MODEL_DIR, TEMP_DIR
+from .constants import MODEL_DIR, TEMP_DIR, cleanup_job_temp_dir, job_temp_dir
+from .job_store import set_job, update_job
 from .model_loader import ModelSpec, MultiModelLoader
 
 
@@ -97,6 +98,10 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
             msg = f"failed to locate temp directory: {str(e)}"
             raise Exception(msg)
 
+        # give this job its own temp subdirectory so concurrent jobs don't
+        # clobber each other's intermediate files (see job_temp_dir docstring)
+        path_temp_dir = job_temp_dir(job_id)
+
         # load model
         # return error if not successful
         try:
@@ -113,7 +118,7 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
                 results = run_paras(
                     selected_input=selected_input,
                     selected_input_type=selected_input_type,
-                    path_temp_dir=TEMP_DIR,
+                    path_temp_dir=path_temp_dir,
                     model=model,
                     use_structure_guided_alignment=use_structure_guided_alignment,
                 )
@@ -160,7 +165,7 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
                 results = run_parasect(
                     selected_input=selected_input,
                     selected_input_type=selected_input_type,
-                    path_temp_dir=TEMP_DIR,
+                    path_temp_dir=path_temp_dir,
                     model=model,
                     custom_substrate_names=custom_substrate_names,
                     custom_substrate_smiles=custom_substrate_smiles,
@@ -180,23 +185,19 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
         del model
 
         # store results
-        new_status = str(Status.Success).lower()
-        new_message = "Successfully ran predictions!"
-        new_results = [r.to_json() for r in results]
-
-        app.config["JOB_RESULTS"][job_id]["status"] = new_status
-        app.config["JOB_RESULTS"][job_id]["message"] = new_message
-        app.config["JOB_RESULTS"][job_id]["results"] = new_results
+        update_job(
+            job_id,
+            status=str(Status.Success).lower(),
+            message="Successfully ran predictions!",
+            results=[r.to_json() for r in results],
+        )
 
     except Exception as e:
         # store results
-        new_status = str(Status.Failure).lower()
-        new_message = str(e)
-        new_results = []
+        update_job(job_id, status=str(Status.Failure).lower(), message=str(e), results=[])
 
-        app.config["JOB_RESULTS"][job_id]["status"] = new_status
-        app.config["JOB_RESULTS"][job_id]["message"] = new_message
-        app.config["JOB_RESULTS"][job_id]["results"] = new_results
+    finally:
+        cleanup_job_temp_dir(job_id)
 
 
 @blueprint_submit_raw.route("/api/submit_raw", methods=["POST"])
@@ -215,12 +216,12 @@ def submit_raw() -> Response:
     current_time = int(time.time())
 
     # initialize job with status as pending
-    app.config["JOB_RESULTS"][job_id] = {
+    set_job(job_id, {
         "status": str(Status.Pending).lower(),
         "message": "Job is pending!",
         "results": [],
         "timestamp": current_time,
-    }
+    })
 
     # run prediction in a separate thread
     threading.Thread(target=run_prediction_raw, args=(job_id, data)).start()
@@ -345,23 +346,16 @@ def run_prediction_signature(job_id: str, data: Dict[str, str]) -> None:
         del model
 
         # store results
-        new_status = str(Status.Success).lower()
-        new_message = "Successfully ran predictions!"
-        new_results = [r.to_json() for r in results]
-
-        app.config["JOB_RESULTS"][job_id]["status"] = new_status
-        app.config["JOB_RESULTS"][job_id]["message"] = new_message
-        app.config["JOB_RESULTS"][job_id]["results"] = new_results
+        update_job(
+            job_id,
+            status=str(Status.Success).lower(),
+            message="Successfully ran predictions!",
+            results=[r.to_json() for r in results],
+        )
 
     except Exception as e:
         # store results
-        new_status = str(Status.Failure).lower()
-        new_message = str(e)
-        new_results = []
-
-        app.config["JOB_RESULTS"][job_id]["status"] = new_status
-        app.config["JOB_RESULTS"][job_id]["message"] = new_message
-        app.config["JOB_RESULTS"][job_id]["results"] = new_results
+        update_job(job_id, status=str(Status.Failure).lower(), message=str(e), results=[])
 
 
 @blueprint_submit_quick.route("/api/submit_quick", methods=["GET"])
@@ -410,31 +404,31 @@ def submit_quick() -> Response:
         )
 
         if len(data["data"]["submissions"]) == 0:
-            app.config["JOB_RESULTS"][job_id] = {
+            set_job(job_id, {
                 "status": str(Status.Failure).lower(),
                 "message": "No valid signatures provided.",
                 "results": [],
                 "timestamp": int(time.time()),
-            }
+            })
 
         else:
             # Initialize job with pending status
-            app.config["JOB_RESULTS"][job_id] = {
+            set_job(job_id, {
                 "status": str(Status.Pending).lower(),
                 "message": "Job is pending!",
                 "results": [],
                 "timestamp": int(time.time()),
-            }
+            })
 
             threading.Thread(target=run_prediction_signature, args=(job_id, data)).start()
-    
+
     except Exception as e:
-        app.config["JOB_RESULTS"][job_id] = {
+        set_job(job_id, {
             "status": str(Status.Failure).lower(),
             "message": str(e),
             "results": [],
             "timestamp": int(time.time()),
-        }
+        })
 
     if app.config["ENV"] == "production":
         results_url = f"https://paras.bioinformatics.nl/results/{job_id}"
