@@ -22,6 +22,13 @@ const Results = () => {
     // state to keep track of loading state
     const [isLoading, setIsLoading] = useState(true);
 
+    // what the server last said about the job: null until the first response
+    // lands, then 'pending' while it is genuinely still running. This page
+    // serves both flows (a fresh submit and a retrieve of an older job) and
+    // nothing in the route tells them apart, so the status is what decides
+    // which loading message is honest.
+    const [jobStatus, setJobStatus] = useState(null);
+
     // how to order the protein/gene groups of prediction cards
     // ('default' = order as returned by the server and for submit_quick/submit_domain
     // this reflects submission order; for a FASTA/GBK upload it's the order in
@@ -40,6 +47,7 @@ const Results = () => {
                 };
 
                 const data = await response.json();
+                setJobStatus(data.status);
 
                 if (data.status === 'success') {
                     const results = data['payload']['results']
@@ -77,7 +85,10 @@ const Results = () => {
         };
 
         if (jobId) {
-            // poll every second (1000 milliseconds)
+            // fetch straight away, then poll every second (1000 milliseconds).
+            // Without the leading call an already-finished job still sits on
+            // the loading screen for a full second before its results appear.
+            fetchResult();
             intervalId = setInterval(fetchResult, 1000);
         };
 
@@ -168,7 +179,7 @@ const Results = () => {
                     frame1='paras_loading_1.png' 
                     frame2='paras_loading_2.png' 
                 />
-                <p>Making predictions...</p>
+                <p>{jobStatus === 'pending' ? 'Making predictions...' : 'Retrieving predictions...'}</p>
             </Box>
         );  
     };
