@@ -37,6 +37,7 @@ const Loading = ({ frame1, frame2 }) => {
                 width='300px'
                 src={`${process.env.PUBLIC_URL}/${currentImage}`} 
                 alt='Loading...' 
+                style={{ borderRadius: 12, backgroundColor: '#FFFFFF' }}
             />
         </div>
     );

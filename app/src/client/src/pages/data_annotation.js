@@ -128,7 +128,7 @@ const DataAnnotation = () => {
         display='flex'
         flexDirection='column'
         alignItems='flex-start'
-        padding={4}
+        sx={{ px: { xs: 2, sm: 4 }, py: 4, maxWidth: 840, width: '100%' }}
         margin='auto'
       >
         <Typography variant='h4' gutterBottom>

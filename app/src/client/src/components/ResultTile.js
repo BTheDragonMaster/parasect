@@ -21,15 +21,19 @@ const ResultTile = ({ result }) => {
                 minWidth: '350px',
                 maxWidth: '350px',
                 borderRadius: '11px',
-                boxShadow: '0px 4px 10px rgba(100, 84, 31, 0.5)',
+                backgroundColor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
+                boxShadow: 2,
+                overflow: 'hidden',
             }}
         >
 
             {/* header with domain name and location */}
             <Box
                 sx={{
-                    backgroundColor: 'secondary.main',
-                    color: 'black.main',
+                    backgroundColor: 'accent.main',
+                    color: 'accent.contrastText',
                     padding: '14px 8px',
                     display: 'flex',
                     marginBottom: 1,
@@ -132,7 +136,7 @@ const ResultTile = ({ result }) => {
                         }}
                         disabled={result['domain_sequence'].length === 0}
                     >
-                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
+                        <FaCopy style={{ marginRight: '5px', fill: 'currentColor' }} />
                         Sequence
                     </Button>
                     <Button
@@ -150,7 +154,7 @@ const ResultTile = ({ result }) => {
                         }}
                         disabled={result['domain_signature'].length === 0}
                     >
-                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
+                        <FaCopy style={{ marginRight: '5px', fill: 'currentColor' }} />
                         Signature
                     </Button>
                 </Box>
@@ -177,7 +181,7 @@ const ResultTile = ({ result }) => {
                         }}
                         disabled={selectedPrediction['substrate_smiles'].length === 0}
                     >
-                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
+                        <FaCopy style={{ marginRight: '5px', fill: 'currentColor' }} />
                         SMILES
                     </Button>
                     <Button
@@ -195,7 +199,7 @@ const ResultTile = ({ result }) => {
                         }}
                         disabled={result['domain_extended_signature'].length === 0}
                     >
-                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
+                        <FaCopy style={{ marginRight: '5px', fill: 'currentColor' }} />
                         Ext. signature
                     </Button>
                 </Box>

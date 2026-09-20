@@ -131,11 +131,11 @@ const Submit = () => {
 
     return (
         <>
-            <Box 
-                display='flex' 
-                flexDirection='column' 
-                alignItems='left' 
-                padding={4} 
+            <Box
+                display='flex'
+                flexDirection='column'
+                alignItems='left'
+                sx={{ px: { xs: 2, sm: 4 }, py: 4, maxWidth: 840, width: '100%' }}
                 margin='auto'
             >
                 <Typography variant='h4' gutterBottom>
@@ -257,11 +257,11 @@ const Submit = () => {
                 </FormControl>
 
                 {/* settings, submit, and refresh buttons */}
-                <Box mt={4} display='flex' justifyContent='left' width='100%' gap={2}>
+                <Box mt={4} display='flex' flexWrap='wrap' justifyContent='left' width='100%' gap={2}>
                     <Button
                         variant='contained'
                         color='primary'
-                        startIcon={<MdSettings size={20} style={{ fill: 'white' }}/>}
+                        startIcon={<MdSettings size={20} style={{ fill: 'currentColor' }}/>}
                         onClick={handleOpenSettingsModal}
                     >
                         Settings

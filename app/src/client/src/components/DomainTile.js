@@ -356,26 +356,27 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
             sx={{
                 flexGrow: 1,
                 borderRadius: '11px',
-                boxShadow: '0px 4px 10px rgba(100, 84, 31, 0.5)',
+                border: '1px solid',
+                borderColor: 'divider',
+                boxShadow: 2,
+                overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
-                backgroundColor: hasSequenceMatch ? '#e0e0e0' : 'white',
+                // a domain already in the database is shown sunken rather than
+                // greyed, so it still reads as a card in either colour mode
+                backgroundColor: hasSequenceMatch ? 'surface.sunken' : 'background.paper',
             }}
         >
             {/* Header with collapse toggle */}
             <Box
                 sx={{
-                    backgroundColor: hasSequenceMatch ? '#c0c0c0' : 'secondary.main',
-                    color: 'black.main',
+                    backgroundColor: hasSequenceMatch ? 'surface.borderStrong' : 'accent.main',
+                    color: hasSequenceMatch ? 'text.primary' : 'accent.contrastText',
+                    fontWeight: 600,
                     padding: '14px 8px',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    borderTopLeftRadius: '10px',
-                    borderTopRightRadius: '10px',
-                    // add radius to bottom corners if not expanded
-                    borderBottomLeftRadius: expanded ? '0' : '10px',
-                    borderBottomRightRadius: expanded ? '0' : '10px',
                 }}
             >
                 {/* Left side: domain info + optional warning stacked vertically */}
@@ -506,7 +507,7 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                                             </Box>
                                             <Box
                                                 sx={{
-                                                    border: '1px solid #ccc',
+                                                    border: 1, borderColor: 'divider',
                                                     borderRadius: '4px',
                                                     padding: '8px',
                                                     minHeight: '40px',
@@ -528,7 +529,7 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                                                 display: 'flex',
                                                 gap: 2,
                                                 alignItems: 'flex-start',
-                                                border: '1px solid #ccc',
+                                                border: 1, borderColor: 'divider',
                                                 borderRadius: 1,
                                                 p: 1,
                                                 minWidth: 500,
@@ -655,9 +656,9 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'center',
-                                                            color: 'gray',
+                                                            color: 'text.secondary',
                                                             fontStyle: 'italic',
-                                                            border: '1px dashed #ccc',
+                                                            border: '1px dashed', borderColor: 'divider',
                                                         }}
                                                     >
                                                         No substrate selected
@@ -672,14 +673,15 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                                     {showNoUpdateMessage && (
                                         <Box
                                             sx={{
-                                                border: '1px solid #aaa',
-                                                backgroundColor: '#f0f0f0',
+                                                border: 1,
+                                                borderColor: 'success.main',
+                                                backgroundColor: 'surface.sunken',
                                                 borderRadius: 1,
                                                 padding: 2,
                                                 mb: 2,
                                             }}
                                         >
-                                            <Typography sx={{fontWeight: 500, color: 'green'}}>
+                                            <Typography sx={{fontWeight: 500, color: 'success.main'}}>
                                                 Selected substrates match known substrates exactly. No update will be
                                                 made.
                                             </Typography>

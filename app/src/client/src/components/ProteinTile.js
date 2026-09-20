@@ -21,7 +21,7 @@ const ProteinTile = ({proteinResult, onUpdateAnnotation}) => {
     const [proteinName, setProteinName] = useState(defaultProteinName);
     const [proteinExists, setProteinExists] = useState(null); // null = not checked yet
 
-    // 🔍 Check if protein is in dataset
+    // Check if protein is in dataset
     const checkProteinInDataset = async (name) => {
         try {
             const response = await fetch("/api/check_protein_name", {
@@ -94,21 +94,24 @@ const ProteinTile = ({proteinResult, onUpdateAnnotation}) => {
                 minWidth: '650px',
                 maxWidth: '650px',
                 borderRadius: '11px',
-                boxShadow: '0px 4px 10px rgba(100, 84, 31, 0.5)',
+                backgroundColor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
+                boxShadow: 3,
                 display: 'flex',
                 flexDirection: 'column',
+                overflow: 'hidden',
             }}
         >
             {/* header with domain name and location */}
             <Box
                 sx={{
-                    backgroundColor: 'secondary.main',
-                    color: 'black.main',
+                    backgroundColor: 'accent.main',
+                    color: 'accent.contrastText',
+                    fontWeight: 600,
                     padding: '21px 16px',
                     display: 'flex',
                     marginBottom: 1,
-                    borderTopLeftRadius: '10px',
-                    borderTopRightRadius: '10px',
                     justifyContent: 'center',
                 }}
             >
