@@ -889,7 +889,7 @@ const NetworkGraph = () => {
                         noOptionsText={availableCategories.length ? 'Nothing left to add' : 'Loading...'}
                         renderOption={(props, option) => (option.label === MORE_OPTIONS ? (
                             <li {...props} key={MORE_OPTIONS} style={{ opacity: 0.7, fontSize: '0.75rem' }}>
-                                +{option.count} more - keep typing to narrow
+                                +{option.count} more. Keep typing to narrow!
                             </li>
                         ) : (
                             <li {...props} key={option.label}>

@@ -119,7 +119,7 @@ const LazyMultiSelect = ({ field, value, onChange, label, placeholder }) => {
             />
             {truncated && (
                 <Typography variant='caption' color='textSecondary' sx={{ mt: 0.5, display: 'block' }}>
-                    Showing the {FETCH_LIMIT} most-used matches - keep typing to narrow.
+                    Showing the {FETCH_LIMIT} most-used matches. Keep typing to narrow!
                 </Typography>
             )}
         </Box>

@@ -418,7 +418,7 @@ const QueryDatabase = () => {
                 Pick a filter and hit search
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                You can select several values at once - every match ends up in one table.
+                You can select several values at once, and every match is combined into one table.
               </Typography>
             </>
           )}
