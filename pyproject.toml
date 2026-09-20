@@ -39,7 +39,14 @@ dependencies = [
     "biopython",
     "joblib",
     "pikachu-chem",
-    "scikit-learn<=1.8.0",
+    # Ceiling: prediction quality degrades above 1.8.0.
+    # Floor: scikit-learn 1.3 added a field to the decision-tree node dtype, so
+    # anything older cannot unpickle the published models at all. Model dies with
+    # "node array from the pickle has an incompatible dtype". Without a floor
+    # this range silently allows those versions. 1.6 is the oldest that has been
+    # verified against the current models, and is reachable on Python 3.9, so
+    # this does not force anyone off it (1.8.0 itself needs Python >= 3.11).
+    "scikit-learn>=1.6,<=1.8.0",
     "ncbi-acc-download>=0.2.5",
     "sqlalchemy",
     "iterative-stratification",

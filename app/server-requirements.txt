@@ -1,3 +1,10 @@
+# The core parasect package declares a compatible range for scikit-learn, as a
+# library should. This is a deployment, so it pins the exact version instead:
+# the one the published models were pickled under. Loading a random forest under
+# a different scikit-learn than it was written with is unsupported.
+# Bump this together with ZENODO_RECORD in docker-compose.yml, never alone.
+scikit-learn==1.8.0
+
 python-dotenv
 flask
 sqlalchemy
@@ -5,4 +12,3 @@ gunicorn
 joblib
 redis
 psutil
-git+https://github.com/BTheDragonMaster/parasect

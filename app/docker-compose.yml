@@ -13,10 +13,30 @@ services:
       retries: 10
       start_period: 5s
 
+  # One-shot init: populates ./models before the server starts, then exits.
+  paras-models:
+    image: paras-server
+    container_name: paras-models-init
+    command: ["exec conda run --no-capture-output -n web python /app/fetch_models.py"]
+    restart: "no"
+    volumes:
+      - ./models:/app/models
+    environment:
+      - MODEL_DIR=/app/models
+      - LOG_LEVEL=INFO
+      # Which models to fetch: any comma-separated subset of the keys the API
+      # accepts (parasAllSubstrates, parasCommonSubstrates, parasect,
+      # parasectBacterial), or "all".
+      - PARAS_MODELS=${PARAS_MODELS:-all}
+      # Which Zenodo release those models come from. Pinned, not floating.
+      - ZENODO_RECORD=${ZENODO_RECORD:-18682178}
+    networks: [paras-network]
+
   paras-server:
     build:
-      context: .
-      dockerfile: Dockerfile.server
+      # repo root, not app/
+      context: ..
+      dockerfile: app/Dockerfile.server
     image: paras-server
     restart: always
     env_file:
@@ -43,6 +63,9 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+      # Won't start until the models are actually on disk.
+      paras-models:
+        condition: service_completed_successfully
     healthcheck:
       # Use base Python; no curl/wget dependency needed
       test: [ "CMD", "/opt/conda/bin/python", "-c",

@@ -14,9 +14,12 @@ RUN groupadd --gid $USER_GID $USERNAME \
 # Workdir
 WORKDIR /app
 
+# Build context is the repo root (see docker-compose.yml), not app/, so this
+# Dockerfile can also see src/parasect/ below. Everything here is app/-relative!
+
 # Copy env first to leverage Docker layer caching
-COPY server-environment.yml /app/
-COPY server-requirements.txt /app/
+COPY app/server-environment.yml /app/
+COPY app/server-requirements.txt /app/
 
 # Create Conda env with mamba (faster) and clean caches
 RUN mamba env create -n web -f server-environment.yml \
@@ -25,8 +28,14 @@ RUN mamba env create -n web -f server-environment.yml \
 # Ensure `conda run -n web ...` works for ENTRYPOINT/CMD
 RUN echo "conda activate web" >> /etc/bash.bashrc
 
+# Install the local checkout of the core parasect/paras package
+COPY pyproject.toml setup.cfg manifest.in /tmp/parasect-src/
+COPY src/ /tmp/parasect-src/src/
+RUN conda run -n web pip install --no-cache-dir /tmp/parasect-src \
+ && rm -rf /tmp/parasect-src
+
 # Copy the app code and give ownership to the non-root user
-COPY --chown=${USER_UID}:${USER_GID} ./src/server/ /app/
+COPY --chown=${USER_UID}:${USER_GID} app/src/server/ /app/
 
 # Ensure temp dir exists and is writable
 RUN mkdir -p /app/temp && chown -R ${USER_UID}:${USER_GID} /app
