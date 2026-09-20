@@ -13,6 +13,7 @@ from flask import Blueprint, Response, request, redirect, jsonify
 
 from parasect.api import run_paras, run_parasect, run_paras_for_signatures
 from parasect.core.domain import AdenylationDomain
+from parasect.core.hit import DomainType
 from pikachu.general import read_smiles
 
 from .app import app
@@ -316,6 +317,7 @@ def run_prediction_signature(job_id: str, data: Dict[str, str]) -> None:
             for s in submissions:
                 domain = AdenylationDomain(
                     protein_name=s["protein_name"],
+                    domain_type=DomainType.AMP_BINDING,
                     domain_start=s["domain_start"],
                     domain_end=s["domain_end"],
                 )
