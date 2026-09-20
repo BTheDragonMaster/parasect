@@ -4,7 +4,7 @@
 
 
 import subprocess
-from typing import List
+from typing import Dict, List
 import os
 import itertools
 from Bio import SeqIO
@@ -13,14 +13,23 @@ from ncbi_acc_download.errors import DownloadError
 
 from parasect.core.writers import write_fasta_file
 
+# Large enough that per-record offsets can't collide with a single record's
+# own feature-start positions, so records stay in file order and each
+# record's genes stay ordered within it.
+_RECORD_POSITION_OFFSET = 10 ** 9
 
-def genbank_to_fasta(path_in: str, path_out: str) -> None:
+
+def genbank_to_fasta(path_in: str, path_out: str) -> Dict[str, int]:
     """Parse protein sequences from a GenBank file and writes them to a fasta file.
 
     :param path_in: Path to input GenBank file.
     :type path_in: str
     :param path_out: Path to output fasta file.
     :type path_out: str
+    :return: Mapping of sequence ID to the gene/CDS's start position along the
+        input DNA (offset per record, so record order and within-record order
+        are both preserved for multi-record files).
+    :rtype: Dict[str, int]
     :raises FileNotFoundError: If the file at the specified path does not exist.
     """
     # check if the file exists
@@ -33,8 +42,11 @@ def genbank_to_fasta(path_in: str, path_out: str) -> None:
     # initialize a dictionary to store the fasta sequences
     fasta_dict = {}
 
+    # initialize a dictionary to store each gene's position along the DNA
+    gene_positions: Dict[str, int] = {}
+
     # parse the GenBank file
-    for record in SeqIO.parse(path_in, "genbank"):
+    for record_index, record in enumerate(SeqIO.parse(path_in, "genbank")):
         for feature in record.features:
 
             # check if the feature is a coding sequence (CDS)
@@ -60,8 +72,14 @@ def genbank_to_fasta(path_in: str, path_out: str) -> None:
                     # add the sequence to the dictionary
                     fasta_dict[seq_id] = sequence
 
+                    # record this gene's position along the DNA, if available
+                    if feature.location is not None:
+                        gene_positions[seq_id] = record_index * _RECORD_POSITION_OFFSET + int(feature.location.start)
+
     # write the fasta sequences to a file
     write_fasta_file(fasta_dict=fasta_dict, path_out=path_out)
+
+    return gene_positions
 
 
 def fetch_from_genbank(protein_accessions: List[str], fasta_out: str) -> None:

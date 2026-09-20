@@ -371,12 +371,14 @@ def get_domains(
             f"Only supported file types are 'fasta' or 'gbk'. Got {file_type}."
         )  # noqa: E501
 
+    gene_positions: dict = {}
+
     if file_type == "gbk":
         # parse genbank file
         original_fasta = os.path.join(path_temp_dir, "proteins_from_genbank.fasta")
-        genbank_to_fasta(
+        gene_positions = genbank_to_fasta(
             path_in=path_in, path_out=original_fasta
-        )  # creates a fasta file at path_out
+        )  # creates a fasta file at path_out, and returns each gene's position along the DNA
         mapping_file, renamed_fasta_file = rename_sequences(
             path_in=original_fasta, path_out=path_temp_dir
         )
@@ -402,5 +404,10 @@ def get_domains(
         raise ValueError(msg)
 
     reverse_renaming(adenylation_domains=a_domains, path_in_mapping_file=mapping_file)
+
+    # attach each domain's gene position along the DNA, when known (gbk input only)
+    if gene_positions:
+        for a_domain in a_domains:
+            a_domain.set_genomic_position(gene_positions.get(a_domain.protein_name))
 
     return a_domains
