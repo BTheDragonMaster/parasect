@@ -10,6 +10,16 @@ src/server/temp/*
 *.paras.gz
 *.parasect.gz
 
+# Everything else the paras-models init service writes into the models
+# directory, apart from .gitkeep: .part files while a download is in flight and
+# .fetch_manifest.json, which records the Zenodo record, archive checksum and
+# verified scikit-learn version per model so a re-run can skip what is already
+# there. All of it is generated at runtime and volume-mounted into the
+# container, never committed (the directory is excluded from the image build
+# context too, see .dockerignore).
+models/*
+!models/.gitkeep
+
 # Reference database: ships inside the parasect package (see
 # routes/constants.py); the app no longer keeps its own copy
 src/server/parasect.db
