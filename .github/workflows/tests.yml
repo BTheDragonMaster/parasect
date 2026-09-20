@@ -92,7 +92,7 @@ jobs:
 
       # These tests download the real trained PARAS models from Zenodo on first
       # run (~80 MB total) and run the actual HMMER/MUSCLE pipeline end to end
-      # against the fixture proteins in src/parasect/tests/data.
+      # against the fixture proteins in tests/integration/data.
       - name: Run integration tests
         run: >
           coverage run -p -m pytest -m integration -v --durations=20
