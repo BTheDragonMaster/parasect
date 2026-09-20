@@ -37,6 +37,7 @@ Environment:
 
 from __future__ import annotations
 
+import errno
 import gzip
 import hashlib
 import json
@@ -374,7 +375,20 @@ def verify(models: list[ModelFile], model_dir: str, manifest: dict[str, dict]) -
     for model in models:
         target = os.path.join(model_dir, model.target)
         try:
-            joblib.load(target, mmap_mode="r")
+            try:
+                joblib.load(target, mmap_mode="r")
+            except OSError as e:
+                # Mirror MultiModelLoader._default_load in routes/model_loader.py:
+                # mmap'ing a random forest costs a descriptor per array, so a low
+                # RLIMIT_NOFILE (1024 on plenty of hosts) trips EMFILE on the
+                # larger models. The server retries those with a plain read, so
+                # this gate has to as well, otherwise it refuses to start on
+                # models the server itself would have loaded quite happily.
+                if e.errno != errno.EMFILE:
+                    raise
+                logging.warning("  too many open files, retrying without mmap: %s",
+                                model.target)
+                joblib.load(target, mmap_mode=None)
             logging.info("  ok: %s", model.target)
             if model.target in manifest:
                 manifest[model.target]["verified_sklearn"] = sklearn.__version__
@@ -386,7 +400,8 @@ def verify(models: list[ModelFile], model_dir: str, manifest: dict[str, dict]) -
         raise SystemExit(
             f"{len(broken)} model(s) could not be loaded under scikit-learn "
             f"{sklearn.__version__}: {', '.join(broken)}.\n"
-            f"These models and this scikit-learn do not go together. Either the "
+            f"See the errors above for the reason. An unpickling error means "
+            f"these models and this scikit-learn do not go together: either the "
             f"pinned ZENODO_RECORD is wrong for this environment, or the "
             f"scikit-learn pin moved (see app/server-requirements.txt). Refusing "
             f"to let the server start on models it cannot read."

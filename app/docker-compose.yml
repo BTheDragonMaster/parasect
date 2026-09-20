@@ -29,6 +29,15 @@ services:
       # ./models, i.e. what it did before. This is the only service that writes
       # there; paras-server mounts the same directory read-only.
       - ${PARAS_MODELS_DIR:-./models}:/app/models
+    # mmap'ing a random forest costs a file descriptor per array, and the big
+    # PARAS model has enough of them to blow past a 1024 soft limit, which is
+    # what the daemon hands containers on some hosts. Raising it keeps the mmap
+    # path (JOBLIB_MMAP_MODE=r) working; without it every load falls back to
+    # reading the whole model into RAM, ~3.3 GB for the largest, per worker.
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     environment:
       - MODEL_DIR=/app/models
       - LOG_LEVEL=INFO
@@ -52,6 +61,15 @@ services:
     container_name: paras-server
     volumes:
       - ${PARAS_MODELS_DIR:-./models}:/app/models:ro
+    # mmap'ing a random forest costs a file descriptor per array, and the big
+    # PARAS model has enough of them to blow past a 1024 soft limit, which is
+    # what the daemon hands containers on some hosts. Raising it keeps the mmap
+    # path (JOBLIB_MMAP_MODE=r) working; without it every load falls back to
+    # reading the whole model into RAM, ~3.3 GB for the largest, per worker.
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     environment:
       - MODEL_DIR=/app/models
       - LOG_LEVEL=INFO
