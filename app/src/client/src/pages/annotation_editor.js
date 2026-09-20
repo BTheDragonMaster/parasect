@@ -338,16 +338,20 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
     return (
         <Modal open={open} onClose={onClose}>
             <Box
-                width={800}
-                bgcolor='white.main'
+                sx={{
+                    width: { xs: '92vw', sm: 500, md: 800 },
+                    maxHeight: '88vh',
+                    overflowY: 'auto',
+                }}
+                bgcolor='background.paper'
                 mx='auto'
-                my={10}
+                my={{ xs: 4, sm: 10 }}
                 borderRadius={4}
                 boxShadow={3}
             >
                 <Box
                     sx={{
-                        backgroundColor: 'secondary.main',
+                        backgroundColor: 'accent.main',
                         borderTopLeftRadius: '14px',
                         borderTopRightRadius: '14px',
                         display: 'flex',
@@ -360,7 +364,7 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                         variant='h5' 
                         gutterBottom
                         sx={{ 
-                            color: 'black.main', 
+                            color: 'accent.contrastText', 
                             textAlign: 'center',
                             pl: 2,
                             pt: 2, 
@@ -368,7 +372,7 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                     >
                         Submit annotations
                     </Typography>
-                    <IconButton onClick={onClose}>
+                    <IconButton onClick={onClose} sx={{ color: 'accent.contrastText' }}>
                         <MdClose size={24} />
                     </IconButton>
                 </Box>
@@ -465,7 +469,7 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                         )}
                         {refsPending && (
                             <Typography variant="body2" sx={{ mt: 1 }}>
-                                Validating references…
+                                Validating references...
                             </Typography>
                         )}
                     </Box>
@@ -494,7 +498,7 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                         disabled={!canSubmit}
                     >
                         {submitting 
-                            ? 'Submitting…' 
+                            ? 'Submitting...' 
                             : `Submit ${Object.keys(proteinAnnotations).length} annotated protein(s)`}
                     </Button>
                 </Box>
@@ -659,7 +663,7 @@ const AnnotationEditor = () => {
                         </Typography>
 
                         <Typography variant='body1' gutterBottom>
-                            Domains which already exist in the PARAS/PARASECT dataset are displayed in grey. New domains are displayed in yellow. Please review the new domains and provide annotations where possible. You can proceed with submitting domains once they are annotated.
+                            Domains that already exist in the PARAS/PARASECT dataset have a muted header and a sunken card; new domains are headed in the PARAS orange. Please review the new domains and provide annotations where possible. You can proceed with submitting domains once they are annotated.
                         </Typography>
 
                         <Typography variant='body1' gutterBottom>
@@ -687,7 +691,7 @@ const AnnotationEditor = () => {
                     sx={{
                         overflowY: 'auto',
                         overflowX: 'auto',
-                        backgroundColor: 'white.main',
+                        backgroundColor: 'background.default',
                         flexDirection: 'row',
                         display: 'flex',
                         gap: '20px',
@@ -702,7 +706,7 @@ const AnnotationEditor = () => {
 
                         // scrollbar style
                         '&::-webkit-scrollbar-thumb': {
-                            backgroundColor: '#ceccca',
+                            backgroundColor: 'surface.borderStrong',
                             borderRadius: '10px',
                         },
                     }}
