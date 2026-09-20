@@ -15,14 +15,20 @@ services:
       retries: 10
       start_period: 5s
 
-  # One-shot init: populates ./models before the server starts, then exits.
+  # One-shot init: populates the models directory before the server starts,
+  # then exits.
   paras-models:
     image: paras-server
     container_name: paras-models-init
     command: ["exec conda run --no-capture-output -n web python /app/fetch_models.py"]
     restart: "no"
     volumes:
-      - ./models:/app/models
+      # Host path is configurable so the ~4 GB of models need not sit inside the
+      # repo checkout: set PARAS_MODELS_DIR to an absolute path in app/.env
+      # (gitignored, and read by compose for interpolation). Defaults to
+      # ./models, i.e. what it did before. This is the only service that writes
+      # there; paras-server mounts the same directory read-only.
+      - ${PARAS_MODELS_DIR:-./models}:/app/models
     environment:
       - MODEL_DIR=/app/models
       - LOG_LEVEL=INFO
@@ -45,7 +51,7 @@ services:
       - .env  # Need secrets for submitting newly annotated domains
     container_name: paras-server
     volumes:
-      - ./models:/app/models:ro
+      - ${PARAS_MODELS_DIR:-./models}:/app/models:ro
     environment:
       - MODEL_DIR=/app/models
       - LOG_LEVEL=INFO
