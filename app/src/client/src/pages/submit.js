@@ -21,7 +21,7 @@ const RadioLabel = ({ imageSrc, label }) => (
             component="img"
             src={imageSrc}
             alt=""
-            sx={{ width: 40, height: 40, marginRight: 1 }}
+            sx={{ width: 40, height: 40, marginRight: 1, borderRadius: '6px' }}
         />
         <Typography variant="body1">{label}</Typography>
     </Box>
