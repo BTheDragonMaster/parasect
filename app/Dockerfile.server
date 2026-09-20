@@ -29,7 +29,7 @@ RUN mamba env create -n web -f server-environment.yml \
 RUN echo "conda activate web" >> /etc/bash.bashrc
 
 # Install the local checkout of the core parasect/paras package
-COPY pyproject.toml setup.cfg manifest.in /tmp/parasect-src/
+COPY pyproject.toml setup.cfg MANIFEST.in /tmp/parasect-src/
 COPY src/ /tmp/parasect-src/src/
 RUN conda run -n web pip install --no-cache-dir /tmp/parasect-src \
  && rm -rf /tmp/parasect-src

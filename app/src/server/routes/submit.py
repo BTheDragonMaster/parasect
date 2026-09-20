@@ -195,6 +195,10 @@ def run_prediction_raw(job_id: str, data: dict[str, str]) -> None:
         )
 
     except Exception as e:
+        # Log the traceback: the job store only keeps str(e), so without this a
+        # failure leaves nothing in the container logs to debug from.
+        app.logger.exception("job %s failed: %s", job_id, e)
+
         # store results
         update_job(job_id, status=str(Status.Failure).lower(), message=str(e), results=[])
 
@@ -357,6 +361,10 @@ def run_prediction_signature(job_id: str, data: dict[str, str]) -> None:
         )
 
     except Exception as e:
+        # Log the traceback: the job store only keeps str(e), so without this a
+        # failure leaves nothing in the container logs to debug from.
+        app.logger.exception("job %s failed: %s", job_id, e)
+
         # store results
         update_job(job_id, status=str(Status.Failure).lower(), message=str(e), results=[])
 

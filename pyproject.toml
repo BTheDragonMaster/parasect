@@ -99,6 +99,13 @@ where = ["src"]
     "*.txt",
     "*.hmm",
     "*.hmm.*",
+    # The HMM profiles live in a subdirectory, which the globs above do not
+    # reach: they only match files directly inside parasect/data/. Without this
+    # line the profiles are missing from an installed package, both hmmpfam2 and
+    # hmmscan fail, and every prediction ends in "no adenylation domains found".
+    # The pressed HMMER3 aux files (.h3f/.h3i/.h3m/.h3p) must come along too, or
+    # hmmscan exits with "use hmmpress first".
+    "hmm/*",
     "*.tsv",
     "*.fasta",
     "database_files/*.tsv",
