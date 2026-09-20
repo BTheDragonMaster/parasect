@@ -6,6 +6,8 @@ import os
 import shutil
 import time
 
+from parasect.core.constants import DATABASE_FILE
+
 MODEL_DIR_LOCAL = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
     "models",
@@ -13,11 +15,12 @@ MODEL_DIR_LOCAL = os.path.join(
 MODEL_DIR = os.getenv("MODEL_DIR", MODEL_DIR_LOCAL)
 TEMP_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "temp")
 
-DB_PATH_LOCAL = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "parasect.db",
-)
-DB_PATH = os.getenv("SQLITE_PATH", DB_PATH_LOCAL)
+# The reference database ships inside the parasect package itself (see
+# [tool.setuptools.package-data] in pyproject.toml), and both the server image
+# and any dev environment pip-install that package. This means that the app no
+# longer carries its own copy of it. SQLITE_PATH still overrides, e.g. to point a
+# deployment at a newer database without rebuilding the image.
+DB_PATH = os.getenv("SQLITE_PATH", DATABASE_FILE)
 
 
 STALE_JOB_TEMP_DIR_SECONDS = 2 * 60 * 60  # 2 hours; normal jobs finish in seconds to minutes

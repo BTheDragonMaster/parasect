@@ -9,3 +9,7 @@ src/server/temp/*
 *.parasect
 *.paras.gz
 *.parasect.gz
+
+# Reference database: ships inside the parasect package (see
+# routes/constants.py); the app no longer keeps its own copy
+src/server/parasect.db
