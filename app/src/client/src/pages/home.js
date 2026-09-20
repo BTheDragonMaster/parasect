@@ -13,14 +13,14 @@ const links = [
     {
         text: 'Want to learn more about the research behind PARAS and PARASECT?',
         cta: 'Read our publication',
-        href: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC13126170/',
-        tooltip: 'Opens new tab to bioRxiv.',
+        href: 'https://pubs.acs.org/jaaucr/article/6/4/2315/5145284/PARAS-High-Accuracy-Machine-Learning-of-Substrate',
+        tooltip: 'Opens new tab to JACS Au.',
     },
     {
         text: 'Did you find PARAS or PARASECT useful?',
         cta: 'Please cite our publication',
-        href: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC13126170/',
-        tooltip: 'Opens new tab to bioRxiv.',
+        href: 'https://pubs.acs.org/jaaucr/article/6/4/2315/5145284/PARAS-High-Accuracy-Machine-Learning-of-Substrate',
+        tooltip: 'Opens new tab to JACS Au.',
     },
     {
         text: 'Have something to contribute?',
