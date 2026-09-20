@@ -238,7 +238,7 @@ export default function Statistics() {
                 axisLine={false}
                 tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
                 // trimmed before the ellipsis so the clipped label is one
-                // unbroken word -- recharts only wraps on spaces, and
+                // unbroken word: recharts only wraps on spaces, and
                 // "Pseudomonas ..." would otherwise drop the ... onto its own line
                 tickFormatter={(v) => {
                   const label = String(v);

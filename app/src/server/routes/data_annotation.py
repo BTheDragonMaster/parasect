@@ -2,11 +2,12 @@
 
 """Routes for making adenylation domain subtrate specificity predictions on raw input."""
 
+from __future__ import annotations
+
 import os
 import threading
 import time
 import uuid
-from typing import Dict
 
 import joblib
 from flask import Blueprint, Response, request, jsonify
@@ -24,13 +25,13 @@ from .submit import loader
 blueprint_annotate_data = Blueprint("annotate_data", __name__)
 
 
-def run_prediction_protein(job_id: str, data: Dict[str, str]) -> None:
+def run_prediction_protein(job_id: str, data: dict[str, str]) -> None:
     """Run prediction with PARAS all substrate model on protein input.
 
     :param job_id: Job ID.
     :type job_id: str
     :param data: Data.
-    :type data: Dict[str, str]
+    :type data: dict[str, str]
     """
     try:
         # read settings

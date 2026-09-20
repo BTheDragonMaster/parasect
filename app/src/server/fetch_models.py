@@ -29,7 +29,7 @@ Environment:
     ZENODO_RECORD   Zenodo record id to pin to (default below).
     PARAS_MODELS_KEEP_EXISTING
                     if set to 1/true/yes, leave already-present files alone
-                    even when they didn't come from the pinned record -- for
+                    even when they didn't come from the pinned record. For
                     when you are deliberately running your own weights.
     PARAS_MODELS_VERIFY
                     set to 0/false/no to skip the post-fetch load check.
@@ -44,7 +44,7 @@ import logging
 import os
 import shutil
 import sys
-from typing import Dict, List, NamedTuple
+from typing import NamedTuple
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -93,12 +93,12 @@ class ModelFile(NamedTuple):
 
 
 # Keyed by the strings the submit endpoint accepts, so pinning the set of models
-# here and the set offered in the UI are obviously the same list -- see the
+# here and the set offered in the UI are obviously the same list. See the
 # model registry at the top of routes/submit.py.
 #
 # `expanded` is measured against the default record; it only feeds the
 # pre-flight free-space warning, so it being a little stale is harmless.
-MODELS: Dict[str, ModelFile] = {
+MODELS: dict[str, ModelFile] = {
     m.key: m
     for m in (
         ModelFile("parasAllSubstrates", "all_substrates_model.paras.gz",
@@ -135,7 +135,7 @@ def default_model_dir() -> str:
     return os.path.join(app_dir, "models")
 
 
-def selected_models(raw: str) -> List[ModelFile]:
+def selected_models(raw: str) -> list[ModelFile]:
     """Resolve the PARAS_MODELS setting into model entries.
 
     An unknown key is an error rather than a warning: a typo would otherwise
@@ -146,8 +146,8 @@ def selected_models(raw: str) -> List[ModelFile]:
     if not raw or raw.lower() == "all":
         return list(MODELS.values())
 
-    wanted: List[ModelFile] = []
-    unknown: List[str] = []
+    wanted: list[ModelFile] = []
+    unknown: list[str] = []
     for name in (part.strip() for part in raw.split(",")):
         if not name:
             continue
@@ -167,7 +167,7 @@ def selected_models(raw: str) -> List[ModelFile]:
     return wanted
 
 
-def read_manifest(model_dir: str) -> Dict[str, dict]:
+def read_manifest(model_dir: str) -> dict[str, dict]:
     try:
         with open(os.path.join(model_dir, MANIFEST_NAME)) as fh:
             data = json.load(fh)
@@ -178,7 +178,7 @@ def read_manifest(model_dir: str) -> Dict[str, dict]:
         return {}
 
 
-def write_manifest(model_dir: str, files: Dict[str, dict]) -> None:
+def write_manifest(model_dir: str, files: dict[str, dict]) -> None:
     path = os.path.join(model_dir, MANIFEST_NAME)
     partial = f"{path}.part"
     with open(partial, "w") as fh:
@@ -187,7 +187,7 @@ def write_manifest(model_dir: str, files: Dict[str, dict]) -> None:
 
 
 def present_and_pinned(model: ModelFile, model_dir: str, record: str,
-                       manifest: Dict[str, dict], keep_existing: bool) -> bool:
+                       manifest: dict[str, dict], keep_existing: bool) -> bool:
     """Decide whether model on disk can be left as it is.
 
     Three cases, because "the file exists" is not the same as "the file is the
@@ -207,7 +207,7 @@ def present_and_pinned(model: ModelFile, model_dir: str, record: str,
         return True
 
     if entry:
-        logging.info("%s: on disk from record %s, pinned to %s -- replacing",
+        logging.info("%s: on disk from record %s, pinned to %s, replacing",
                      model.label, entry.get("record", "?"), record)
         return False
 
@@ -220,13 +220,13 @@ def present_and_pinned(model: ModelFile, model_dir: str, record: str,
 
     logging.warning(
         "%s: %s is already there but wasn't fetched by this script, so it "
-        "can't be checked against record %s -- replacing it. Set "
+        "can't be checked against record %s, so replacing it. Set "
         "PARAS_MODELS_KEEP_EXISTING=1 to keep your own copy instead.",
         model.label, model.target, record)
     return False
 
 
-def fetch_record(record: str) -> Dict[str, dict]:
+def fetch_record(record: str) -> dict[str, dict]:
     """Return the record's files, keyed by file name.
 
     Checksums come from the record itself rather than being hard-coded, so
@@ -307,7 +307,7 @@ def expand(archive: str, target: str) -> None:
 
 
 def ensure(model: ModelFile, model_dir: str, record: str,
-           record_files: Dict[str, dict]) -> dict:
+           record_files: dict[str, dict]) -> dict:
     """Download and expand one model. Returns its manifest entry."""
     entry = record_files.get(model.archive)
     if entry is None:
@@ -338,7 +338,7 @@ def ensure(model: ModelFile, model_dir: str, record: str,
     return {"record": record, "archive_md5": expected_md5, "size": size}
 
 
-def verify(models: List[ModelFile], model_dir: str, manifest: Dict[str, dict]) -> None:
+def verify(models: list[ModelFile], model_dir: str, manifest: dict[str, dict]) -> None:
     """Actually load every requested model, and fail loudly if one won't.
 
     This is the check whose absence let a real breakage sit unnoticed: a random
@@ -370,7 +370,7 @@ def verify(models: List[ModelFile], model_dir: str, manifest: Dict[str, dict]) -
         return
 
     logging.info("Checking the models load under scikit-learn %s", sklearn.__version__)
-    broken: List[str] = []
+    broken: list[str] = []
     for model in models:
         target = os.path.join(model_dir, model.target)
         try:
@@ -379,7 +379,7 @@ def verify(models: List[ModelFile], model_dir: str, manifest: Dict[str, dict]) -
             if model.target in manifest:
                 manifest[model.target]["verified_sklearn"] = sklearn.__version__
         except Exception as e:
-            logging.error("  FAILED: %s -- %s: %s", model.target, type(e).__name__, e)
+            logging.error("  FAILED: %s (%s: %s)", model.target, type(e).__name__, e)
             broken.append(model.target)
 
     if broken:
@@ -429,8 +429,8 @@ def main() -> int:
     return 0
 
 
-def fetch_missing(missing: List[ModelFile], model_dir: str, record: str,
-                  manifest: Dict[str, dict]) -> None:
+def fetch_missing(missing: list[ModelFile], model_dir: str, record: str,
+                  manifest: dict[str, dict]) -> None:
     """Download and expand the models that aren't already on disk."""
     needed = sum(m.expanded for m in missing)
     free = shutil.disk_usage(model_dir).free

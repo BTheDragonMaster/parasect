@@ -12,7 +12,7 @@
  *   - slots are assigned in order and never cycled, and
  *   - a category keeps its slot for as long as it is on screen, so adding or
  *     removing one never repaints the others.
- * Past eight simultaneous categories no palette is safe -- see CATEGORICAL_TIER2.
+ * Past eight simultaneous categories no palette is safe. See CATEGORICAL_TIER2.
  */
 
 /** Sampled from the logos. */

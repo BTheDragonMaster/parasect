@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import annotations
+
 import json
 import os
-from typing import Any, Dict, Optional
+from typing import Any
 
 import redis
 
@@ -17,7 +19,7 @@ def _key(job_id: str) -> str:
     return f"job:{job_id}"
 
 
-def set_job(job_id: str, job: Dict[str, Any]) -> None:
+def set_job(job_id: str, job: dict[str, Any]) -> None:
     """Create or fully overwrite a job's state.
 
     :param job_id: Job ID.
@@ -26,7 +28,7 @@ def set_job(job_id: str, job: Dict[str, Any]) -> None:
     _client.set(_key(job_id), json.dumps(job), ex=JOB_TTL_SECONDS)
 
 
-def get_job(job_id: str) -> Optional[Dict[str, Any]]:
+def get_job(job_id: str) -> dict[str, Any] | None:
     """Retrieve a job's state.
 
     :param job_id: Job ID.

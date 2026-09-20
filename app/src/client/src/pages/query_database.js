@@ -136,7 +136,7 @@ const QueryDatabase = () => {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sortModel, setSortModel] = useState([]);
-  // distinguishes "you haven't searched yet" from "that search found nothing" --
+  // distinguishes "you haven't searched yet" from "that search found nothing";
   // an empty grid can't say which, so it isn't shown for either
   const [hasSearched, setHasSearched] = useState(false);
   const lastRequestRef = useRef(0);

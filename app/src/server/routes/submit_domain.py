@@ -10,10 +10,11 @@ by the "structure guided alignment" option on `/api/submit_raw`
 (`AdenylationDomain.set_domain_signatures_profile`).
 """
 
+from __future__ import annotations
+
 import threading
 import time
 import uuid
-from typing import Dict
 
 from flask import Blueprint, Response, jsonify, request
 
@@ -36,7 +37,7 @@ _DOMAIN_TYPES = {
 }
 
 
-def run_prediction_domain(job_id: str, data: Dict[str, str]) -> None:
+def run_prediction_domain(job_id: str, data: dict[str, str]) -> None:
     """Mine extended signatures from full domain sequences, then predict.
 
     :param job_id: Job ID.
@@ -147,7 +148,7 @@ def submit_domain() -> Response:
     "domain_type": "AMP_BINDING" | "A_OX" (optional, default "AMP_BINDING")}, ...]}}``
 
     Unlike `/api/submit_quick`, callers do not need to extract the 34-residue
-    extended signature themselves -- it's mined server-side via MUSCLE
+    extended signature themselves; it's mined server-side via MUSCLE
     profile alignment. Async, same contract as `/api/submit_raw`: returns a
     `jobId` immediately, poll `/api/retrieve/<job_id>` for the result.
 

@@ -15,8 +15,10 @@ the classic "sequence similarity network" technique) rather than showing all
 domains at once. Clicking a cluster expands it into its individual members.
 """
 
+from __future__ import annotations
+
 import threading
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 from flask import Blueprint, jsonify, request
@@ -35,22 +37,22 @@ CLUSTER_EXPAND_KNN = 6  # cap edges-per-node when expanding a large cluster
 CLUSTER_EXPAND_FULL_LIMIT = 60  # clusters up to this size get full pairwise edges
 
 _cache_lock = threading.Lock()
-_cache: Optional[Dict[str, Any]] = None
+_cache: dict[str, Any] | None = None
 
 _cluster_cache_lock = threading.Lock()
-_cluster_cache: Dict[int, Dict[str, Any]] = {}
+_cluster_cache: dict[int, dict[str, Any]] = {}
 
 
-def _label_counts(label_lists: List[List[str]]) -> Dict[str, int]:
+def _label_counts(label_lists: list[list[str]]) -> dict[str, int]:
     """Count how many domains carry each label (a multi-substrate domain counts once per substrate)."""
-    counts: Dict[str, int] = {}
+    counts: dict[str, int] = {}
     for labels in label_lists:
         for label in set(labels) or {"unknown"}:
             counts[label] = counts.get(label, 0) + 1
     return counts
 
 
-def _dominant(label_lists: List[List[str]], totals: Dict[str, int]) -> str:
+def _dominant(label_lists: list[list[str]], totals: dict[str, int]) -> str:
     """Return the majority-vote label over a set of domains.
 
     Every domain casts exactly one vote, split evenly when it carries several
@@ -60,7 +62,7 @@ def _dominant(label_lists: List[List[str]], totals: Dict[str, int]) -> str:
     across the whole database and then alphabetically, so the same cluster
     always comes out the same colour.
     """
-    votes: Dict[str, float] = {}
+    votes: dict[str, float] = {}
     for labels in label_lists:
         weight = 1.0 / len(labels) if labels else 1.0
         for label in labels or ["unknown"]:
@@ -70,7 +72,7 @@ def _dominant(label_lists: List[List[str]], totals: Dict[str, int]) -> str:
     return min(votes.items(), key=lambda kv: (-kv[1], -totals.get(kv[0], 0), kv[0]))[0]
 
 
-def _clean_taxon(value: Optional[str]) -> str:
+def _clean_taxon(value: str | None) -> str:
     """Normalise the placeholders the database build leaves behind into 'unknown'.
 
     Some taxonomy rows carry the literal string "None" where lineage lookup
@@ -81,7 +83,7 @@ def _clean_taxon(value: Optional[str]) -> str:
     return value
 
 
-def _build_cache() -> Dict[str, Any]:
+def _build_cache() -> dict[str, Any]:
     """Load every domain's identity/metadata and build the pairwise Hamming distance matrix."""
     session_generator = get_db()
     session = next(session_generator)
@@ -97,12 +99,12 @@ def _build_cache() -> Dict[str, Any]:
     finally:
         session_generator.close()
 
-    ids: List[int] = []
-    names: List[str] = []
-    substrate_lists: List[List[str]] = []
-    genus_list: List[str] = []
-    kingdom_list: List[str] = []
-    signature_rows: List[List[int]] = []
+    ids: list[int] = []
+    names: list[str] = []
+    substrate_lists: list[list[str]] = []
+    genus_list: list[str] = []
+    kingdom_list: list[str] = []
+    signature_rows: list[list[int]] = []
 
     for domain in domains:
         sig = domain.extended_signature or ""
@@ -155,7 +157,7 @@ def _build_cache() -> Dict[str, Any]:
     }
 
 
-def _get_cache() -> Dict[str, Any]:
+def _get_cache() -> dict[str, Any]:
     global _cache
     with _cache_lock:
         if _cache is None:
@@ -163,7 +165,7 @@ def _get_cache() -> Dict[str, Any]:
         return _cache
 
 
-def _connected_components(distances: np.ndarray, threshold: int) -> List[List[int]]:
+def _connected_components(distances: np.ndarray, threshold: int) -> list[list[int]]:
     """Group indices into connected components where distance <= threshold."""
     n = distances.shape[0]
     parent = list(range(n))
@@ -185,14 +187,14 @@ def _connected_components(distances: np.ndarray, threshold: int) -> List[List[in
         for j in neighbours:
             union(i, int(j))
 
-    groups: Dict[int, List[int]] = {}
+    groups: dict[int, list[int]] = {}
     for i in range(n):
         groups.setdefault(find(i), []).append(i)
 
     return list(groups.values())
 
 
-def _get_clusters(threshold: int) -> Dict[str, Any]:
+def _get_clusters(threshold: int) -> dict[str, Any]:
     """Compute (and cache) connected-component clusters at a given threshold."""
     with _cluster_cache_lock:
         if threshold in _cluster_cache:
@@ -415,7 +417,7 @@ def get_neighbors():
     domain_id_param = request.args.get("domain_id")
     signature_param = (request.args.get("signature") or "").strip().upper()
 
-    query_index: Optional[int] = None
+    query_index: int | None = None
     query_name = None
     query_signature = None
 

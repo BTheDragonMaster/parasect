@@ -599,10 +599,10 @@ const NetworkGraph = () => {
                 setMeta({ total_domains: data.total_domains, cluster_count: data.clusters.length });
                 searchHighlightRef.current = null;
                 // cluster ids are only meaningful within one threshold, so a legend of
-                // clusters cannot survive a reload -- drop it and let it re-seed
+                // clusters cannot survive a reload, so drop it and let it re-seed
                 setLegend((prev) => ({ ...prev, cluster: undefined }));
                 // a prior search may have zoomed the camera in on coordinates that no
-                // longer mean anything for this freshly laid-out graph -- reset it
+                // longer mean anything for this freshly laid-out graph, so reset it
                 sigmaRef.current?.getCamera().setState({ x: 0.5, y: 0.5, ratio: 1, angle: 0 });
                 refreshSigma();
                 setLoading(false);

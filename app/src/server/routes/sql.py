@@ -12,7 +12,6 @@ import os
 import re
 import sqlite3
 import time
-from typing import List, Optional
 
 from flask import Blueprint, request, jsonify, abort, Response
 
@@ -69,7 +68,7 @@ def _assert_select_only(sql: str):
         abort(400, "Semicolons are not allowed.")
 
 
-def _columns_from_query(conn: sqlite3.Connection, base_query: str, params=()) -> List[str]:
+def _columns_from_query(conn: sqlite3.Connection, base_query: str, params=()) -> list[str]:
     cur = conn.execute(f"SELECT * FROM ({base_query}) AS t LIMIT 0", params)
     return [d[0] for d in cur.description]
 
@@ -78,7 +77,7 @@ def _total_from_query(conn: sqlite3.Connection, base_query: str, params=()) -> i
     return int(conn.execute(f"SELECT COUNT(*) AS n FROM ({base_query}) AS sub", params).fetchone()[0])
 
 
-def _sorted_query(base_query: str, sort_by: Optional[str], sort_dir: Optional[str], valid_cols: List[str]) -> str:
+def _sorted_query(base_query: str, sort_by: str | None, sort_dir: str | None, valid_cols: list[str]) -> str:
     if not sort_by or not sort_dir:
         return f"SELECT * FROM ({base_query}) AS t"
     # very basic identifier guard + must be a column from the result set
@@ -140,7 +139,7 @@ def api_sql():
 MAX_FILTER_VALUES = 200
 
 
-def _as_values(raw, field: str) -> List[str]:
+def _as_values(raw, field: str) -> list[str]:
     """Normalise a filter parameter into a list of non-empty strings.
 
     Filters accept either a single value or a list, so an older client sending
@@ -161,7 +160,7 @@ def _as_values(raw, field: str) -> List[str]:
     return list(dict.fromkeys(values))
 
 
-def _in_clause(values: List[str], prefix: str):
+def _in_clause(values: list[str], prefix: str):
     """Build an IN (...) list of bound placeholders.
 
     The placeholder NAMES are generated here (:sub0, :sub1, ...) and only the
