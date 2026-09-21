@@ -60,6 +60,14 @@ export const OTHER = { light: '#b8b4ac', dark: '#5c5a54' };
 /** Dimmed-out marks when a highlight is active. */
 export const MUTED_MARK = { light: '#dedbd4', dark: '#3a3936' };
 
+/**
+ * Signatures the user placed in the network. Every hue is already represented
+ * by CATEGORICAL, and the greys by OTHER and MUTED_MARK, so a placed signature
+ * is drawn in the text colour: it reads as "yours" against all of them, in
+ * both modes, and never as a legend entry.
+ */
+export const QUERY_MARK = { light: BRAND.ink, dark: '#F2F1EE' };
+
 const NEUTRAL_LIGHT = {
     bg: '#F7F6F3',
     paper: '#FFFFFF',

@@ -24,6 +24,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { DataGrid, GridToolbarContainer, GridPagination } from '@mui/x-data-grid';
 import Statistics from '../components/Statistics';
 import LazyMultiSelect from '../components/LazyMultiSelect';
+import { downloadFile, makeDelimited } from '../utils/tabular';
 
 const DEFAULT_PAGE_SIZE = 100;
 const MAX_EXPORT_ROWS = 100000;
@@ -215,25 +216,6 @@ const QueryDatabase = () => {
     setSortModel([]);
     setHasSearched(false);
     // keep current filter values; if preset is active and its editor cleared, params may be {}
-  };
-
-  // Export helpers
-  const makeDelimited = (cols, data, delim) => {
-    const header = cols.map((c) => c.field).join(delim);
-    const lines = data.map((r) => cols.map((c) => String(r[c.field] ?? '').replace(/\n|\r/g, ' ')).join(delim));
-    return [header, ...lines].join('\n');
-  };
-
-  const downloadFile = (content, filename, mime) => {
-    const blob = new Blob([content], { type: mime });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
   };
 
   const exportCurrentPage = (format) => {

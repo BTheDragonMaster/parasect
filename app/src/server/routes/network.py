@@ -259,7 +259,13 @@ def _get_clusters(threshold: int) -> dict[str, Any]:
                 seen_pairs.add(pair)
                 edges.append({"source": i, "target": j, "distance": dist})
 
-        result = {"clusters": clusters, "edges": edges, "components": components}
+        # domain index -> cluster id, so looking up a domain's cluster doesn't
+        # mean scanning every component for it
+        membership = np.empty(len(cache["ids"]), dtype=np.int32)
+        for cluster_id, component in enumerate(components):
+            membership[component] = cluster_id
+
+        result = {"clusters": clusters, "edges": edges, "components": components, "membership": membership}
         _cluster_cache[threshold] = result
         return result
 
@@ -313,7 +319,7 @@ def expand_cluster(cluster_id: int):
             "dominant_substrate": _dominant([cache["substrate_lists"][idx]], cache["totals"]["substrate"]),
             "genus": cache["genus_list"][idx],
             "kingdom": cache["kingdom_list"][idx],
-            "extended_signature": "".join(chr(c) for c in cache["signature_matrix"][idx]),
+            "extended_signature": _signature_at(idx),
         }
         for idx in member_indices
     ]
@@ -398,6 +404,76 @@ def search_names():
 
 _VALID_AA = set("ACDEFGHIKLMNPQRSTVWYX-")
 
+MAX_NEIGHBOURS = 50
+# placement runs synchronously in the request, so a batch is capped: each query
+# is one cheap pass over the signature matrix, but the response carries up to
+# MAX_NEIGHBOURS rows for every one of them
+MAX_QUERIES = 50
+MAX_QUERY_NAME = 120
+# edges drawn from a placed signature into the graph, on top of the one to the
+# closest member of every cluster it joins
+QUERY_LINKS = CLUSTER_EXPAND_KNN
+
+
+def _signature_at(index: int) -> str:
+    """The extended signature of the reference domain at a matrix row."""
+    return _get_cache()["signature_matrix"][index].tobytes().decode("ascii")
+
+
+def _clean_signature(raw: Any) -> str | None:
+    """Uppercase a signature and drop any whitespace; None unless it is 34 valid residues."""
+    if not isinstance(raw, str):
+        return None
+    signature = "".join(raw.split()).upper()
+    if len(signature) != 34 or not set(signature) <= _VALID_AA:
+        return None
+    return signature
+
+
+def _signature_distances(signature: str) -> np.ndarray:
+    """Hamming distance from a (cleaned) signature to every reference domain."""
+    query_vector = np.frombuffer(signature.encode("ascii"), dtype=np.uint8)
+    return (_get_cache()["signature_matrix"] != query_vector[None, :]).sum(axis=1)
+
+
+def _rank_neighbours(
+    row_distances: np.ndarray,
+    k: int,
+    membership: np.ndarray,
+    exclude: int | None = None,
+) -> list[dict[str, Any]]:
+    """The k reference domains closest to a query, closest first.
+
+    :param row_distances: distance from the query to every reference domain.
+    :param k: how many neighbours to return.
+    :param membership: domain index -> cluster id at the threshold in use.
+    :param exclude: matrix row of the query itself, when it is a reference domain.
+    :return: one row per neighbour, with everything a downloaded table needs.
+    """
+    cache = _get_cache()
+    # stable, so domains at the same distance always come out in the same order
+    # and a downloaded table can be reproduced
+    order = np.argsort(row_distances, kind="stable")
+    neighbours = []
+    for idx in order:
+        idx = int(idx)
+        if idx == exclude:
+            continue
+        neighbours.append({
+            "rank": len(neighbours) + 1,
+            "id": cache["ids"][idx],
+            "name": cache["names"][idx],
+            "distance": int(row_distances[idx]),
+            "substrates": cache["substrate_lists"][idx],
+            "genus": cache["genus_list"][idx],
+            "kingdom": cache["kingdom_list"][idx],
+            "cluster_id": int(membership[idx]),
+            "extended_signature": _signature_at(idx),
+        })
+        if len(neighbours) >= k:
+            break
+    return neighbours
+
 
 @blueprint_network.route("/api/network/neighbors", methods=["GET"])
 def get_neighbors():
@@ -409,13 +485,13 @@ def get_neighbors():
     threshold = max(0, min(threshold, MAX_THRESHOLD))
 
     try:
-        k = min(int(request.args.get("k", 10)), 50)
+        k = max(1, min(int(request.args.get("k", 10)), MAX_NEIGHBOURS))
     except ValueError:
         k = 10
 
     cache = _get_cache()
     domain_id_param = request.args.get("domain_id")
-    signature_param = (request.args.get("signature") or "").strip().upper()
+    signature_param = request.args.get("signature") or ""
 
     query_index: int | None = None
     query_name = None
@@ -430,45 +506,143 @@ def get_neighbors():
         if query_index is None:
             return jsonify({"error": "domain not found"}), 404
         query_name = cache["names"][query_index]
-        query_signature = "".join(chr(c) for c in cache["signature_matrix"][query_index])
+        query_signature = _signature_at(query_index)
         row_distances = cache["distances"][query_index]
-    elif signature_param:
-        if len(signature_param) != 34 or not set(signature_param) <= _VALID_AA:
+    elif signature_param.strip():
+        query_signature = _clean_signature(signature_param)
+        if query_signature is None:
             return jsonify({"error": "signature must be a 34-residue amino acid sequence"}), 400
-        query_signature = signature_param
-        query_vector = np.array([ord(c) for c in signature_param], dtype=np.uint8)
-        row_distances = (cache["signature_matrix"] != query_vector[None, :]).sum(axis=1)
+        row_distances = _signature_distances(query_signature)
     else:
         return jsonify({"error": "provide either domain_id or signature"}), 400
 
-    order = np.argsort(row_distances)
-    neighbours = []
-    for idx in order:
-        idx = int(idx)
-        if idx == query_index:
-            continue
-        neighbours.append({
-            "id": cache["ids"][idx],
-            "name": cache["names"][idx],
-            "distance": int(row_distances[idx]),
-            "substrates": cache["substrate_lists"][idx],
-            "genus": cache["genus_list"][idx],
-        })
-        if len(neighbours) >= k:
-            break
-
-    cluster_id = None
-    if query_index is not None:
-        clusters = _get_clusters(threshold)
-        for component_idx, component in enumerate(clusters["components"]):
-            if query_index in component:
-                cluster_id = component_idx
-                break
+    membership = _get_clusters(threshold)["membership"]
+    neighbours = _rank_neighbours(row_distances, k, membership, exclude=query_index)
 
     return jsonify({
         "query": {"id": int(domain_id_param) if domain_id_param is not None else None,
                    "name": query_name, "signature": query_signature},
-        "cluster_id": cluster_id,
+        "cluster_id": int(membership[query_index]) if query_index is not None else None,
         "threshold": threshold,
         "neighbors": neighbours,
+    })
+
+
+def _place_signature(name: str, signature: str, threshold: int, k: int) -> dict[str, Any]:
+    """Work out where a signature lands in the network at a threshold.
+
+    Clusters are connected components (single linkage), so a signature within
+    the threshold of any member joins that cluster, and one within reach of two
+    clusters joins both: added to the reference set, it would merge them. That
+    is reported rather than hidden.
+
+    Every joined cluster gets an edge to its closest member, so a bridge is
+    visible, plus the QUERY_LINKS closest domains overall. A signature that
+    joins nothing is linked to its nearest domain(s) with the edge marked as
+    beyond the threshold, so it still lands next to something meaningful.
+
+    :param name: display name of the query.
+    :param signature: cleaned 34-residue signature.
+    :param threshold: Hamming-distance threshold the clusters were built at.
+    :param k: how many nearest neighbours to list.
+    :return: placement summary, graph links and ranked neighbours.
+    """
+    cache = _get_cache()
+    clusters = _get_clusters(threshold)
+    membership = clusters["membership"]
+    row = _signature_distances(signature)
+
+    within = np.nonzero(row <= threshold)[0]
+    within = within[np.argsort(row[within], kind="stable")]  # closest first
+
+    joined: dict[int, dict[str, Any]] = {}
+    linked: list[int] = []
+    for idx in within:
+        idx = int(idx)
+        cluster_id = int(membership[idx])
+        if cluster_id not in joined:
+            joined[cluster_id] = {
+                "cluster_id": cluster_id,
+                "size": clusters["clusters"][cluster_id]["size"],
+                "representative_name": clusters["clusters"][cluster_id]["representative_name"],
+                "nearest_distance": int(row[idx]),
+                "within_threshold": 0,
+            }
+            linked.append(idx)
+        joined[cluster_id]["within_threshold"] += 1
+    for idx in within[:QUERY_LINKS]:
+        if int(idx) not in linked:
+            linked.append(int(idx))
+
+    nearest_distance = int(row.min())
+    beyond_threshold = not len(within)
+    if beyond_threshold:
+        linked = [int(idx) for idx in np.nonzero(row == nearest_distance)[0][:QUERY_LINKS]]
+
+    links = sorted(
+        (
+            {
+                "id": cache["ids"][idx],
+                "cluster_id": int(membership[idx]),
+                "distance": int(row[idx]),
+                "beyond_threshold": beyond_threshold,
+            }
+            for idx in linked
+        ),
+        key=lambda link: (link["distance"], link["id"]),
+    )
+
+    return {
+        "name": name,
+        "signature": signature,
+        "nearest_distance": nearest_distance,
+        "within_threshold": int(len(within)),
+        "clusters": list(joined.values()),
+        "links": links,
+        "neighbors": _rank_neighbours(row, k, membership),
+    }
+
+
+@blueprint_network.route("/api/network/place", methods=["POST"])
+def place_signatures():
+    """Place user-submitted extended signatures into the network.
+
+    Expects {"threshold": int, "k": int, "queries": [{"name": str, "signature": str}]}
+    and answers with one placement per query, in the same order. Nothing is
+    stored: the signatures only live in the request and the response.
+    """
+    body = request.get_json(silent=True) or {}
+    try:
+        threshold = max(0, min(int(body.get("threshold", DEFAULT_THRESHOLD)), MAX_THRESHOLD))
+        k = max(1, min(int(body.get("k", 10)), MAX_NEIGHBOURS))
+    except (TypeError, ValueError):
+        return jsonify({"error": "threshold and k must be integers"}), 400
+
+    queries = body.get("queries")
+    if not isinstance(queries, list) or not queries:
+        return jsonify({"error": "provide at least one query"}), 400
+    if len(queries) > MAX_QUERIES:
+        return jsonify({"error": f"at most {MAX_QUERIES} signatures can be placed at once"}), 400
+
+    cleaned = []
+    invalid = []
+    for i, query in enumerate(queries):
+        query = query if isinstance(query, dict) else {}
+        name = str(query.get("name") or "").strip()[:MAX_QUERY_NAME] or f"query_{i + 1}"
+        signature = _clean_signature(query.get("signature"))
+        if signature is None:
+            invalid.append({"index": i, "name": name})
+        else:
+            cleaned.append((name, signature))
+    if invalid:
+        return jsonify({
+            "error": "every signature must be 34 residues of ACDEFGHIKLMNPQRSTVWY, X or -",
+            "invalid": invalid,
+        }), 400
+
+    return jsonify({
+        "threshold": threshold,
+        "k": k,
+        "total_domains": len(_get_cache()["ids"]),
+        "queries": [_place_signature(name, signature, threshold, k) for name, signature in cleaned],
     })

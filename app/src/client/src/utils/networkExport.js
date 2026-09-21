@@ -33,14 +33,22 @@ const r2 = (n) => Math.round(n * 100) / 100;
  * @param {object} options - export options.
  * @param {import('graphology').default} options.graph - the live graph.
  * @param {(node: string, attrs: object) => string} options.colorOf - node colour, matching the on-screen reducer.
- * @param {boolean} options.showLabels - whether to draw node labels.
- * @param {Array<{label: string, color: string, count: number|undefined}>} options.legend - legend entries.
+ * @param {(edge: string, attrs: object) => ({color: string, width: number}|null)} [options.edgeStyleOf] -
+ *     stroke for an edge that isn't drawn in the default edge colour, or null.
+ * @param {(node: string, attrs: object) => (string|null)} [options.ringOf] - colour of a ring drawn
+ *     around a node that is marked on screen, or null. Ringed nodes are drawn on top.
+ * @param {boolean} options.showLabels - whether to draw node labels. Nodes with `forceLabel` are
+ *     labelled first and never dropped for a collision, as on screen.
+ * @param {Array<{label: string, color: string, count: number|undefined, ring: boolean|undefined}>} options.legend -
+ *     legend entries; `ring` draws the swatch as a ringed dot, matching a ringed node.
  * @param {{title: string, subtitle: string}} options.caption - figure heading.
  * @param {{background: string, text: string, textSecondary: string, edge: string, border: string}} options.colors - surface colours.
  * @param {number} options.size - width of the plot area in px.
  * @returns {string} - the SVG source.
  */
-export function graphToSvg({ graph, colorOf, showLabels, legend, caption, colors, size = 1400 }) {
+export function graphToSvg({
+    graph, colorOf, edgeStyleOf, ringOf, showLabels, legend, caption, colors, size = 1400,
+}) {
     let minX = Infinity;
     let maxX = -Infinity;
     let minY = Infinity;
@@ -91,30 +99,50 @@ export function graphToSvg({ graph, colorOf, showLabels, legend, caption, colors
 
     parts.push(`<g transform="translate(0 ${headerHeight})">`);
 
-    // edges first so nodes sit on top of them
+    // edges first so nodes sit on top of them; styled edges after the plain
+    // ones, so a highlighted link isn't painted over by a grey one
+    const styled = [];
     parts.push(`<g stroke="${colors.edge}" stroke-width="0.8" stroke-opacity="0.75">`);
     graph.forEachEdge((edge, attrs, source, target, sourceAttrs, targetAttrs) => {
-        parts.push(`<line x1="${px(sourceAttrs.x)}" y1="${py(sourceAttrs.y)}" `
-            + `x2="${px(targetAttrs.x)}" y2="${py(targetAttrs.y)}"/>`);
+        const line = `<line x1="${px(sourceAttrs.x)}" y1="${py(sourceAttrs.y)}" `
+            + `x2="${px(targetAttrs.x)}" y2="${py(targetAttrs.y)}"`;
+        const style = edgeStyleOf?.(edge, attrs);
+        if (style) {
+            styled.push(`${line} stroke="${style.color}" stroke-width="${style.width}"/>`);
+        } else {
+            parts.push(`${line}/>`);
+        }
     });
     parts.push('</g>');
+    if (styled.length) parts.push(`<g>${styled.join('')}</g>`);
 
     const placeable = [];
+    const nodes = [];
+    graph.forEachNode((node, attrs) => nodes.push({ node, attrs, ring: ringOf?.(node, attrs) || null }));
+    // ringed nodes last, so nothing is drawn over the marks the figure is about
+    nodes.sort((a, b) => Number(Boolean(a.ring)) - Number(Boolean(b.ring)));
     parts.push('<g>');
-    graph.forEachNode((node, attrs) => {
+    nodes.forEach(({ node, attrs, ring }) => {
         const cx = px(attrs.x);
         const cy = py(attrs.y);
         const radius = r2(Math.max(attrs.size || 3, 1.5));
         parts.push(`<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${colorOf(node, attrs)}"/>`);
-        if (showLabels && attrs.label) placeable.push({ cx, cy, radius, text: attrs.label });
+        if (ring) {
+            parts.push(`<circle cx="${cx}" cy="${cy}" r="${r2(radius + 3)}" fill="none" stroke="${ring}" `
+                + `stroke-width="2"/>`);
+        }
+        if (showLabels && attrs.label) {
+            placeable.push({ cx, cy, radius: ring ? radius + 3 : radius, text: attrs.label, forced: Boolean(attrs.forceLabel) });
+        }
     });
     parts.push('</g>');
 
     if (placeable.length) {
         // On screen sigma drops labels that would collide; without the same pass the
-        // export turns into a solid band of overlapping text. Biggest nodes win,
+        // export turns into a solid band of overlapping text. Forced labels go
+        // first and always stay, like on screen, then the biggest nodes win,
         // which is also what a figure wants to call out.
-        placeable.sort((a, b) => b.radius - a.radius);
+        placeable.sort((a, b) => Number(b.forced) - Number(a.forced) || b.radius - a.radius);
         const placed = [];
         const kept = [];
         for (const item of placeable) {
@@ -126,7 +154,7 @@ export function graphToSvg({ graph, colorOf, showLabels, legend, caption, colors
                 y2: item.cy + LABEL_SIZE * 0.6,
             };
             const collides = placed.some((b) => !(box.x2 < b.x1 || box.x1 > b.x2 || box.y2 < b.y1 || box.y1 > b.y2));
-            if (collides) continue;
+            if (collides && !item.forced) continue;
             placed.push(box);
             kept.push(`<text x="${r2(box.x1)}" y="${r2(item.cy + LABEL_SIZE * 0.35)}" `
                 + `font-size="${LABEL_SIZE}" fill="${colors.text}">${escapeXml(item.text)}</text>`);
@@ -142,8 +170,15 @@ export function graphToSvg({ graph, colorOf, showLabels, legend, caption, colors
             + `fill="${colors.text}">Legend</text>`);
         legend.forEach((item, i) => {
             const y = LEGEND_PAD + 24 + i * LEGEND_ROW;
-            parts.push(`<rect x="${LEGEND_PAD}" y="${y + 4}" width="${LEGEND_SWATCH}" height="${LEGEND_SWATCH}" `
-                + `rx="3" fill="${item.color}"/>`);
+            if (item.ring) {
+                const c = LEGEND_SWATCH / 2;
+                parts.push(`<circle cx="${LEGEND_PAD + c}" cy="${y + 4 + c}" r="${c - 3}" fill="${item.color}"/>`);
+                parts.push(`<circle cx="${LEGEND_PAD + c}" cy="${y + 4 + c}" r="${c - 0.5}" fill="none" `
+                    + `stroke="${item.color}" stroke-width="1.5"/>`);
+            } else {
+                parts.push(`<rect x="${LEGEND_PAD}" y="${y + 4}" width="${LEGEND_SWATCH}" height="${LEGEND_SWATCH}" `
+                    + `rx="3" fill="${item.color}"/>`);
+            }
             const text = item.count === undefined ? item.label : `${item.label} (${item.count})`;
             parts.push(`<text x="${LEGEND_PAD + LEGEND_SWATCH + 8}" y="${y + 15}" font-size="11.5" `
                 + `fill="${colors.text}">${escapeXml(text)}</text>`);

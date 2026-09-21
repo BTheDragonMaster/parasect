@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Graph from 'graphology';
 import Sigma from 'sigma';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
@@ -13,9 +14,15 @@ import TuneIcon from '@mui/icons-material/Tune';
 
 import Loading from '../components/Loading';
 import { DistanceBadge, DistanceLegend } from '../components/DistanceBadge';
+import SignatureQueryPanel from '../components/SignatureQueryPanel';
 import { useColorMode } from '../theme/ColorModeContext';
-import { categoricalColor, MUTED_MARK, OTHER, SAFE_SLOTS } from '../theme';
+import { categoricalColor, MUTED_MARK, OTHER, QUERY_MARK, SAFE_SLOTS } from '../theme';
 import { graphToSvg, svgToPng } from '../utils/networkExport';
+import {
+    NEIGHBOR_COLUMNS, QUERY_COLUMNS, exportStamp, fileSafe, neighborRows, queryRows,
+} from '../utils/neighborExport';
+import { MAX_QUERIES, checkSignature, describePlacement } from '../utils/signatures';
+import { TSV_MIME, downloadFile, makeDelimited } from '../utils/tabular';
 import { createZip, downloadBlob } from '../utils/zip';
 
 /** Colour modes backed by a database-wide category list (/api/network/categories).
@@ -51,6 +58,35 @@ const clampSidebar = (width) => Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, Math
  * WP_069322367.1.A2", so the default word-break leaves them hanging out of
  * whatever column they are in. They have to be allowed to break mid-token. */
 const WRAP_ANYWHERE = { overflowWrap: 'anywhere' };
+
+/** A placed signature expands the clusters it joins, up to this size. Past it
+ * (at threshold 10 one cluster holds ~1,500 domains) the signature is linked to
+ * the collapsed cluster instead, and clicking the cluster still expands it. */
+const AUTO_EXPAND_LIMIT = 300;
+const NEIGHBOR_COUNTS = [10, 25, 50];
+const QUERY_NODE_SIZE = 7;
+
+/**
+ * Signatures handed over in the URL, as the results page's "Show in network"
+ * does: repeated signature parameters, each with an optional name at the
+ * same position.
+ *
+ * @param {URLSearchParams} params - the page's query string.
+ * @returns {{queries: Array<{name: string|null, signature: string}>, errors: string[]}} -
+ *     usable signatures, and one message per unusable one.
+ */
+function readUrlQueries(params) {
+    const names = params.getAll('name');
+    const queries = [];
+    const errors = [];
+    params.getAll('signature').slice(0, MAX_QUERIES).forEach((raw, i) => {
+        const name = (names[i] || '').trim() || null;
+        const { signature, problem } = checkSignature(raw);
+        if (problem) errors.push(`${name || `Signature ${i + 1}`} from the link: ${problem}`);
+        else queries.push({ name, signature });
+    });
+    return { queries, errors };
+}
 
 /** Sidebar width and open state from the last visit, or the defaults. */
 function readSidebarPreference() {
@@ -182,7 +218,23 @@ const NetworkGraph = () => {
     // the search marker is a reserved status colour, never a categorical slot
     const searchMarkRef = useRef('#B3261E');
     const edgeColorRef = useRef('#dddddd');
+    const edgePaintRef = useRef(() => null);
     const themeRef = useRef(null);
+    const selectedQueryRef = useRef(null);
+
+    // placed signatures, mirrored for the graph code that runs outside a render
+    // (sigma handlers, cluster expansion); state drives the sidebar
+    const queriesRef = useRef([]);
+    const placementsRef = useRef({});
+    const thresholdRef = useRef(5);
+    const neighborKRef = useRef(NEIGHBOR_COUNTS[0]);
+    // only the latest placement request may touch the graph
+    const placeSeqRef = useRef(0);
+    const queryCounterRef = useRef(0);
+    // settles once the top-level graph for the current threshold is in place
+    const graphReadyRef = useRef(Promise.resolve());
+    const selectQueryRef = useRef(() => {});
+    const resultPanelRef = useRef(null);
 
     const [displayThreshold, setDisplayThreshold] = useState(5);
     const [threshold, setThreshold] = useState(5);
@@ -209,8 +261,24 @@ const NetworkGraph = () => {
     const [searchMatches, setSearchMatches] = useState([]);
     const [neighborResult, setNeighborResult] = useState(null);
     const [searchLoading, setSearchLoading] = useState(false);
+    const [neighborK, setNeighborK] = useState(NEIGHBOR_COUNTS[0]);
+
+    const [searchParams] = useSearchParams();
+    // signatures placed in the graph, in the order they were added
+    const [queries, setQueries] = useState([]);
+    // query key -> where the server placed it, at the current threshold
+    const [placements, setPlacements] = useState({});
+    const [selectedQuery, setSelectedQuery] = useState(null);
+    const [placing, setPlacing] = useState(false);
+    // new signatures only join queriesRef once placed, so a threshold change
+    // while they are in flight would re-place the old set and drop them
+    const [adding, setAdding] = useState(false);
+    const [placeError, setPlaceError] = useState(null);
+    const [downloadingResults, setDownloadingResults] = useState(false);
 
     const [sidebar, setSidebar] = useState(readSidebarPreference);
+
+    thresholdRef.current = threshold;
 
     // the graph is the page; a width the user dragged to, or a sidebar they
     // closed to see it, should still be there next time
@@ -298,12 +366,19 @@ const NetworkGraph = () => {
 
     const otherColor = OTHER[colorMode];
     const mutedColor = MUTED_MARK[colorMode];
+    const queryColor = QUERY_MARK[colorMode];
+    // a link to a signature's nearest domain that is beyond the threshold, so
+    // it is drawn, but quieter than one that actually joins a cluster
+    const queryFaintColor = theme.palette.text.secondary;
 
     /**
      * The colour a node takes, shared by the renderer and the SVG export so the
      * downloaded figure is the picture on screen.
      */
     const paintNode = useCallback((node, attrs) => {
+        // a placed signature is never a category: it keeps its mark through any
+        // colour mode or highlight
+        if (attrs.isQuery) return queryColor;
         const mode = colorByRef.current;
         const activeHighlights = highlightRef.current;
         if (activeHighlights.length) {
@@ -311,9 +386,19 @@ const NetworkGraph = () => {
             return match === null ? mutedColor : (colorForLabel(match) || otherColor);
         }
         return colorForLabel(attrs.dominant[mode] || 'unknown') || otherColor;
-    }, [colorForLabel, mutedColor, otherColor]);
+    }, [colorForLabel, mutedColor, otherColor, queryColor]);
 
     useEffect(() => { paintRef.current = paintNode; sigmaRef.current?.refresh(); }, [paintNode]);
+
+    /** Stroke for a placed signature's links, or null for an ordinary edge; shared like paintNode. */
+    const paintEdge = useCallback((edge, attrs) => {
+        if (!attrs.queryLink) return null;
+        return attrs.beyondThreshold
+            ? { color: queryFaintColor, width: 1 }
+            : { color: queryColor, width: 1.5 };
+    }, [queryColor, queryFaintColor]);
+
+    useEffect(() => { edgePaintRef.current = paintEdge; sigmaRef.current?.refresh(); }, [paintEdge]);
 
     const edgeColor = theme.palette.surface.border;
     const surfaceColor = theme.palette.background.paper;
@@ -351,10 +436,14 @@ const NetworkGraph = () => {
         const clusterSizes = new Map();
         let matchedNodes = 0;
         let matchedDomains = 0;
+        let referenceNodes = 0;
         const activeHighlights = highlightRef.current;
         const mode = colorByRef.current;
 
         g.forEachNode((node, attrs) => {
+            // placed signatures belong to no category and aren't reference domains
+            if (attrs.isQuery) return;
+            referenceNodes += 1;
             Object.entries(attrs.composition.cluster).forEach(([key, count]) => {
                 clusterSizes.set(key, (clusterSizes.get(key) || 0) + count);
             });
@@ -375,7 +464,7 @@ const NetworkGraph = () => {
         );
         setMatchStats(
             activeHighlights.length
-                ? { nodes: matchedNodes, domains: matchedDomains, total: g.order }
+                ? { nodes: matchedNodes, domains: matchedDomains, total: referenceNodes }
                 : null,
         );
     }, []);
@@ -416,6 +505,14 @@ const NetworkGraph = () => {
 
         renderer.setSetting('nodeReducer', (node, data) => {
             const res = { ...data };
+            if (data.isQuery) {
+                // highlighted keeps the hover ring drawn permanently, on top of
+                // everything else; the label is forced through by the attribute
+                res.color = paintRef.current(node, data);
+                res.highlighted = true;
+                if (selectedQueryRef.current === node) res.size = data.size * 1.3;
+                return res;
+            }
             // colour by the highlighted category the node actually carries, not by
             // its majority vote: that is what makes a rare substrate visible even
             // where it loses the vote in every cluster it appears in
@@ -434,6 +531,13 @@ const NetworkGraph = () => {
             return res;
         });
 
+        // query links carry their own colour, and the theme effect repaints
+        // every edge's attribute, so it is applied here rather than stored
+        renderer.setSetting('edgeReducer', (edge, data) => {
+            const style = edgePaintRef.current(edge, data);
+            return style ? { ...data, color: style.color, size: style.width } : data;
+        });
+
         renderer.on('enterNode', ({ node, event }) => {
             setHoverInfo({ x: event.x, y: event.y, attrs: graph.getNodeAttributes(node) });
         });
@@ -441,7 +545,9 @@ const NetworkGraph = () => {
         renderer.on('clickNode', ({ node }) => {
             const attrs = graph.getNodeAttributes(node);
             setHoverInfo(null);
-            if (attrs.isCluster) {
+            if (attrs.isQuery) {
+                selectQueryRef.current(attrs.queryKey);
+            } else if (attrs.isCluster) {
                 expandClusterRef.current(attrs.clusterId, node);
             }
         });
@@ -482,8 +588,89 @@ const NetworkGraph = () => {
         }));
     }, [colorBy, availableCategories]);
 
+    /**
+     * Put every placed signature into the graph and link it to what it joins.
+     *
+     * Runs after anything that changes the graph (a reload, an expanded cluster,
+     * a new placement), so it has to work from whatever is there: each link goes
+     * to the domain's own node when its cluster is expanded, and to the
+     * collapsed cluster node when it isn't. Signatures that are gone are
+     * dropped; ones already in the graph keep their position.
+     *
+     * @returns {boolean} - whether any signature node was newly added, so needs a layout pass.
+     */
+    const wireQueries = useCallback(() => {
+        const g = graphRef.current;
+        if (!g) return false;
+        const current = queriesRef.current;
+        const byKey = placementsRef.current;
+        const wanted = new Set(current.filter((q) => byKey[q.key]).map((q) => q.key));
+
+        g.filterNodes((node, attrs) => attrs.isQuery && !wanted.has(node)).forEach((node) => g.dropNode(node));
+
+        // the jitter below is relative to the layout's own scale, which
+        // forceAtlas2 leaves anywhere from ~1 to several hundred units wide
+        let minX = Infinity;
+        let maxX = -Infinity;
+        g.forEachNode((node, attrs) => {
+            minX = Math.min(minX, attrs.x);
+            maxX = Math.max(maxX, attrs.x);
+        });
+        const jitter = Number.isFinite(minX) ? Math.max(maxX - minX, 1) * 0.02 : 0.02;
+
+        let added = false;
+        current.forEach((q) => {
+            const placement = byKey[q.key];
+            if (!placement) return;
+
+            // links arrive closest first, so the first one per node is the one to keep
+            const targets = new Map();
+            placement.links.forEach((link) => {
+                const domainKey = `domain-${link.id}`;
+                const target = g.hasNode(domainKey) ? domainKey : `cluster-${link.cluster_id}`;
+                if (g.hasNode(target) && !targets.has(target)) targets.set(target, link);
+            });
+
+            const attrs = {
+                label: q.name,
+                size: QUERY_NODE_SIZE,
+                forceLabel: true,
+                isQuery: true,
+                queryKey: q.key,
+                signature: q.signature,
+                // empty rather than missing, so code that walks every node's
+                // composition doesn't have to know about signatures
+                dominant: {},
+                composition: { substrate: {}, genus: {}, kingdom: {}, cluster: {} },
+            };
+            if (g.hasNode(q.key)) {
+                g.edges(q.key).forEach((edge) => g.dropEdge(edge));
+                g.mergeNodeAttributes(q.key, attrs);
+            } else {
+                // start in the middle of whatever it links to, nudged off so it
+                // never sits exactly on top of a node
+                const points = [...targets.keys()].map((key) => g.getNodeAttributes(key));
+                const cx = points.length ? points.reduce((sum, p) => sum + p.x, 0) / points.length : 0;
+                const cy = points.length ? points.reduce((sum, p) => sum + p.y, 0) / points.length : 0;
+                const angle = Math.random() * 2 * Math.PI;
+                g.addNode(q.key, { ...attrs, x: cx + Math.cos(angle) * jitter, y: cy + Math.sin(angle) * jitter });
+                added = true;
+            }
+            targets.forEach((link, target) => {
+                g.addEdge(q.key, target, {
+                    size: 1,
+                    color: edgeColorRef.current,
+                    distance: link.distance,
+                    queryLink: true,
+                    beyondThreshold: link.beyond_threshold,
+                });
+            });
+        });
+        return added;
+    }, []);
+
     const expandClusterRef = useRef(() => {});
-    const expandCluster = useCallback(async (clusterId, clusterNodeKey) => {
+    const expandCluster = useCallback(async (clusterId, clusterNodeKey, { layout = true } = {}) => {
         const g = graphRef.current;
         if (!g || !g.hasNode(clusterNodeKey)) return;
 
@@ -491,6 +678,9 @@ const NetworkGraph = () => {
             const res = await fetch(`/api/network/cluster/${clusterId}?threshold=${threshold}`);
             if (!res.ok) throw new Error('failed to expand cluster');
             const data = await res.json();
+            // the threshold moved while this was in flight: the graph has been
+            // rebuilt, and a cluster with this id is now a different cluster
+            if (thresholdRef.current !== threshold || !g.hasNode(clusterNodeKey)) return;
 
             const basePos = g.getNodeAttributes(clusterNodeKey);
             g.dropNode(clusterNodeKey);
@@ -538,12 +728,15 @@ const NetworkGraph = () => {
                 }
             });
 
-            forceAtlas2.assign(g, { iterations: 80, settings: forceAtlas2.inferSettings(g) });
+            // dropping the cluster node took any signature's link to it along;
+            // this re-links those signatures to the members themselves
+            wireQueries();
+            if (layout) forceAtlas2.assign(g, { iterations: 80, settings: forceAtlas2.inferSettings(g) });
             refreshSigma();
         } catch (err) {
             console.error(err);
         }
-    }, [threshold, refreshSigma]);
+    }, [threshold, refreshSigma, wireQueries]);
     expandClusterRef.current = expandCluster;
 
     // load (or reload) the top-level cluster graph for a given threshold
@@ -595,6 +788,10 @@ const NetworkGraph = () => {
                     }
                 });
 
+                // placed signatures survive a reset: they rejoin the collapsed
+                // clusters and settle in the same layout pass. (A threshold change
+                // clears their placements first, since cluster ids don't carry over.)
+                wireQueries();
                 forceAtlas2.assign(g, { iterations: 150, settings: forceAtlas2.inferSettings(g) });
                 setMeta({ total_domains: data.total_domains, cluster_count: data.clusters.length });
                 searchHighlightRef.current = null;
@@ -611,17 +808,220 @@ const NetworkGraph = () => {
                 console.error(err);
                 if (!isCancelled?.()) setLoading(false);
             });
+    }, [refreshSigma, wireQueries]);
+
+    /**
+     * Ask server where signatures land at a threshold.
+     *
+     * @param {Array<{key: string, name: string, signature: string}>} list - signatures to place.
+     * @param {number} t - threshold.
+     * @returns {Promise<Object<string, object>>} - placement per query key.
+     */
+    const fetchPlacements = useCallback(async (list, t) => {
+        const res = await fetch('/api/network/place', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                threshold: t,
+                k: neighborKRef.current,
+                queries: list.map(({ name, signature }) => ({ name, signature })),
+            }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'The signatures could not be placed.');
+        return Object.fromEntries(list.map((q, i) => [q.key, data.queries[i]]));
+    }, []);
+
+    /**
+     * Put fresh placements into the graph.
+     *
+     * @param {Object<string, object>} byKey - placement per query key.
+     * @param {object} options - what else to do.
+     * @param {string[]} options.expandFor - query keys whose clusters to expand, up to AUTO_EXPAND_LIMIT.
+     * @param {() => boolean} options.isStale - true once a newer placement has taken over.
+     * @returns {Promise<void>}
+     */
+    const applyPlacements = useCallback(async (byKey, { expandFor = [], isStale = () => false } = {}) => {
+        placementsRef.current = byKey;
+        setPlacements(byKey);
+        const g = graphRef.current;
+        if (!g) return;
+
+        const clusterIds = new Set();
+        expandFor.forEach((key) => (byKey[key]?.clusters || []).forEach((c) => {
+            if (c.size <= AUTO_EXPAND_LIMIT) clusterIds.add(c.cluster_id);
+        }));
+        for (const clusterId of clusterIds) {
+            const clusterKey = `cluster-${clusterId}`;
+            if (g.hasNode(clusterKey)) await expandClusterRef.current(clusterId, clusterKey, { layout: false });
+            if (isStale()) return;
+        }
+
+        const added = wireQueries();
+        if (clusterIds.size || added) {
+            forceAtlas2.assign(g, { iterations: 80, settings: forceAtlas2.inferSettings(g) });
+        }
+        refreshSigma();
+    }, [wireQueries, refreshSigma]);
+
+    /** Pan to a node, and optionally give it the search marker. */
+    const focusNode = useCallback((nodeKey, { mark = true } = {}) => {
+        const g = graphRef.current;
+        if (!g || !g.hasNode(nodeKey) || !sigmaRef.current) return;
+        searchHighlightRef.current = mark ? nodeKey : null;
+        // camera coordinates are sigma's normalized display space, not the raw
+        // graph-space x/y stored on the node: sigma.refresh() first so display
+        // data reflects the just-added/laid-out node before we read it
+        sigmaRef.current.refresh();
+        const displayPos = sigmaRef.current.getNodeDisplayData(nodeKey);
+        if (displayPos) {
+            sigmaRef.current.getCamera().animate({ x: displayPos.x, y: displayPos.y, ratio: 0.15 }, { duration: 600 });
+        }
+        refreshSigma();
     }, [refreshSigma]);
 
-    // (re)load the top-level cluster graph whenever the threshold changes
+    /** List a placed signature's neighbours in the sidebar, and optionally pan to it. */
+    const selectQuery = useCallback((key, { locate = true } = {}) => {
+        selectedQueryRef.current = key;
+        setSelectedQuery(key);
+        setNeighborResult(null);
+        if (key && locate) focusNode(key, { mark: false });
+        else sigmaRef.current?.refresh();
+    }, [focusNode]);
+    selectQueryRef.current = selectQuery;
+
+    /**
+     * Place a set of signatures, replacing whatever placements there were.
+     *
+     * @param {Array<{key: string, name: string, signature: string}>} next - every signature to show.
+     * @param {object} options - what else to do.
+     * @param {string[]} options.expandFor - query keys whose clusters to expand.
+     * @param {string|null} options.focusKey - query to select and pan to afterwards.
+     * @returns {Promise<boolean>} - whether they were placed.
+     */
+    const placeAll = useCallback(async (next, { expandFor = [], focusKey = null } = {}) => {
+        placeSeqRef.current += 1;
+        const seq = placeSeqRef.current;
+        setPlacing(true);
+        setPlaceError(null);
+        try {
+            const byKey = next.length ? await fetchPlacements(next, thresholdRef.current) : {};
+            await graphReadyRef.current;
+            if (seq !== placeSeqRef.current) return false;
+            queriesRef.current = next;
+            setQueries(next);
+            const isStale = () => seq !== placeSeqRef.current;
+            await applyPlacements(byKey, { expandFor, isStale });
+            if (focusKey && !isStale()) selectQuery(focusKey);
+            return true;
+        } catch (err) {
+            console.error(err);
+            if (seq === placeSeqRef.current) setPlaceError(err.message);
+            return false;
+        } finally {
+            if (seq === placeSeqRef.current) setPlacing(false);
+        }
+    }, [fetchPlacements, applyPlacements, selectQuery]);
+
+    /**
+     * Add signatures to the ones already placed.
+     *
+     * @param {Array<{name: string|null, signature: string}>} parsed - checked signatures.
+     * @returns {Promise<boolean>} - whether they are now in the graph.
+     */
+    const addQueries = useCallback(async (parsed) => {
+        const existing = queriesRef.current;
+        const fresh = [];
+        parsed.forEach((p) => {
+            const duplicate = [...existing, ...fresh].some(
+                (q) => q.signature === p.signature && (!p.name || q.name === p.name),
+            );
+            if (duplicate) return;
+            queryCounterRef.current += 1;
+            const n = queryCounterRef.current;
+            fresh.push({ key: `query-${n}`, name: p.name || `signature_${n}`, signature: p.signature });
+        });
+
+        if (!fresh.length) {
+            // everything pasted is already there: point at it instead
+            const match = existing.find((q) => q.signature === parsed[0]?.signature);
+            if (match) selectQuery(match.key);
+            return true;
+        }
+        if (existing.length + fresh.length > MAX_QUERIES) {
+            setPlaceError(`Up to ${MAX_QUERIES} signatures can be placed at once, and this would make `
+                + `${existing.length + fresh.length}. Remove some first.`);
+            return false;
+        }
+        setAdding(true);
+        try {
+            return await placeAll([...existing, ...fresh], {
+                expandFor: fresh.map((q) => q.key),
+                focusKey: fresh[0].key,
+            });
+        } finally {
+            setAdding(false);
+        }
+    }, [placeAll, selectQuery]);
+
+    const removeQuery = useCallback((key) => {
+        const next = queriesRef.current.filter((q) => q.key !== key);
+        const { [key]: removed, ...rest } = placementsRef.current;
+        queriesRef.current = next;
+        placementsRef.current = rest;
+        setQueries(next);
+        setPlacements(rest);
+        if (selectedQueryRef.current === key) selectQuery(null);
+        wireQueries();
+        refreshSigma();
+    }, [selectQuery, wireQueries, refreshSigma]);
+
+    const clearQueries = useCallback(() => {
+        queriesRef.current = [];
+        placementsRef.current = {};
+        setQueries([]);
+        setPlacements({});
+        setPlaceError(null);
+        selectQuery(null);
+        wireQueries();
+        refreshSigma();
+    }, [selectQuery, wireQueries, refreshSigma]);
+
+    // (re)load the top-level cluster graph whenever the threshold changes, and
+    // re-place any signatures: which clusters they join depends on it
     useEffect(() => {
         let cancelled = false;
         setHighlighted([]);
         setNeighborResult(null);
-        loadTopLevelGraph(threshold, { isCancelled: () => cancelled });
+        // cluster ids from the old threshold would link signatures to the wrong
+        // clusters in the new graph, so they come out until re-placed
+        placementsRef.current = {};
+        setPlacements({});
+        const ready = loadTopLevelGraph(threshold, { isCancelled: () => cancelled });
+        graphReadyRef.current = ready;
+        if (queriesRef.current.length) {
+            const current = queriesRef.current;
+            placeAll(current, { expandFor: current.map((q) => q.key), focusKey: selectedQueryRef.current });
+        }
         return () => { cancelled = true; };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [threshold]);
+
+    // signatures handed over in the URL (the results page's "Show in network");
+    // placeAll waits for the first graph load on its own
+    useEffect(() => {
+        const { queries: fromUrl, errors } = readUrlQueries(searchParams);
+        if (fromUrl.length) addQueries(fromUrl).then(() => { if (errors.length) setPlaceError(errors.join(' ')); });
+        else if (errors.length) setPlaceError(errors.join(' '));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // bring the neighbour list into view when a new one opens: the sidebar is
+    // usually scrolled to the controls at the top when a node is clicked
+    const activeResultKey = selectedQuery || neighborResult?.query?.id || neighborResult?.query?.signature || null;
+    useEffect(() => {
+        if (activeResultKey) resultPanelRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }, [activeResultKey]);
 
     // debounced name search
     useEffect(() => {
@@ -638,58 +1038,57 @@ const NetworkGraph = () => {
         return () => clearTimeout(handle);
     }, [searchQuery]);
 
+    /** Pan to a domain, expanding its cluster first if it is collapsed. */
     const locateNode = useCallback(async (nodeKey, clusterId) => {
         const g = graphRef.current;
         if (!g) return;
         if (!g.hasNode(nodeKey) && clusterId !== null && clusterId !== undefined) {
             await expandCluster(clusterId, `cluster-${clusterId}`);
         }
-        if (!g.hasNode(nodeKey) || !sigmaRef.current) return;
-        searchHighlightRef.current = nodeKey;
-        // camera coordinates are sigma's normalized display space, not the raw
-        // graph-space x/y stored on the node: sigma.refresh() first so display
-        // data reflects the just-added/laid-out node before we read it
-        sigmaRef.current.refresh();
-        const displayPos = sigmaRef.current.getNodeDisplayData(nodeKey);
-        if (displayPos) {
-            sigmaRef.current.getCamera().animate({ x: displayPos.x, y: displayPos.y, ratio: 0.15 }, { duration: 600 });
-        }
-        refreshSigma();
-    }, [expandCluster, refreshSigma]);
+        focusNode(nodeKey);
+    }, [expandCluster, focusNode]);
 
-    const runNeighborSearch = useCallback(async (domainId, signature) => {
+    const runNeighborSearch = useCallback(async (domainId) => {
         setSearchLoading(true);
         setSearchMatches([]);
         try {
-            const params = domainId != null
-                ? `domain_id=${domainId}&threshold=${threshold}`
-                : `signature=${signature}&threshold=${threshold}`;
-            const res = await fetch(`/api/network/neighbors?${params}&k=12`);
+            const res = await fetch(
+                `/api/network/neighbors?domain_id=${domainId}&threshold=${threshold}&k=${neighborKRef.current}`,
+            );
             if (!res.ok) throw new Error('search failed');
             const data = await res.json();
+            selectQuery(null, { locate: false });
             setNeighborResult(data);
-            if (domainId != null) {
-                await locateNode(`domain-${domainId}`, data.cluster_id);
-            }
+            await locateNode(`domain-${domainId}`, data.cluster_id);
         } catch (err) {
             console.error(err);
         } finally {
             setSearchLoading(false);
         }
-    }, [threshold, locateNode]);
+    }, [threshold, locateNode, selectQuery]);
 
-    const handleSearchSubmit = () => {
+    const handleSearchSubmit = async () => {
         const query = searchQuery.trim();
-        if (/^[A-Za-z-]{34}$/.test(query)) {
-            runNeighborSearch(null, query.toUpperCase());
+        // a signature typed into search gets placed like a pasted one, so it
+        // shows up in the graph rather than only as a list
+        if (/^[A-Za-z-]{34}$/.test(query) && await addQueries([{ name: null, signature: query.toUpperCase() }])) {
+            setSearchQuery('');
         }
+    };
+
+    const changeNeighborK = (k) => {
+        neighborKRef.current = k;
+        setNeighborK(k);
+        if (neighborResult?.query?.id != null) runNeighborSearch(neighborResult.query.id);
+        // links don't depend on k, only the neighbour lists do, so nothing expands
+        if (queriesRef.current.length) placeAll(queriesRef.current);
     };
 
     const resetView = () => {
         searchHighlightRef.current = null;
         setNeighborResult(null);
         setHighlighted([]);
-        loadTopLevelGraph(threshold);
+        graphReadyRef.current = loadTopLevelGraph(threshold);
     };
 
     const modeNoun = colorBy === 'cluster' ? 'cluster' : colorBy;
@@ -713,56 +1112,139 @@ const NetworkGraph = () => {
     };
 
     /**
-     * Download the graph as it stands (expanded clusters, colours, labels and
-     * legend) as a vector SVG plus a PNG of the same figure, zipped together.
+     * The graph as it stands (expanded clusters, placed signatures, colours,
+     * labels and legend) as a vector SVG plus a PNG of the same figure.
+     *
+     * @returns {Promise<Array<{name: string, data: (string|Uint8Array)}>>} - zip entries.
      */
+    const renderFigureFiles = useCallback(async () => {
+        const g = graphRef.current;
+        const expanded = g.filterNodes((node, attrs) => !attrs.isCluster && !attrs.isQuery).length;
+        const placed = g.filterNodes((node, attrs) => attrs.isQuery).length;
+        const subtitle = [
+            `${meta.total_domains} domains`,
+            `Hamming threshold ${threshold}/34`,
+            `coloured by ${modeNoun}`,
+            expanded ? `${expanded} domains shown individually` : 'all clusters collapsed',
+            placed ? `${placed} placed signature${placed === 1 ? '' : 's'}` : null,
+            highlighted.length ? `highlighting ${highlighted.join(', ')}` : null,
+        ].filter(Boolean).join('; ');
+
+        const svg = graphToSvg({
+            graph: g,
+            colorOf: paintNode,
+            edgeStyleOf: paintEdge,
+            ringOf: (node, attrs) => (attrs.isQuery ? queryColor : null),
+            showLabels,
+            legend: [
+                ...(placed ? [{ label: 'Your signatures', color: queryColor, ring: true }] : []),
+                ...legendLabels.map((label) => ({
+                    label,
+                    color: colorForLabel(label) || otherColor,
+                    count: countByLabel.get(label),
+                })),
+            ],
+            caption: { title: 'Sequence similarity network', subtitle },
+            colors: {
+                background: surfaceColor,
+                text: theme.palette.text.primary,
+                textSecondary: theme.palette.text.secondary,
+                edge: edgeColor,
+                border: theme.palette.surface.border,
+            },
+        });
+
+        const png = await svgToPng(svg);
+        return [
+            { name: 'network.svg', data: svg },
+            { name: 'network.png', data: new Uint8Array(await png.arrayBuffer()) },
+        ];
+    }, [meta.total_domains, threshold, highlighted, paintNode, paintEdge, queryColor, showLabels, legendLabels,
+        colorForLabel, otherColor, countByLabel, theme, surfaceColor, edgeColor, modeNoun]);
+
+    /** Download the figure on its own, as a zip of the SVG and PNG. */
     const exportFigure = useCallback(async () => {
         const g = graphRef.current;
         if (!g || !g.order) return;
         setExporting(true);
         try {
-            const expanded = g.filterNodes((node, attrs) => !attrs.isCluster).length;
-            const subtitle = [
-                `${meta.total_domains} domains`,
-                `Hamming threshold ${threshold}/34`,
-                `coloured by ${modeNoun}`,
-                expanded ? `${expanded} domains shown individually` : 'all clusters collapsed',
-                highlighted.length ? `highlighting ${highlighted.join(', ')}` : null,
-            ].filter(Boolean).join('; ');
-
-            const svg = graphToSvg({
-                graph: g,
-                colorOf: paintNode,
-                showLabels,
-                legend: legendLabels.map((label) => ({
-                    label,
-                    color: colorForLabel(label) || otherColor,
-                    count: countByLabel.get(label),
-                })),
-                caption: { title: 'Sequence similarity network', subtitle },
-                colors: {
-                    background: surfaceColor,
-                    text: theme.palette.text.primary,
-                    textSecondary: theme.palette.text.secondary,
-                    edge: edgeColor,
-                    border: theme.palette.surface.border,
-                },
-            });
-
-            const png = await svgToPng(svg);
-            const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-            const zip = await createZip([
-                { name: 'network.svg', data: svg },
-                { name: 'network.png', data: new Uint8Array(await png.arrayBuffer()) },
-            ]);
-            downloadBlob(zip, `parasect-network-${stamp}.zip`);
+            const zip = await createZip(await renderFigureFiles());
+            downloadBlob(zip, `parasect-network-${exportStamp()}.zip`);
         } catch (err) {
             console.error(err);
         } finally {
             setExporting(false);
         }
-    }, [meta.total_domains, threshold, highlighted, paintNode, showLabels, legendLabels,
-        colorForLabel, otherColor, countByLabel, theme, surfaceColor, edgeColor, modeNoun]);
+    }, [renderFigureFiles]);
+
+    /**
+     * Download everything about the placed signatures: where each landed, all
+     * their neighbours, the figure they appear in, and the settings behind it.
+     */
+    const downloadQueryResults = useCallback(async () => {
+        const placed = queries.filter((q) => placements[q.key]);
+        if (!placed.length) return;
+        setDownloadingResults(true);
+        try {
+            const neighbors = placed.flatMap((q) => neighborRows({
+                name: q.name, signature: q.signature, threshold, neighbors: placements[q.key].neighbors,
+            }));
+            const parameters = {
+                threshold,
+                neighbors_per_signature: neighborK,
+                reference_domains: meta.total_domains,
+                clusters_at_threshold: meta.cluster_count,
+                exported: new Date().toISOString(),
+                app_version: process.env.REACT_APP_VERSION || null,
+                note: 'Distances are Hamming distances between 34-residue extended signatures. '
+                    + 'Cluster ids are only meaningful at the threshold above.',
+            };
+            const zip = await createZip([
+                { name: 'signatures.tsv', data: makeDelimited(QUERY_COLUMNS, queryRows(placed, placements, threshold), '\t') },
+                { name: 'neighbors.tsv', data: makeDelimited(NEIGHBOR_COLUMNS, neighbors, '\t') },
+                ...await renderFigureFiles(),
+                { name: 'parameters.json', data: JSON.stringify(parameters, null, 2) },
+            ]);
+            downloadBlob(zip, `parasect-signatures-${exportStamp()}.zip`);
+        } catch (err) {
+            console.error(err);
+            setPlaceError('The download could not be built.');
+        } finally {
+            setDownloadingResults(false);
+        }
+    }, [queries, placements, threshold, neighborK, meta, renderFigureFiles]);
+
+    // the neighbour list on screen: a placed signature's, or a database domain's
+    const selectedPlacement = selectedQuery ? placements[selectedQuery] : null;
+    const selectedQueryInfo = queries.find((q) => q.key === selectedQuery);
+    let activeResult = null;
+    if (selectedPlacement && selectedQueryInfo) {
+        activeResult = {
+            isQuery: true,
+            name: selectedQueryInfo.name,
+            signature: selectedQueryInfo.signature,
+            neighbors: selectedPlacement.neighbors,
+            placement: selectedPlacement,
+        };
+    } else if (neighborResult) {
+        activeResult = {
+            isQuery: false,
+            name: neighborResult.query.name || neighborResult.query.signature,
+            signature: neighborResult.query.signature,
+            neighbors: neighborResult.neighbors,
+        };
+    }
+
+    /** Download the neighbour list on screen as a TSV. */
+    const downloadNeighborTable = () => {
+        if (!activeResult) return;
+        const rows = neighborRows({ ...activeResult, threshold });
+        downloadFile(
+            makeDelimited(NEIGHBOR_COLUMNS, rows, '\t'),
+            `parasect-neighbors-${fileSafe(activeResult.name)}-${exportStamp()}.tsv`,
+            TSV_MIME,
+        );
+    };
 
 
     return (
@@ -775,7 +1257,8 @@ const NetworkGraph = () => {
                     Domains from the reference database, grouped into clusters by Hamming distance between their
                     34-residue extended signatures. Click a cluster to expand it into individual domains. A cluster
                     takes the colour its members vote for by majority, one vote per domain; anything outside the
-                    legend stays neutral, so every colour on screen is one you can look up.
+                    legend stays neutral, so every colour on screen is one you can look up. Paste your own extended
+                    signatures under "Your signatures" to see which clusters they would join.
                     {meta.total_domains > 0 && ` ${meta.total_domains} domains across ${meta.cluster_count} clusters at the current threshold.`}
                 </Typography>
             </Box>
@@ -812,6 +1295,7 @@ const NetworkGraph = () => {
                         step={1}
                         onChange={(e, v) => setDisplayThreshold(v)}
                         onChangeCommitted={(e, v) => setThreshold(v)}
+                        disabled={adding}
                         valueLabelDisplay='auto'
                         size='small'
                         sx={{ mb: 2 }}
@@ -990,7 +1474,25 @@ const NetworkGraph = () => {
 
                     <Divider sx={{ mb: 2 }} />
 
-                    <Typography variant='subtitle2' gutterBottom>Search</Typography>
+                    <SignatureQueryPanel
+                        queries={queries}
+                        placements={placements}
+                        selectedKey={selectedQuery}
+                        threshold={threshold}
+                        placing={placing}
+                        error={placeError}
+                        downloading={downloadingResults}
+                        queryColor={queryColor}
+                        onPlace={addQueries}
+                        onSelect={(key) => selectQuery(key)}
+                        onRemove={removeQuery}
+                        onClear={clearQueries}
+                        onDownload={downloadQueryResults}
+                    />
+
+                    <Divider sx={{ my: 2 }} />
+
+                    <Typography variant='subtitle2' gutterBottom>Search the database</Typography>
                     <TextField
                         size='small'
                         fullWidth
@@ -1014,19 +1516,55 @@ const NetworkGraph = () => {
                     )}
                     {searchLoading && <CircularProgress size={20} />}
 
-                    {neighborResult && (
-                        <Paper variant='outlined' sx={{ p: 1.5, mt: 1 }}>
-                            <Typography variant='body2' sx={{ fontWeight: 700, ...WRAP_ANYWHERE }}>
-                                Nearest neighbors of {neighborResult.query.name || neighborResult.query.signature}
-                            </Typography>
+                    {activeResult && (
+                        <Paper ref={resultPanelRef} variant='outlined' sx={{ p: 1.5, mt: 1, scrollMarginBottom: 16 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
+                                <Typography variant='body2' sx={{ fontWeight: 700, flex: 1, ...WRAP_ANYWHERE }}>
+                                    Nearest neighbors of {activeResult.name}
+                                </Typography>
+                                <Select
+                                    variant='standard'
+                                    disableUnderline
+                                    value={neighborK}
+                                    onChange={(e) => changeNeighborK(e.target.value)}
+                                    renderValue={(k) => `top ${k}`}
+                                    inputProps={{ 'aria-label': 'Neighbours to list' }}
+                                    sx={{ fontSize: '0.8125rem', flexShrink: 0 }}
+                                >
+                                    {NEIGHBOR_COUNTS.map((k) => <MenuItem key={k} value={k}>top {k}</MenuItem>)}
+                                </Select>
+                                <Tooltip title='Download this list (TSV)'>
+                                    <IconButton size='small' onClick={downloadNeighborTable} sx={{ mt: -0.5 }}>
+                                        <DownloadIcon fontSize='small' />
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
+                            {activeResult.isQuery && (
+                                <>
+                                    <Typography
+                                        variant='caption'
+                                        display='block'
+                                        sx={{ fontFamily: 'monospace', color: 'text.secondary', ...WRAP_ANYWHERE }}
+                                    >
+                                        {activeResult.signature}
+                                    </Typography>
+                                    <Typography variant='caption' display='block' sx={{ mt: 0.5, ...WRAP_ANYWHERE }}>
+                                        {describePlacement(activeResult.placement, threshold)}
+                                    </Typography>
+                                </>
+                            )}
                             <Box sx={{ mt: 1, mb: 0.5 }}>
                                 <DistanceLegend />
                             </Box>
                             <List dense disablePadding>
-                                {neighborResult.neighbors.map((n) => (
+                                {activeResult.neighbors.map((n) => (
                                     <ListItemButton
                                         key={n.id}
-                                        onClick={() => runNeighborSearch(n.id)}
+                                        // a signature's list stays put and the click just finds the
+                                        // domain; a database domain's list walks on to the neighbour's
+                                        onClick={() => (activeResult.isQuery
+                                            ? locateNode(`domain-${n.id}`, n.cluster_id)
+                                            : runNeighborSearch(n.id))}
                                         sx={{ alignItems: 'flex-start', gap: 1, px: 1, borderRadius: 1 }}
                                     >
                                         <Box sx={{ pt: '2px' }}>
@@ -1137,7 +1675,24 @@ const NetworkGraph = () => {
                                     ? `${hoverInfo.attrs.representativeName} +${hoverInfo.attrs.memberCount - 1} more`
                                     : (hoverInfo.attrs.representativeName || hoverInfo.attrs.label)}
                             </Typography>
-                            {hoverInfo.attrs.isCluster ? (
+                            {hoverInfo.attrs.isQuery && (
+                                <>
+                                    <Typography variant='caption' display='block'>
+                                        Your signature - click to list its neighbours
+                                    </Typography>
+                                    <Typography
+                                        variant='caption'
+                                        display='block'
+                                        sx={{ fontFamily: 'monospace', mt: 0.5, ...WRAP_ANYWHERE }}
+                                    >
+                                        {hoverInfo.attrs.signature}
+                                    </Typography>
+                                    <Typography variant='caption' display='block' sx={{ mt: 0.5 }}>
+                                        {describePlacement(placements[hoverInfo.attrs.queryKey], threshold)}
+                                    </Typography>
+                                </>
+                            )}
+                            {hoverInfo.attrs.isQuery ? null : hoverInfo.attrs.isCluster ? (
                                 <>
                                     <Typography variant='caption' display='block'>
                                         {hoverInfo.attrs.memberCount === 1
