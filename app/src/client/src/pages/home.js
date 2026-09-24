@@ -11,23 +11,25 @@ import HubIcon from '@mui/icons-material/Hub';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PlayCircleIcon from '@mui/icons-material/PlayCircleOutline';
 
+import { GITHUB_URL, PUBLICATION_URL } from '../links';
+
 const links = [
     {
         text: 'Want to learn more about the research behind PARAS and PARASECT?',
         cta: 'Read our publication',
-        href: 'https://pubs.acs.org/jaaucr/article/6/4/2315/5145284/PARAS-High-Accuracy-Machine-Learning-of-Substrate',
+        href: PUBLICATION_URL,
         tooltip: 'Opens new tab to JACS Au.',
     },
     {
         text: 'Did you find PARAS or PARASECT useful?',
         cta: 'Please cite our publication',
-        href: 'https://pubs.acs.org/jaaucr/article/6/4/2315/5145284/PARAS-High-Accuracy-Machine-Learning-of-Substrate',
+        href: PUBLICATION_URL,
         tooltip: 'Opens new tab to JACS Au.',
     },
     {
         text: 'Have something to contribute?',
         cta: 'Visit our GitHub page',
-        href: 'https://github.com/bthedragonmaster/parasect',
+        href: GITHUB_URL,
         tooltip: 'Opens new tab to GitHub.',
     },
 ];

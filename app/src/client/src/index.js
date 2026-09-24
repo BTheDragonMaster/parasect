@@ -10,9 +10,11 @@ import RetrieveIcon from '@mui/icons-material/GetApp';
 import DatasetIcon from '@mui/icons-material/Dataset'
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import HubIcon from '@mui/icons-material/Hub';
+import StorageIcon from '@mui/icons-material/Storage';
 
 import './style/main.css';
 
+import { GITHUB_ISSUES_URL } from './links';
 import { ColorModeProvider } from './theme/ColorModeContext';
 import ColorModeToggle from './components/ColorModeToggle';
 import Toast from './components/Toast';
@@ -25,6 +27,7 @@ import DataAnnotation from './pages/data_annotation'
 import AnnotationEditor from './pages/annotation_editor'
 import QueryDatabase from './pages/query_database'
 import NetworkGraph from './pages/network'
+import Dataset from './pages/dataset'
 
 /**
  * Custom toolbar for the app.
@@ -120,7 +123,11 @@ const CustomToolbar = () => {
                         <HubIcon sx={{ marginRight: '10px' }} />
                         Network
                     </MenuItem>
-                    <MenuItem onClick={() => handleExternalLinkClick('https://github.com/BTheDragonMaster/parasect/issues')}>
+                    <MenuItem onClick={() => handleMenuItemClick('/dataset')}>
+                        <StorageIcon sx={{ marginRight: '10px' }} />
+                        Download dataset
+                    </MenuItem>
+                    <MenuItem onClick={() => handleExternalLinkClick(GITHUB_ISSUES_URL)}>
                         <GitHubIcon sx={{ marginRight: '10px' }} />
                         Report an issue
                     </MenuItem>
@@ -198,6 +205,10 @@ function AppRoutes () {
                 <Route
                     path='/network'
                     element={<NetworkGraph />}
+                />
+                <Route
+                    path='/dataset'
+                    element={<Dataset />}
                 />
                 <Route
                     path='*'

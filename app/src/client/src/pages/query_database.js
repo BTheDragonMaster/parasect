@@ -20,6 +20,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import DownloadIcon from '@mui/icons-material/Download';
 import HubIcon from '@mui/icons-material/Hub';
+import StorageIcon from '@mui/icons-material/Storage';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { DataGrid, GridToolbarContainer, GridPagination } from '@mui/x-data-grid';
 import Statistics from '../components/Statistics';
@@ -288,6 +289,25 @@ const QueryDatabase = () => {
             </Typography>
             <Typography variant="body2" color="text.secondary">
               See how these domains relate to each other, clustered by their signatures, instead of as a table.
+            </Typography>
+          </Box>
+          <ArrowForwardIcon sx={{ flexShrink: 0, display: { xs: 'none', sm: 'block' } }} />
+        </CardActionArea>
+      </Card>
+
+      <Card variant="outlined" sx={{ mt: 2, borderRadius: 3 }}>
+        <CardActionArea
+          component={RouterLink}
+          to="/dataset"
+          sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}
+        >
+          <StorageIcon color="primary" sx={{ fontSize: 28, flexShrink: 0 }} />
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+              Download the full dataset
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Get the whole database as one SQLite file, and inspect its entity-relationship diagram.
             </Typography>
           </Box>
           <ArrowForwardIcon sx={{ flexShrink: 0, display: { xs: 'none', sm: 'block' } }} />
