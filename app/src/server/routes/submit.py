@@ -20,7 +20,7 @@ from pikachu.general import read_smiles
 from .app import app
 from .common import ResponseData, Status
 from .constants import MODEL_DIR, TEMP_DIR, cleanup_job_temp_dir, job_temp_dir
-from .job_store import set_job, update_job
+from .job_store import claim_job, delete_job, get_job, set_job, update_job
 from .model_loader import ModelSpec, MultiModelLoader
 
 
@@ -234,6 +234,76 @@ def submit_raw() -> Response:
 
     # immediately return job_id
     return ResponseData(Status.Success, payload={"jobId": job_id}).to_dict()
+
+
+########################################################################################################################
+########################################################################################################################
+#
+# Example job shown from the home page
+#
+########################################################################################################################
+########################################################################################################################
+
+
+# One shared job, so visitors land on finished results instead of each
+# spending a prediction run. It expires with the normal job TTL and is simply
+# recomputed by the first visitor after that (or after a model update/flush).
+EXAMPLE_JOB_ID = "example-dptA"
+EXAMPLE_FASTA_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "example_data", "dptA.fasta")
+EXAMPLE_STALE_PENDING_SECONDS = 30 * 60  # a pending example this old was orphaned by a killed worker
+
+
+blueprint_submit_example = Blueprint("submit_example", __name__)
+
+
+@blueprint_submit_example.route("/api/example", methods=["GET"])
+def submit_example() -> Response:
+    """Return the job ID of the example (dptA) job, starting it if needed.
+
+    :return: Response.
+    :rtype: Response
+    """
+    try:
+        job = get_job(EXAMPLE_JOB_ID)
+        current_time = int(time.time())
+
+        # throw away a failed or orphaned run so the claim below can restart it
+        if job is not None and (
+            job["status"] == str(Status.Failure).lower()
+            or (
+                job["status"] == str(Status.Pending).lower()
+                and current_time - job.get("timestamp", 0) > EXAMPLE_STALE_PENDING_SECONDS
+            )
+        ):
+            delete_job(EXAMPLE_JOB_ID)
+
+        claimed = claim_job(EXAMPLE_JOB_ID, {
+            "status": str(Status.Pending).lower(),
+            "message": "Job is pending!",
+            "results": [],
+            "timestamp": current_time,
+        })
+
+        # only the request that created the job runs it; everyone else just polls
+        if claimed:
+            with open(EXAMPLE_FASTA_PATH) as f:
+                example_fasta = f.read()
+
+            data = {"data": {
+                "selectedInputType": "fasta",
+                "selectedInput": example_fasta,
+                "selectedModel": "parasAllSubstrates",
+                "useStructureGuidedAlignment": False,
+                "smilesFileContent": "",
+                "useOnlyUploadedSubstrates": False,
+                "uploadedSubstratesFileContentHasHeader": True,
+            }}
+            threading.Thread(target=run_prediction_raw, args=(EXAMPLE_JOB_ID, data)).start()
+
+        return ResponseData(Status.Success, payload={"jobId": EXAMPLE_JOB_ID}).to_dict()
+    except Exception as e:
+        app.logger.exception("failed to start example job: %s", e)
+        return ResponseData(Status.Failure, message=str(e)).to_dict()
 
 
 ########################################################################################################################

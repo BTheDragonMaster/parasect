@@ -28,6 +28,24 @@ def set_job(job_id: str, job: dict[str, Any]) -> None:
     _client.set(_key(job_id), json.dumps(job), ex=JOB_TTL_SECONDS)
 
 
+def claim_job(job_id: str, job: dict[str, Any]) -> bool:
+    """Create a job's state only if no job with this ID exists yet.
+
+    :param job_id: Job ID.
+    :param job: Initial job state.
+    :return: True if this call created the job, False if it already existed.
+    """
+    return bool(_client.set(_key(job_id), json.dumps(job), ex=JOB_TTL_SECONDS, nx=True))
+
+
+def delete_job(job_id: str) -> None:
+    """Remove a job's state.
+
+    :param job_id: Job ID.
+    """
+    _client.delete(_key(job_id))
+
+
 def get_job(job_id: str) -> dict[str, Any] | None:
     """Retrieve a job's state.
 

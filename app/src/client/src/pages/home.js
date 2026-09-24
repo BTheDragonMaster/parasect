@@ -1,6 +1,7 @@
-import React from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-import { Box, Typography, Link, Tooltip, Card, CardActionArea, Divider } from '@mui/material';
+import React, { useState } from 'react';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { Box, Typography, Link, Tooltip, Card, CardActionArea, Divider, Button, CircularProgress } from '@mui/material';
 import ExitIcon from '@mui/icons-material/ExitToApp';
 import UploadIcon from '@mui/icons-material/Upload';
 import RetrieveIcon from '@mui/icons-material/GetApp';
@@ -8,6 +9,7 @@ import DatasetIcon from '@mui/icons-material/Dataset';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import HubIcon from '@mui/icons-material/Hub';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import PlayCircleIcon from '@mui/icons-material/PlayCircleOutline';
 
 const links = [
     {
@@ -81,6 +83,27 @@ const LOGO_PLATE = {
  * @returns {React.ReactElement} - The component showing the home page content.
  */
 const Home = () => {
+    const navigate = useNavigate();
+    const [isOpeningExample, setIsOpeningExample] = useState(false);
+
+    // the server keeps one shared example job (and reruns it once it expires),
+    // so ask it for the job ID instead of hardcoding one here
+    const handleOpenExample = async () => {
+        setIsOpeningExample(true);
+        try {
+            const response = await fetch('/api/example');
+            if (!response.ok) throw new Error('Network response was not ok!');
+
+            const json = await response.json();
+            if (json.status !== 'success') throw new Error(json.message);
+
+            navigate(`/results/${json.payload.jobId}`);
+        } catch (error) {
+            toast.error(`Could not open the example results: ${error.message}`);
+            setIsOpeningExample(false);
+        };
+    };
+
     return (
         <Box sx={{ maxWidth: 880, mx: 'auto', px: { xs: 2, sm: 4 }, py: { xs: 4, sm: 6 } }}>
             {/* hero */}
@@ -137,6 +160,17 @@ const Home = () => {
                     <ArrowForwardIcon sx={{ flexShrink: 0, display: { xs: 'none', sm: 'block' } }} />
                 </CardActionArea>
             </Card>
+
+            <Box sx={{ mt: 1.5, textAlign: 'center' }}>
+                <Button
+                    onClick={handleOpenExample}
+                    disabled={isOpeningExample}
+                    startIcon={isOpeningExample ? <CircularProgress size={18} /> : <PlayCircleIcon />}
+                    sx={{ textTransform: 'none' }}
+                >
+                    New here? See example predictions for dptA (daptomycin NRPS)
+                </Button>
+            </Box>
 
             {/* one grid of equal columns, so no card can size itself to its text */}
             <Box
