@@ -67,7 +67,7 @@ const Dataset = () => {
             tables: info.tables,
             caption: {
                 title: 'PARAS/PARASECT database schema',
-                subtitle: `${info.fileName} · ${info.tables.length} tables`,
+                subtitle: `${info.fileName} / ${info.tables.length} tables`,
             },
             colors: {
                 background: theme.palette.background.paper,
