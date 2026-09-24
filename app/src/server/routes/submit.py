@@ -20,6 +20,7 @@ from pikachu.general import read_smiles
 from .app import app
 from .common import ResponseData, Status
 from .constants import MODEL_DIR, TEMP_DIR, cleanup_job_temp_dir, job_temp_dir
+from .examples import EXAMPLE_INPUTS, read_example_input
 from .job_store import claim_job, delete_job, get_job, set_job, update_job
 from .model_loader import ModelSpec, MultiModelLoader
 
@@ -249,7 +250,7 @@ def submit_raw() -> Response:
 # spending a prediction run. It expires with the normal job TTL and is simply
 # recomputed by the first visitor after that (or after a model update/flush).
 EXAMPLE_JOB_ID = "example-dptA"
-EXAMPLE_FASTA_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "example_data", "dptA.fasta")
+EXAMPLE_JOB_INPUT = "dptA"  # key in examples.EXAMPLE_INPUTS
 EXAMPLE_STALE_PENDING_SECONDS = 30 * 60  # a pending example this old was orphaned by a killed worker
 
 
@@ -286,12 +287,9 @@ def submit_example() -> Response:
 
         # only the request that created the job runs it; everyone else just polls
         if claimed:
-            with open(EXAMPLE_FASTA_PATH) as f:
-                example_fasta = f.read()
-
             data = {"data": {
-                "selectedInputType": "fasta",
-                "selectedInput": example_fasta,
+                "selectedInputType": EXAMPLE_INPUTS[EXAMPLE_JOB_INPUT]["inputType"],
+                "selectedInput": read_example_input(EXAMPLE_JOB_INPUT),
                 "selectedModel": "parasAllSubstrates",
                 "useStructureGuidedAlignment": False,
                 "smilesFileContent": "",
