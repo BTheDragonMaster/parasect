@@ -533,7 +533,7 @@ const AnnotationEditor = () => {
         setOpenAnnotationsSubmissionModal(false);
     };
 
-    {/* For collecting protein annotations */}
+    // For collecting protein annotations
 
     const handleProteinAnnotationChange = (proteinId, data) => {
     setProteinAnnotations((prev) => {

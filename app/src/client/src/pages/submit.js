@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { Box, Button, Divider, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, CircularProgress, Typography, Input } from '@mui/material';
-import { MdSettings, MdBugReport } from 'react-icons/md';
+import { MdSettings } from 'react-icons/md';
 
 import ExampleInputPicker from '../components/ExampleInputPicker';
 import SettingsModal from '../components/SettingsModal';

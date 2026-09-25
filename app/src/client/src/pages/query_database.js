@@ -28,6 +28,21 @@ import LazyMultiSelect from '../components/LazyMultiSelect';
 import { downloadFile, makeDelimited } from '../utils/tabular';
 
 const DEFAULT_PAGE_SIZE = 100;
+
+// Build DataGrid columns from sample rows, for a response without column metadata
+const buildColumnsFromRows = (sampleRows) => {
+  if (!sampleRows.length) return [];
+  return Object.keys(sampleRows[0]).map((k) => ({
+    field: k,
+    headerName: k,
+    flex: 1,
+    minWidth: 120,
+  }));
+};
+
+// Ensure each row has a unique 'id' field for DataGrid; keyed on the page the
+// rows were fetched for, so ids stay unique across pages
+const ensureRowIds = (arr, page) => arr.map((r, i) => (r.id ? r : { id: `${page}-${i}`, ...r }));
 const MAX_EXPORT_ROWS = 100000;
 
 // Every preset's Editor reports a plain { paramName: value } object via setParams and
@@ -150,21 +165,6 @@ const QueryDatabase = () => {
     return { sortBy: field, sortDir: sort };
   }, [sortModel]);
 
-  // Function to build columns from sample rows
-  const buildColumnsFromRows = (sampleRows) => {
-    if (!sampleRows.length) return [];
-    const keys = Object.keys(sampleRows[0]);
-    return keys.map((k) => ({
-      field: k,
-      headerName: k,
-      flex: 1,
-      minWidth: 120,
-    }))
-  };
-
-  // Ensure each row has a unique 'id' field for DataGrid
-  const ensureRowIds = (arr) => arr.map((r, i) => (r.id ? r : { id: `${page}-${i}`, ...r }));
-
   // Fetch results from the server via the safe, parameterized preset endpoint
   // (see routes/sql.py: PRESETS). Params are always bound SQL parameters, never
   // interpolated into query text, so this can't be used to inject SQL
@@ -186,7 +186,7 @@ const QueryDatabase = () => {
       const data = await res.json();
       if (lastRequestRef.current !== reqId) return;
       const cols = data.columns?.length ? data.columns.map((c) => ({ flex: 1, minWidth: 120, ...c })) : buildColumnsFromRows(data.rows || []);
-      const withIds = ensureRowIds(data.rows || []);
+      const withIds = ensureRowIds(data.rows || [], p);
       setColumns(cols);
       setRows(withIds);
       setRowCount(Number.isFinite(data.total) ? data.total : withIds.length);
@@ -200,7 +200,7 @@ const QueryDatabase = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, selectedOption]);
+  }, []);
 
   // Fetch results when page, pageSize, or activeSort changes
   const onSearch = useCallback(() => {
@@ -217,16 +217,6 @@ const QueryDatabase = () => {
     setSortModel([]);
     setHasSearched(false);
     // keep current filter values; if preset is active and its editor cleared, params may be {}
-  };
-
-  const exportCurrentPage = (format) => {
-    if (!columns.length || !rows.length) {
-      toast.info('Nothing to export.');
-      return;
-    }
-    const delim = format === 'csv' ? ',' : '\t';
-    const text = makeDelimited(columns, rows, delim);
-    downloadFile(text, `results_page${page + 1}.${format}`, format === 'csv' ? 'text/csv' : 'text/tab-separated-values');
   };
 
   const exportAll = async (format) => {

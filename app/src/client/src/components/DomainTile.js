@@ -34,7 +34,6 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
     const [expanded, setExpanded] = useState(false);  // Start expanded
     const toggleExpanded = () => setExpanded(prev => !prev);
     const [nameWarnings, setNameWarnings] = useState({});
-    const [nameValidity, setNameValidity] = useState({});
 
     const parasResult = result["paras_result"];
     const sequence = parasResult["domain_sequence"];
@@ -68,14 +67,18 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
         return `${proteinName}.A${domainIndex}`;
     }, [proteinName, domainIndex]);
 
+    // the annotation type depends on whether the domain is already in the
+    // dataset, so recompute it when that answer comes back; only then, since
+    // substrate edits recompute it themselves
     useEffect(() => {
         const hasValidSubstrate = substrates?.some(
             sub => sub.substrateName && sub.substrateSmiles
         );
 
         if (hasValidSubstrate) {
-            updateSubstrateField(substrates);
+            recalculateAnnotationType(substrates);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isDuplicateDomain]);
 
     useEffect(() => {
@@ -102,8 +105,7 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
         fetchDuplicateStatus();
     }, [domainName]);
 
-    {/* Initialize with one substrate entry, default to no selection & no custom smiles */
-    }
+    // Initialize with one substrate entry, default to no selection & no custom smiles
     const [substrates, setSubstrates] = useState([
         {
             selectedSubstrate: null,
@@ -181,8 +183,7 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
         setAnnotationType(type);
     };
 
-    {/* Load SMILES for substrate assignment */
-    }
+    // Load SMILES for substrate assignment
     useEffect(() => {
         fetch('/api/get_substrates')
             .then(res => res.json())
@@ -194,14 +195,14 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
             });
     }, []);
 
-    {/* Sort smilesOptions by PARAS predictions order */
-    }
+    // Sort smilesOptions by PARAS predictions order
     const [sortedOptions, setSortedOptions] = useState([]);
 
+    const predictions = parasResult["predictions"];
     useEffect(() => {
-        if (!smilesOptions.length || !parasResult["predictions"]) return;
+        if (!smilesOptions.length || !predictions) return;
 
-        const preferredOrder = parasResult["predictions"].map(p => p["substrate_name"]);
+        const preferredOrder = predictions.map(p => p["substrate_name"]);
         const orderMap = new Map(preferredOrder.map((name, i) => [name, i]));
 
         const sorted = [...smilesOptions].sort((a, b) => {
@@ -212,15 +213,13 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
         });
 
         setSortedOptions(sorted);
-    }, [smilesOptions, parasResult["predictions"]]);
+    }, [smilesOptions, predictions]);
 
-    {/* The first prediction for showing */
-    }
+    // The first prediction for showing
     const selectedPrediction = parasResult['predictions'][0];
 
 
-    {/* Handlers to update substrate entries */
-    }
+    // Handlers to update substrate entries
     const updateSubstrateField = (index, field, value) => {
         setSubstrates((prev) => {
             const newSubs = [...prev];
@@ -254,6 +253,12 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
             return newSubs;
         });
     };
+    // Keyed on the typed names/SMILES only: the effect writes substrateName and
+    // substrateSmiles back into `substrates`, so depending on the whole array
+    // would re-run it (and re-fetch) on its own update.
+    const customSubstrateKey = substrates.map((s) => `${s.newSubstrateName}|${s.customSmiles}`).join('|');
+    const newSubstrateNamesKey = substrates.map((s) => s.newSubstrateName).join('|');
+
     useEffect(() => {
         substrates.forEach((sub, i) => {
             const name = sub.newSubstrateName?.trim();
@@ -274,11 +279,6 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                             [i]: duplicate
                                 ? 'Substrate name already exists in the dataset.'
                                 : null,
-                        }));
-
-                        setNameValidity((prev) => ({
-                            ...prev,
-                            [i]: !duplicate,
                         }));
 
                         setSubstrates((prev) => {
@@ -307,7 +307,8 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                     });
             }
         });
-    }, [substrates.map((s) => `${s.newSubstrateName}|${s.customSmiles}`).join('|')]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [customSubstrateKey]);
 
     useEffect(() => {
         substrates.forEach((sub, i) => {
@@ -325,10 +326,6 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                             ...prev,
                             [i]: isDuplicate ? `Substrate name already exists in the dataset.` : null,
                         }));
-                        setNameValidity((prev) => ({
-                            ...prev,
-                            [i]: !isDuplicate,
-                        }));
                     })
                     .catch((err) => {
                         console.error('Failed to check substrate name:', err);
@@ -336,20 +333,16 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                             ...prev,
                             [i]: 'Error checking substrate name.',
                         }));
-                        setNameValidity((prev) => ({
-                            ...prev,
-                            [i]: false,
-                        }));
                     });
             } else {
                 setNameWarnings((prev) => ({
                     ...prev,
                     [i]: null,
                 }));
-                setNameValidity((prev) => ({...prev, [i]: true}));
             }
         });
-    }, [substrates.map((s) => s.newSubstrateName).join('|')]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [newSubstrateNamesKey]);
 
     return (
         <Box
