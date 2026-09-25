@@ -19,6 +19,7 @@ from routes.annotation_editor import (
 )
 from routes.sql import blueprint_sql
 from routes.network import blueprint_network
+from routes.compare import blueprint_compare
 
 from parasect.version import get_version
 
@@ -38,6 +39,7 @@ app.register_blueprint(blueprint_submit_annotations)
 app.register_blueprint(blueprint_check_protein_name)
 app.register_blueprint(blueprint_sql)
 app.register_blueprint(blueprint_network)
+app.register_blueprint(blueprint_compare)
 
 
 @app.errorhandler(404)

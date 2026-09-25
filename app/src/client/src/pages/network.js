@@ -11,6 +11,7 @@ import {
 import DownloadIcon from '@mui/icons-material/Download';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import TuneIcon from '@mui/icons-material/Tune';
+import ViewStreamIcon from '@mui/icons-material/ViewStream';
 
 import Loading from '../components/Loading';
 import { DistanceBadge, DistanceLegend } from '../components/DistanceBadge';
@@ -21,6 +22,7 @@ import { graphToSvg, svgToPng } from '../utils/networkExport';
 import {
     NEIGHBOR_COLUMNS, QUERY_COLUMNS, exportStamp, fileSafe, neighborRows, queryRows,
 } from '../utils/neighborExport';
+import { compareUrl } from '../utils/compare';
 import { MAX_QUERIES, checkSignature, describePlacement } from '../utils/signatures';
 import { TSV_MIME, downloadFile, makeDelimited } from '../utils/tabular';
 import { createZip, downloadBlob } from '../utils/zip';
@@ -1229,11 +1231,21 @@ const NetworkGraph = () => {
     } else if (neighborResult) {
         activeResult = {
             isQuery: false,
+            id: neighborResult.query.id,
             name: neighborResult.query.name || neighborResult.query.signature,
             signature: neighborResult.query.signature,
             neighbors: neighborResult.neighbors,
         };
     }
+    
+    const openInCompare = () => {
+        if (!activeResult) return;
+        const neighborIds = activeResult.neighbors.map((n) => n.id);
+        const url = activeResult.isQuery || activeResult.id === null || activeResult.id === undefined
+            ? compareUrl({ custom: [{ name: activeResult.name, signature: activeResult.signature }], ids: neighborIds })
+            : compareUrl({ ids: [activeResult.id, ...neighborIds] });
+        window.open(url, '_blank', 'noopener');
+    };
 
     /** Download the neighbour list on screen as a TSV. */
     const downloadNeighborTable = () => {
@@ -1533,6 +1545,11 @@ const NetworkGraph = () => {
                                 >
                                     {NEIGHBOR_COUNTS.map((k) => <MenuItem key={k} value={k}>top {k}</MenuItem>)}
                                 </Select>
+                                <Tooltip title='Compare these signatures side by side (new tab)'>
+                                    <IconButton size='small' onClick={openInCompare} sx={{ mt: -0.5 }}>
+                                        <ViewStreamIcon fontSize='small' />
+                                    </IconButton>
+                                </Tooltip>
                                 <Tooltip title='Download this list (TSV)'>
                                     <IconButton size='small' onClick={downloadNeighborTable} sx={{ mt: -0.5 }}>
                                         <DownloadIcon fontSize='small' />

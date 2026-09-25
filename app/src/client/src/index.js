@@ -10,6 +10,7 @@ import RetrieveIcon from '@mui/icons-material/GetApp';
 import DatasetIcon from '@mui/icons-material/Dataset'
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import HubIcon from '@mui/icons-material/Hub';
+import CompareIcon from '@mui/icons-material/ViewStream';
 import StorageIcon from '@mui/icons-material/Storage';
 
 import './style/main.css';
@@ -27,6 +28,7 @@ import DataAnnotation from './pages/data_annotation'
 import AnnotationEditor from './pages/annotation_editor'
 import QueryDatabase from './pages/query_database'
 import NetworkGraph from './pages/network'
+import Compare from './pages/compare'
 import Dataset from './pages/dataset'
 
 /**
@@ -123,6 +125,10 @@ const CustomToolbar = () => {
                         <HubIcon sx={{ marginRight: '10px' }} />
                         Network
                     </MenuItem>
+                    <MenuItem onClick={() => handleMenuItemClick('/compare')}>
+                        <CompareIcon sx={{ marginRight: '10px' }} />
+                        Compare signatures
+                    </MenuItem>
                     <MenuItem onClick={() => handleMenuItemClick('/dataset')}>
                         <StorageIcon sx={{ marginRight: '10px' }} />
                         Download dataset
@@ -205,6 +211,10 @@ function AppRoutes () {
                 <Route
                     path='/network'
                     element={<NetworkGraph />}
+                />
+                <Route
+                    path='/compare'
+                    element={<Compare />}
                 />
                 <Route
                     path='/dataset'

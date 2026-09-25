@@ -161,6 +161,11 @@ export const DISTANCE_RAMP = {
     ],
 };
 
+export const SIMILARITY_RAMP = {
+    light: { low: '#FFFFFF', high: '#1B5FA8', inks: [BRAND.ink, '#FFFFFF'] },
+    dark: { low: '#212120', high: '#8FBCF0', inks: ['#F2F1EE', BRAND.ink] },
+};
+
 /** Status colours, reserved, and never reused as a categorical slot. */
 export const STATUS = {
     light: { good: '#1F7A4D', warning: '#A2530F', critical: '#B3261E', info: '#1B5FA8' },

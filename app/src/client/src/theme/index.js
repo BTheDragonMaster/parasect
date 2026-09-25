@@ -3,7 +3,7 @@ import { createTheme } from '@mui/material/styles';
 import { BRAND, CHROME, GENE_BANDS, NEUTRALS, STATUS, categoricalColor, SAFE_SLOTS } from './palette';
 
 export { BRAND, CHROME, GENE_BANDS, NEUTRALS, STATUS, categoricalColor, SAFE_SLOTS };
-export { CATEGORICAL, CATEGORICAL_TIER2, DISTANCE_RAMP, MUTED_MARK, OTHER, QUERY_MARK } from './palette';
+export { CATEGORICAL, CATEGORICAL_TIER2, DISTANCE_RAMP, MUTED_MARK, OTHER, QUERY_MARK, SIMILARITY_RAMP } from './palette';
 
 const FONT_STACK = [
     '-apple-system',
