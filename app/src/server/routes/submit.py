@@ -17,6 +17,8 @@ from parasect.core.domain import AdenylationDomain
 from parasect.core.hit import DomainType
 from pikachu.general import read_smiles
 
+from fetch_models import read_manifest
+
 from .app import app
 from .common import ResponseData, Status
 from .constants import MODEL_DIR, TEMP_DIR, cleanup_job_temp_dir, job_temp_dir
@@ -38,6 +40,28 @@ loader = MultiModelLoader({
     "parasect": ModelSpec(name="PARASECT", path=MODEL_PARASECT, mmap=True),
     "parasectBacterial": ModelSpec(name="PARASECT (bacterial)", path=MODEL_PARASECT_BACTERIAL, mmap=True),
 })
+
+
+
+def model_provenance(key: str) -> dict:
+    """Describe the model file behind key, for storing with a job's results.
+
+    :param key: Model key in loader.
+    :return: Key, display name, Zenodo record, archive md5 and scikit-learn version.
+    """
+    spec = loader._specs[key]
+    entry = read_manifest(MODEL_DIR).get(os.path.basename(spec.path)) or {}
+    try:
+        matches = entry.get("size") == os.path.getsize(spec.path)
+    except OSError:
+        matches = False
+    return {
+        "key": key,
+        "name": spec.name,
+        "zenodo_record": entry.get("record") if matches else None,
+        "archive_md5": entry.get("archive_md5") if matches else None,
+        "sklearn_version": entry.get("verified_sklearn") if matches else None,
+    }
 
 
 blueprint_submit_raw = Blueprint("submit_raw", __name__)
@@ -193,6 +217,7 @@ def run_prediction_raw(job_id: str, data: dict[str, str]) -> None:
             status=str(Status.Success).lower(),
             message="Successfully ran predictions!",
             results=[r.to_json() for r in results],
+            model=model_provenance(selected_model),
         )
 
     except Exception as e:
@@ -426,6 +451,7 @@ def run_prediction_signature(job_id: str, data: dict[str, str]) -> None:
             status=str(Status.Success).lower(),
             message="Successfully ran predictions!",
             results=[r.to_json() for r in results],
+            model=model_provenance("parasAllSubstrates"),
         )
 
     except Exception as e:

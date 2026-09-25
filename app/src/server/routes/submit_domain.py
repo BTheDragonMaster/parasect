@@ -25,7 +25,7 @@ from parasect.core.hit import DomainType
 from .common import ResponseData, Status
 from .constants import cleanup_job_temp_dir, job_temp_dir
 from .job_store import set_job, update_job
-from .submit import loader
+from .submit import loader, model_provenance
 
 blueprint_submit_domain = Blueprint("submit_domain", __name__)
 
@@ -130,6 +130,7 @@ def run_prediction_domain(job_id: str, data: dict[str, str]) -> None:
             status=str(Status.Success).lower(),
             message="Successfully ran predictions!",
             results=[r.to_json() for r in results],
+            model=model_provenance("parasAllSubstrates"),
         )
 
     except Exception as e:

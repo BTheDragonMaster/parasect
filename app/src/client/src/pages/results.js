@@ -1,11 +1,25 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Box, IconButton, Divider, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import { FaDownload, FaCopy } from 'react-icons/fa';
+import { Box, IconButton, Divider, Typography, FormControl, InputLabel, Select, MenuItem, Tooltip } from '@mui/material';
+import { FaDownload, FaCopy, FaImage } from 'react-icons/fa';
 
 import Loading from '../components/Loading';
 import ResultTile from '../components/ResultTile';
+import ResultsFigureDialog from '../components/ResultsFigureDialog';
+
+const modelFileLine = (model) => (model?.zenodo_record
+    ? `Zenodo record ${model.zenodo_record}, archive md5 ${model.archive_md5}, scikit-learn ${model.sklearn_version}`
+    : null);
+
+const SORT_LABELS = {
+    default: 'Default (server order)',
+    genomic_asc: 'Order in DNA (GBK only)',
+    protein_asc: 'Protein name (A-Z)',
+    protein_desc: 'Protein name (Z-A)',
+    confidence_desc: 'Highest confidence first',
+    domain_count_desc: 'Most domains first',
+};
 
 /**
  * Component to display the results of the prediction.
@@ -18,6 +32,10 @@ const Results = () => {
 
     // state to store results
     const [results, setResults] = useState(null);
+
+    // the model that made the predictions ({key, name, zenodo_record,
+    // archive_md5, sklearn_version})
+    const [model, setModel] = useState(null);
 
     // state to keep track of loading state
     const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +52,9 @@ const Results = () => {
     // this reflects submission order; for a FASTA/GBK upload it's the order in
     // which the server extracted the domains, not necessarily file/genomic order)
     const [sortBy, setSortBy] = useState('default');
+
+    // whether the figure export dialog is open
+    const [figureOpen, setFigureOpen] = useState(false);
 
     // fetch results from local storage
     useEffect(() => {
@@ -66,6 +87,7 @@ const Results = () => {
                     
                     // set states
                     setResults(results);
+                    setModel(data['payload']['model'] ?? null);
                     setIsLoading(false);
                     clearInterval(intervalId);
                 } else if (data.status === 'failure') {
@@ -220,18 +242,27 @@ const Results = () => {
                     <Box>
 
                         {/* download button */}
-                        <IconButton
-                            onClick={() => {
-                                const blob = new Blob([JSON.stringify(results)], { type: 'application/json' });
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = 'results.json';
-                                a.click();
-                            }
-                        }>
-                            <FaDownload />
-                        </IconButton>
+                        <Tooltip title='Download results as JSON'>
+                            <IconButton
+                                onClick={() => {
+                                    const blob = new Blob([JSON.stringify(results)], { type: 'application/json' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = 'results.json';
+                                    a.click();
+                                }
+                            }>
+                                <FaDownload />
+                            </IconButton>
+                        </Tooltip>
+
+                        {/* figure button */}
+                        <Tooltip title='Download results as a figure (SVG/PNG)'>
+                            <IconButton onClick={() => setFigureOpen(true)}>
+                                <FaImage />
+                            </IconButton>
+                        </Tooltip>
 
                     </Box>
                 </Box>
@@ -244,14 +275,11 @@ const Results = () => {
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
                         >
-                            <MenuItem value='default'>Default (server order)</MenuItem>
-                            {hasGenomicPositions && (
-                                <MenuItem value='genomic_asc'>Order in DNA (GBK only)</MenuItem>
-                            )}
-                            <MenuItem value='protein_asc'>Protein name (A-Z)</MenuItem>
-                            <MenuItem value='protein_desc'>Protein name (Z-A)</MenuItem>
-                            <MenuItem value='confidence_desc'>Highest confidence first</MenuItem>
-                            <MenuItem value='domain_count_desc'>Most domains first</MenuItem>
+                            {Object.entries(SORT_LABELS)
+                                .filter(([value]) => value !== 'genomic_asc' || hasGenomicPositions)
+                                .map(([value, label]) => (
+                                    <MenuItem key={value} value={value}>{label}</MenuItem>
+                                ))}
                         </Select>
                     </FormControl>
                 </Box>
@@ -266,14 +294,34 @@ const Results = () => {
                     </IconButton>
                     {`Job ID: ${jobId}`}
                 </Typography>
+                {model && (
+                    <Typography variant='body1' gutterBottom sx={{ ml: 1 }}>
+                        {`Model: ${model.name}`}
+                        {modelFileLine(model) && (
+                            <Typography component='span' variant='body2' color='textSecondary' sx={{ ml: 1 }}>
+                                ({modelFileLine(model)})
+                            </Typography>
+                        )}
+                    </Typography>
+                )}
                 <Divider />
+
+                <ResultsFigureDialog
+                    open={figureOpen}
+                    onClose={() => setFigureOpen(false)}
+                    groups={groups}
+                    jobId={jobId}
+                    modelLabel={model?.name ?? null}
+                    modelFileLine={modelFileLine(model)}
+                    orderLabel={SORT_LABELS[sortBy]}
+                />
 
                 <Box sx={{ mt: 4 }}>
                     <Typography variant='body1' gutterBottom>
                         In total, {results.length} prediction(s) were made across {groups.length} protein(s). Domains from the same protein are grouped together and shaded the same color, in their order along that protein. You can scroll horizontally to view all predictions, and use the dropdown above to change the order proteins are grouped in.
                     </Typography>
                     <Typography variant='body1' gutterBottom>
-                        You can download the results as a JSON file using the download button above next to the header.
+                        You can download the results as a JSON file, or as a figure (SVG/PNG) of the domains in the current order with their top predictions, using the buttons above next to the header.
                     </Typography>
                     <Typography variant='body1' gutterBottom>
                         You can use the job ID to retrieve the results at a later time. All jobs are automatically deleted after 7 days.
