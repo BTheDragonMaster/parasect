@@ -4,7 +4,10 @@
 from flask import Response, jsonify
 from routes.app import app
 from routes.retrieval import blueprint_retrieve
-from routes.submit import blueprint_submit_raw, blueprint_submit_quick
+from routes.submit import blueprint_submit_raw, blueprint_submit_quick, blueprint_submit_example
+from routes.dataset import blueprint_dataset
+from routes.examples import blueprint_example_inputs
+from routes.submit_domain import blueprint_submit_domain
 from routes.data_annotation import blueprint_annotate_data
 from routes.annotation_editor import (
     blueprint_check_smiles,
@@ -15,12 +18,18 @@ from routes.annotation_editor import (
     blueprint_check_domain_name,
 )
 from routes.sql import blueprint_sql
+from routes.network import blueprint_network
+from routes.compare import blueprint_compare
 
 from parasect.version import get_version
 
 app.register_blueprint(blueprint_retrieve)
 app.register_blueprint(blueprint_submit_raw)
 app.register_blueprint(blueprint_submit_quick)
+app.register_blueprint(blueprint_submit_example)
+app.register_blueprint(blueprint_example_inputs)
+app.register_blueprint(blueprint_dataset)
+app.register_blueprint(blueprint_submit_domain)
 app.register_blueprint(blueprint_annotate_data)
 app.register_blueprint(blueprint_check_smiles)
 app.register_blueprint(blueprint_check_domain_name)
@@ -29,6 +38,8 @@ app.register_blueprint(blueprint_get_substrates)
 app.register_blueprint(blueprint_submit_annotations)
 app.register_blueprint(blueprint_check_protein_name)
 app.register_blueprint(blueprint_sql)
+app.register_blueprint(blueprint_network)
+app.register_blueprint(blueprint_compare)
 
 
 @app.errorhandler(404)

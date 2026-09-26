@@ -1,7 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-DATABASE_URL = "sqlite:///parasect.db"
+from .constants import DB_PATH
+
+# Absolute path: the URL used to be a bare "sqlite:///parasect.db", resolved
+# against the process's working directory, which only worked because a second
+# copy of the database was baked into /app alongside the packaged one.
+DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 engine = create_engine(
     DATABASE_URL,

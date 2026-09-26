@@ -52,16 +52,20 @@ const SettingsModal = ({
     return (
         <Modal open={openSettingsModal} onClose={handleCloseSettingsModal}>
             <Box
-                width={800}
-                bgcolor='white.main'
+                sx={{
+                    width: { xs: '92vw', sm: 500, md: 800 },
+                    maxHeight: '88vh',
+                    overflowY: 'auto',
+                }}
+                bgcolor='background.paper'
                 mx='auto'
-                my={10}
+                my={{ xs: 4, sm: 10 }}
                 borderRadius={4}
                 boxShadow={3}
             >
                 <Box
                     sx={{
-                        backgroundColor: 'secondary.main',
+                        backgroundColor: 'accent.main',
                         borderTopLeftRadius: '14px',
                         borderTopRightRadius: '14px',
                         display: 'flex',
@@ -74,7 +78,7 @@ const SettingsModal = ({
                         variant='h5' 
                         gutterBottom
                         sx={{ 
-                            color: 'black.main', 
+                            color: 'accent.contrastText',
                             textAlign: 'center',
                             pl: 2,
                             pt: 2, 
@@ -82,7 +86,7 @@ const SettingsModal = ({
                     >
                         Settings
                     </Typography>
-                    <IconButton onClick={handleCloseSettingsModal}>
+                    <IconButton onClick={handleCloseSettingsModal} sx={{ color: 'accent.contrastText' }}>
                         <MdClose size={24} />
                     </IconButton>
                 </Box>
@@ -132,10 +136,10 @@ const SettingsModal = ({
                             <Typography 
                                 variant='body1' 
                                 gutterBottom
-                                style={{
+                                sx={{
                                     color: (selectedModel !== 'parasect' || selectedModel !== 'parasectBacterial')
-                                        ? 'rgba(0, 0, 0, 0.26)'
-                                        : 'rgba(0, 0, 0, 0.87)'
+                                        ? 'text.disabled'
+                                        : 'text.primary'
                                 }}
                             >
                                 Upload custom list of substrates (TSV format as 'name\tSMILES' per line):

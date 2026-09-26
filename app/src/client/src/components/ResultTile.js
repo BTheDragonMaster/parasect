@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Box, Button, MenuItem, Select, FormControl } from '@mui/material';
-import { FaFingerprint, FaCopy } from 'react-icons/fa';
+import { FaFingerprint, FaCopy, FaProjectDiagram } from 'react-icons/fa';
+
+import { SIGNATURE_LENGTH } from './DistanceBadge';
 
 import SmileDrawerContainer from './SmilesDrawer';
 
@@ -14,6 +17,17 @@ import SmileDrawerContainer from './SmilesDrawer';
  */
 const ResultTile = ({ result }) => {
     const [selectedPrediction, setSelectedPrediction] = useState(result['predictions'][0]);
+    const navigate = useNavigate();
+    const extendedSignature = result['domain_extended_signature'];
+
+    // same naming as the reference domains, e.g. "Q04747.3.A2"
+    const showInNetwork = () => {
+        const params = new URLSearchParams({
+            signature: extendedSignature,
+            name: `${result['domain_name']}.A${result['domain_nr']}`,
+        });
+        navigate(`/network?${params}`);
+    };
     
     return (
         <Box
@@ -21,15 +35,19 @@ const ResultTile = ({ result }) => {
                 minWidth: '350px',
                 maxWidth: '350px',
                 borderRadius: '11px',
-                boxShadow: '0px 4px 10px rgba(100, 84, 31, 0.5)',
+                backgroundColor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
+                boxShadow: 2,
+                overflow: 'hidden',
             }}
         >
 
             {/* header with domain name and location */}
             <Box
                 sx={{
-                    backgroundColor: 'secondary.main',
-                    color: 'black.main',
+                    backgroundColor: 'accent.main',
+                    color: 'accent.contrastText',
                     padding: '14px 8px',
                     display: 'flex',
                     marginBottom: 1,
@@ -132,7 +150,7 @@ const ResultTile = ({ result }) => {
                         }}
                         disabled={result['domain_sequence'].length === 0}
                     >
-                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
+                        <FaCopy style={{ marginRight: '5px', fill: 'currentColor' }} />
                         Sequence
                     </Button>
                     <Button
@@ -150,7 +168,7 @@ const ResultTile = ({ result }) => {
                         }}
                         disabled={result['domain_signature'].length === 0}
                     >
-                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
+                        <FaCopy style={{ marginRight: '5px', fill: 'currentColor' }} />
                         Signature
                     </Button>
                 </Box>
@@ -173,11 +191,11 @@ const ResultTile = ({ result }) => {
                             flexGrow: 1, 
                             width: '50%', 
                             borderRadius: '0',
-                            borderBottomLeftRadius: '10px',
+                            borderBottom: '1px solid white',
                         }}
                         disabled={selectedPrediction['substrate_smiles'].length === 0}
                     >
-                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
+                        <FaCopy style={{ marginRight: '5px', fill: 'currentColor' }} />
                         SMILES
                     </Button>
                     <Button
@@ -191,14 +209,29 @@ const ResultTile = ({ result }) => {
                             flexGrow: 1, 
                             width: '50%',
                             borderRadius: '0',
-                            borderBottomRightRadius: '10px',
+                            borderBottom: '1px solid white',
                         }}
                         disabled={result['domain_extended_signature'].length === 0}
                     >
-                        <FaCopy style={{ marginRight: '5px', fill: 'white' }} />
+                        <FaCopy style={{ marginRight: '5px', fill: 'currentColor' }} />
                         Ext. signature
                     </Button>
                 </Box>
+                <Button
+                    variant='contained'
+                    color='primary'
+                    fullWidth
+                    onClick={showInNetwork}
+                    sx={{
+                        borderRadius: '0',
+                        borderBottomLeftRadius: '10px',
+                        borderBottomRightRadius: '10px',
+                    }}
+                    disabled={extendedSignature.length !== SIGNATURE_LENGTH}
+                >
+                    <FaProjectDiagram style={{ marginRight: '5px', fill: 'currentColor' }} />
+                    Show in network
+                </Button>
             </Box>
 
         </Box>

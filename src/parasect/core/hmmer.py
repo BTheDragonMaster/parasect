@@ -14,6 +14,32 @@ from parasect.core.parsing import parse_fasta_file
 from parasect.core.hit import HmmHit, DomainType
 
 
+def _check_hmmer_exit(
+    result: "subprocess.CompletedProcess", tool: str, hmm_dir: str
+) -> None:
+    """Raise if a HMMER run failed, quoting what HMMER wrote to stderr.
+
+    A failed run writes nothing to its output file, which parses as zero hits and
+    surfaces to the user as "no adenylation domains found". This is a plausible-looking
+    biological answer to what is really a broken install (a missing HMM profile,
+    or .hmm files that were never hmmpress-ed). Fail loudly instead.
+
+    :param result: Completed HMMER process.
+    :param tool: Name of the HMMER tool that was run.
+    :param hmm_dir: Path to the HMM database the tool was pointed at.
+    :raises RuntimeError: If the HMMER run exited non-zero.
+    """
+    if result.returncode == 0:
+        return
+
+    detail = (result.stderr or "").strip().splitlines()
+    msg = detail[0] if detail else "no error output"
+    if not os.path.exists(hmm_dir):
+        msg = f"{msg} (HMM file {hmm_dir} does not exist)"
+
+    raise RuntimeError(f"{tool} failed with exit code {result.returncode}: {msg}")
+
+
 def run_hmmscan(hmm_dir, fasta_file, hmm_out):
     """
     Run hmmscan from command line
@@ -27,7 +53,9 @@ def run_hmmscan(hmm_dir, fasta_file, hmm_out):
 
     with open(hmm_out, 'w') as out:
         command = ['hmmscan', hmm_dir, fasta_file]
-        subprocess.call(command, stdout=out)
+        result = subprocess.run(command, stdout=out, stderr=subprocess.PIPE, text=True)
+
+    _check_hmmer_exit(result, 'hmmscan', hmm_dir)
 
 
 def run_hmmpfam2(hmm_dir: str, fasta_file: str, hmm_out: str) -> None:
@@ -42,7 +70,9 @@ def run_hmmpfam2(hmm_dir: str, fasta_file: str, hmm_out: str) -> None:
     """
     with open(hmm_out, "w") as out:
         command = ["hmmpfam2", hmm_dir, fasta_file]
-        subprocess.call(command, stdout=out)
+        result = subprocess.run(command, stdout=out, stderr=subprocess.PIPE, text=True)
+
+    _check_hmmer_exit(result, "hmmpfam2", hmm_dir)
 
 
 def parse_hmm_results(path_in: str, hmmer_version: int = 2) -> list[HmmHit]:

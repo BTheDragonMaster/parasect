@@ -1,7 +1,118 @@
 # See https://setuptools.readthedocs.io/en/latest/build_meta.html
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta:__legacy__"
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "paras"
+dynamic = ["version"]
+description = "Predictive algorithm for resolving A-domain specificity featurising enzyme and compound in tandem."
+readme = "README.md"
+license = { file = "LICENSE.txt" }
+requires-python = ">=3.9"
+authors = [
+    { name = "Barbara Terlouw", email = "barbara.terlouw@wur.nl" },
+]
+maintainers = [
+    { name = "David Meijer", email = "david.meijer@wur.nl" },
+]
+keywords = [
+    "paras",
+    "parasect",
+    "non-ribosomal peptide",
+    "substrate specificity",
+    "prediction",
+]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Operating System :: OS Independent",
+    "Framework :: Pytest",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = [
+    "scipy",
+    "biopython",
+    "joblib",
+    "pikachu-chem",
+    # Ceiling: prediction quality degrades above 1.8.0.
+    # Floor: scikit-learn 1.3 added a field to the decision-tree node dtype, so
+    # anything older cannot unpickle the published models at all. Model dies with
+    # "node array from the pickle has an incompatible dtype". Without a floor
+    # this range silently allows those versions. 1.6 is the oldest that has been
+    # verified against the current models, and is reachable on Python 3.9, so
+    # this does not force anyone off it (1.8.0 itself needs Python >= 3.11).
+    "scikit-learn>=1.6,<=1.8.0",
+    "ncbi-acc-download>=0.2.5",
+    "sqlalchemy",
+    "iterative-stratification",
+    "imblearn",
+    "pandas",
+    "seaborn",
+]
+
+[project.urls]
+Homepage = "https://github.com/BTheDragonMaster/parasect"
+Repository = "https://github.com/BTheDragonMaster/parasect"
+
+[project.scripts]
+parasect = "parasect.cli_parasect:main"
+paras = "parasect.cli_paras:main"
+
+[project.optional-dependencies]
+tests = [
+    "coverage",
+    "pytest",
+]
+dev = [
+    "black[jupyter]",
+    "isort",
+    "flake8",
+    "flake8-black",
+    "flake8-bandit",
+    "flake8-bugbear",
+    "flake8-docstrings",
+    "flake8-isort",
+    "flake8-print",
+    "pep8-naming",
+    "darglint",
+    "mypy",
+    "docstr-coverage",
+]
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = { attr = "parasect.version.VERSION" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"parasect.data" = [
+    "*.txt",
+    "*.hmm",
+    "*.hmm.*",
+    # The HMM profiles live in a subdirectory, which the globs above do not
+    # reach: they only match files directly inside parasect/data/. Without this
+    # line the profiles are missing from an installed package, both hmmpfam2 and
+    # hmmscan fail, and every prediction ends in "no adenylation domains found".
+    # The pressed HMMER3 aux files (.h3f/.h3i/.h3m/.h3p) must come along too, or
+    # hmmscan exits with "use hmmpress first".
+    "hmm/*",
+    "*.tsv",
+    "*.fasta",
+    "database_files/*.tsv",
+    "included_substrates/*.txt",
+    "train_domains/*.txt",
+    "parasect.db",
+]
 
 [tool.black]
 line-length = 100
@@ -13,3 +124,25 @@ multi_line_output = 3
 line_length = 100
 include_trailing_comma = true
 reverse_relative = true
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+
+[tool.doc8]
+max-line-length = 120
+
+[tool.coverage.run]
+relative_files = true
+source = ["parasect"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+precision = 1
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+]

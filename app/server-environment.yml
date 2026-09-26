@@ -3,8 +3,12 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  # Python runtime
-  - python=3.9
+  # Python 3.11, not 3.9: scikit-learn 1.8.0 requires Python >= 3.11, so on 3.9 the
+  # "scikit-learn<=1.8.0" ceiling in pyproject.toml is unreachable and pip
+  # quietly settles for 1.6.1 instead. The published models are pickled under
+  # 1.8.0, so 3.9 meant the server was always reading them forward a version.
+  # This also matches what CI tests against (.github/workflows/tests.yml).
+  - python=3.11
 
   # Bio tools (from bioconda)
   - hmmer             # HMMER v3 (hmmsearch, hmmscan, hmmpress, etc.)

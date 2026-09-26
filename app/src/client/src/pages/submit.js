@@ -1,15 +1,39 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { Box, Button, Divider, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, CircularProgress, Typography, Input } from '@mui/material';
-import { MdSettings, MdBugReport } from 'react-icons/md';
+import { MdSettings } from 'react-icons/md';
 
+import ExampleInputPicker from '../components/ExampleInputPicker';
 import SettingsModal from '../components/SettingsModal';
 
-const exampleFastaInput = '>dptA\nMDMQSQRLGVTAAQQSVWLAGQLADDHRLYHCAAYLSLTGSIDPRTLGTAVRRTLDETEALRTRFVPQDGELLQILEPGAGQLLLEADFSGDPDPERAAHDWMHAALAAPVRLDRAGTATHALLTLGPSRHLLYFGYHHIALDGYGALLHLRRLAHVYTALSNGDDPGPCPFGPLAGVLTEEAAYRDSDNHRRDGEFWTRSLAGADEAPGLSEREAGALAVPLRRTVELSGERTEKLAASAAATGARWSSLLVAATAAFVRRHAAADDTVIGLPVTARLTGPALRTPCMLANDVPLRLDARLDAPFAALLADTTRAVGTLARHQRFRGEELHRNLGGVGRTAGLARVTVNVLAYVDNIRFGDCRAVVHELSSGPVRDFHINSYGTPGTPDGVQLVFSGNPALYTATDLADHQERFLRFLDAVTADPDLPTGRHRLLSPGTRARLLDDSRGTERPVPRATLPELFAEQARRTPDAPAVQHDGTVLTYRDLHRSVERAAGRLAGLGLRTEDVVALALPKSAESVAILLGIQRAGAAYVPLDPTHPAERLARVLDDTRPRYLVTTGHIDGLSHPTPQLAAADLLREGGPEPAPGRPAPGNAAYIIQTSGSTGRPKGVVVTHEGLATLAADQIRRYRTGPDARVLQFISPGFDVFVSELSMTLLSGGCLVIPPDGLTGRHLADFLAAEAVTTTSLTPGALATMPATDLPHLRTLIVGGEVCPPEIFDQWGRGRDIVNAYGPTETTVEATAWHRDGATHGPVPLGRPTLNRRGYVLDPALEPVPDGTTGELYLAGEGLARGYVAAPGPTAERFVADPFGPPGSRMYRTGDLVRRRSGGMLEFVGRADGQVKLRGFRIELGEVQAALTALPGVRQAGVLIREDRPGDPRLVGYIVPAPGAEPDAGELRAALARTLPPHMVPWALVPLPALPLTSNGKLDRAALPVPAARAGGSGQRPVTPQEKTLCALFADVLGVTEVATDDVFFELGGHSLNGTRLLARIRTEFGTDLTLRDLFAFPTVAGLLPLLDDNGRQHTTPPLPPRPERLPLSHAQQRLWFLDQVEGPSPAYNIPTAVRLEGPLDIPALAVALQDVTNRHEPLRTLLAEDSEGPHQVILPPEAARPELTHSTVAPGDLAAALAEAARRPFDLAGEIPLKAHLFGCGPDDHTLLLLVHHTAGDGASVEVLVRDLAHAYGARRAGDAPHFEPLPLQYADHTLRRRHLLDDPSDSTQLDHWRDALAGLPEQLELPTDHTRPAVPTRRGEAIAFTVPEHTHHTLRAMAQAHGVTVFMVMQAALAALLSRHGAGHDIPLGTPVAGRSDDGTEDLVGFFVNTLVLRNDVSGDPTFAELVSRVRAANLDAYAYQDVPFERLVDVLKPERSLSWHPLFQIMIAYNGPATNDTADGSRFAGLTSRVHAVHTGMSKFDLSFFLTEHADGLGIDGALEFSTDLFTRITAERLVQRYLTVLEQAAGAPDRPISSYELLGDDERALLAQWNDTAHPTPPGTVLDLLESRAARTPDRPAVVENDHVLTYADLHTRANRLARHLITAHGVGPERLVAVALPRSAELLVALLAVLKTGAAYVPLDLTHPAERTAVVLDDCRPAVILTDAGAARELPRRDIPQLRLDEPEVHAAIAEQPGGPVTDRDRTCVTPVSGEHVAYVIYTSGSTGRPKGVAVEHRSLADFVRYSVTAYPGAFDVTLLHSPVTFDLTVTSLFPPLVVGGAIHVADLTEACPPSLAAAGGPTFVKATPSHLPLLTHEATWAASAKVLLVGGEQLLGRELDKWRAGSPEAVVFNDYGPTEATVNCVDFRIDPGQPIGAGPVAIGRPLRNTRVFVLDGGLRAVPVGVVGELHVAGEGLARGYLGQPGLTAERFVACPFGDAGERMYRTGDLVRWRADGMLEFVGRVDDQVKVRGFRIELGEVEAAVAACPGVDRSVVVVREDRPGDRRLVAYVTAAGDEAEGLAPLIVETAAGRLPGYMVPSAVVVLDEIPLTPNGKVDRAALPAPRVAPAAEFRVTGSPREEALCALFAEVLGVERVGVDDGFFDLGGDSILSIQLVARARRAGLEVSVRDVFEHRTVRALAGVVRESGGVAAAVVDSGVGAVERWPVVEWLAERGGGGLGGAVRAFNQSVVVATPAGITWDELRTVLDAVRERHDAWRLRVVDSGDGAWSLRVDAPAPGGEPDWITRHGMASADLEEQVNAVRAAAVEARSRLDPLTGRMVRAVWLDRGPDRRGVLVLVAHHLVVDGVSWRIVLGDLGEAWTQARAGGHVRLDTVGTSLRGWAAALAEQGRHGARATEANLWAQMVHGSDPLVGPRAVDPSVDVFGVVESVGSRASVGVSRALLTEVPSVLGVGVQEVLLAAFGLAVTRWRGRGGSVVVDVEGHGRNEDAVPGADLSRTVGWFTSIYPVRLPLEPAAWDEIRAGGPAVGRTVREIKECLRTLPDQGLGYGILRYLDPENGPALAQHPTPHFGFNYLGRVSVSADAASLDEGDAHADGLGGLVGGRAAADSDEEQWADWVPVSGPFAVGAGQDPVLPVAHAVEFNAITLDTPDGPRLSVTWSWPTTLLSESRIRELARFWDEALEGLVAHARRPDAGGLTPSDLPLVALDHAELEALQADVTGGVHDILPVSPLQEGLLFHSSFAADGVDVYVGQLTFDLTGPVDADHLHAVVESLVTRHDVLRTGYRQAQSGEWIAVVARQVHTPWQYIHTLDTDADTLTNDERWRPFDMTQGPLARFTLARINDTHFRFIVTYHHVILDGWSVAVLIRELFTTYRDTALGRRPEVPYSPPRRDFMAWLAERDQTAAGQAWRSALAGLAEPTVLALGTEGSGVIPEVLEEEISEELTSELVAWARGRGVTVASVVQAAWALVLGRLVGRDDVVFGLTVSGRPAEVAGVEDMVGLFVNTIPLRARMDPAESLGAFVERLQREQTELLEHQHVRLAEVQRWAGHKELFDVGMVFENYPMDSLLQDSLFHGSGLQIDGIQGADATHFALNLAVVPLPAMRFRLGYRPDVFDAGRVRELWGWIVRALECVVCERDVPVSGVDVLGAGERETLLGWGAGAEPGVRALPGAGAGAGAGLVGLFEERVRTDPDAVAVRGAGVEWSYAELNARANAVARWLIGRGVGPERGVGVVMDRGPDVVAMLLAVAKSGGFYLPVDPQWPTERIDWVLADAGIDLAVVGENLAAAVEAVRDCEVVDYAQIARETRLNEQAATDAGDVTDGERVSALLSGHPLYVIYTSGSTGLPKGVVVTHASVGAYLRRGRNAYRGAADGLGHVHSSLAFDLTVTVLFTPLVSGGCVTLGDLDDTANGLGATFLKATPSHLPLLGQLDRVLAPDATLLLGGEALTAGALHHWRTHHPHTTVINAYGPTELTVNCAEYRIPPGHCLPDGPVPIGRPFTGHHLFVLDPALRLTPPDTIGELYVAGDGLARGYLGRPDLTAERFVACPFRSPGERMYRTGDLARWRSDGTLEFIGRADDQVKIRGFRIELGEVEAAVAAHPHVARAIAVVREDRPGDQRLVAYVTGSDPSGLSSAVTDTVAGRLPAYMVPSAVVVLDQIPLTPNGKVDRAALPAPGTASGTTSRAPGTAREEILCTLFADVLGLDQVGVDEDFFDLGGHSLLATRLTSRIRSALGIDLGVRALFKAPTVGRLDQLLQQQTTSLRAPLVARERTGCEPLSFAQQRLWFLHQLEGPNAAYNIPMALRLTGRLDLTALEAALTDVIARHESLRTVIAQDDSGGVWQNILPTDDTRTHLTLDTMPVDAHTLQNRVDEAARHPFDLTTEIPLRATVFRVTDDEHVLLLVLHHIAGDGWSMAPLAHDLSAAYTVRLEHHAPQLPALAVQYADYAAWQRDVLGTENNTSSQLSTQLDYWYSKLEGLPAELTLPTSRVRPAVASHACDRVEFTVPHDVHQGLTALARTQGATVFMVVQAALAALLSRLGAGTDIPIGTPIAGRTDQAMENLIGLFVNTLVLRTDVSGDPTFAELLARVRTTALDAYAHQDIPFERLVEAINPERSLTRHPLFQVMLAFNNTDRRSALDALDAMPGLHARPADVLAVTSPYDLAFSFVETPGSTEMPGILDYATDLFDRSTAEAMTERLVRLLAEIARRPELSVGDIGILSADEVKALSPEAPPAAEELHTSTLPELFEEQVAARGHAVAVVCEGEELSYKELNARANRLARVLMERGAGPERFVGVALPRGLDLIVALLAVTKTGAAYVPLDPEYPTDRLAYMVTDANPTAVVTSTDVHIPLIAPRIELDDEAIRTELAAAPDTAPCVGSGPAHPAYVIYTSGSTGRPKGVVISHANVVRLFTACSDSFDFGPDHVWTLFHSYAFDFSVWEIWGALLHGGRLVVVPFEVTRSPAEFLALLAEQQVTLLSQTPSAFHQLTEAARQEPARCAGLALRHVVFGGEALDPSRLRDWFDLPLGSRPTLVNMYGITETTVHVTVLPLEDRATSLSGSPIGRPLADLQVYVLDERLRPVPPGTVGEMYVAGAGLARGYLGRPALTAERFVADPNSRSGGRLYRTGDLAKVRPDGGLEYVGRGDRQVKIRGFRIELGEIEAALVTHAGVVQAVVLVRDEQTDDQRLVAHVVPALPHRAPTLAELHEHLAATLPAYMVPSAYRTLDELPLTANGKLDRAALAGQWQGGTRTRRLPRTPQEEILCELFADVLRLPAAGADDDFFALGGHSLLATRLLSAVRGTLGVELGIRDLFAAPTPAGLATVLAASGTALPPVTRIDRRPERLPLSFAQRRLWFLSKLEGPSATYNIPVAVRLTGALDVPALRAALGDVTARHESLRTVFPDDGGEPRQLVLPHAEPPFLTHEVTVGEVAEQAASATGYAFDITSDTPLRATLLRVSPEEHVLVVVIHHIAGDGWSMGPLVRDLVTAYRARTRGDAPEYTPLPVQYADYALWQHAVAGDEDAPDGRTARRLGYWREMLAGLPEEHTLPADRPRPVRSSHRGGRVRFELPAGVHRSLLAVARDRRATLFMVVQAALAGLLSRLGAGDDIPIGTPVAGRGDEALDDVVGFFVNTLVLRTNLAGDPSFADLVDRVRTADLDAFAHQDVPFERLVEALAPRRSLARHPLFQIWYTLTNADQDITGQALNALPGLTGDEYPLGASAAKFDLSFTFTEHRTPDGDAAGLSVLLDYSSDLYDHGTAAALGHRLTGFFAALAADPTAPLGTVPLLTDDERDRILGDWGSGTHTPLPPRSVAEQIVRRAALDPDAVAVITAEEELSYRELERLSGETARLLADRGIGRESLVAVALPRTAGLVTTLLGVLRTGAAYLPLDTGYPAERLAHVLSDARPDLVLTHAGLAGRLPAGLAPTVLVDEPQPPAAAAPAVPTSPSGDHLAYVIHTSGSTGRPKGVAIAESSLRAFLADAVRRHDLTPHDRLLAVTTVGFDIAGLELFAPLLAGAAIVLADEDAVRDPASITSLCARHHVTVVQATPSWWRAMLDGAPADAAARLEHVRILVGGEPLPADLARVLTATGAAVTNVYGPTEATIWATAAPLTAGDDRTPGIGTPLDNWRVHILDAALGPVPPGVPGEIHIAGSGLARGYLRRPDLTAERFVANPFAPGERMYRTGDLGRFRPDGTLEHLGRVDDQVKVRGFRIELGDVEAALARHPDVGRAAAAVRPDHRGQGRLVAYVVPRPGTRGPDAGELRETVRELLPDYMVPSAQVTLTTLPHTPNGKLDRAALPAPVFGTPAGRAPATREEKILAGLFADILGLPDVGADSGFFDLGGDSVLSIQLVSRARREGLHITVRDVFEHGTVGALAAAALPAPADDADDTVPGTDVLPSISDDEFEEFELELGLEGEEEQW';
+const gbkExtensions = ['.gbk', '.gb', '.gbff', '.genbank'];
+const fastaExtensions = ['.fasta', '.fa', '.faa'];
+
+/**
+ * Detect whether input is FASTA or GBK, from its content or else its file name.
+ *
+ * The backend parses input strictly as the selected type, so a GBK parsed as
+ * FASTA yields no sequences and fails deep inside HMMER.
+ *
+ * @param {string} content - The input text.
+ * @param {string} [fileName] - The name of the uploaded file, if any.
+ * @returns {string|null} - 'fasta', 'gbk', or null if undetermined.
+ */
+const detectInputType = (content, fileName = '') => {
+    const start = content.trimStart();
+    if (start.startsWith('LOCUS')) return 'gbk';
+    if (start.startsWith('>')) return 'fasta';
+
+    const name = fileName.toLowerCase();
+    if (gbkExtensions.some((ext) => name.endsWith(ext))) return 'gbk';
+    if (fastaExtensions.some((ext) => name.endsWith(ext))) return 'fasta';
+
+    return null;
+};
 
 /**
  * Component to submit data to the server.
- * 
+ *
  * @param {Object} props - The props of the component.
  * @param {string} props.imageSrc - The path to the image.
  * @param {string} props.label - The label for the radio button.
@@ -21,7 +45,7 @@ const RadioLabel = ({ imageSrc, label }) => (
             component="img"
             src={imageSrc}
             alt=""
-            sx={{ width: 40, height: 40, marginRight: 1 }}
+            sx={{ width: 40, height: 40, marginRight: 1, borderRadius: '6px' }}
         />
         <Typography variant="body1">{label}</Typography>
     </Box>
@@ -41,6 +65,8 @@ const Submit = () => {
     const [inputMethod, setInputMethod] = useState('upload'); // 'paste' or 'upload'
     const [selectedInputType, setSelectedInputType] = useState('fasta'); // fasta or gbk
     const [selectedInput, setSelectedInput] = useState('');
+    const [loadedExampleFileName, setLoadedExampleFileName] = useState(null);
+    const fileInputRef = useRef(null);
 
     // options
     const [selectedModel, setSelectedModel] = useState('parasAllSubstrates'); // parasAllSubstrates, parasCommonSubstrates, or parasect
@@ -58,10 +84,12 @@ const Submit = () => {
     const handleOpenSettingsModal = () => setOpenSettingsModal(true);
     const handleCloseSettingsModal = () => setOpenSettingsModal(false);
 
-    // load example input
-    function handleLoadExample() {
-        setSelectedInputType('fasta');
-        setSelectedInput(exampleFastaInput);
+    // load an example picked from the menu
+    function handleLoadExample(example) {
+        setSelectedInputType(example.inputType);
+        setSelectedInput(example.content);
+        setLoadedExampleFileName(example.fileName);
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     // refresh the page
@@ -77,10 +105,15 @@ const Submit = () => {
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (file) {
+            setLoadedExampleFileName(null);
             const reader = new FileReader();
             reader.onload = function (event) {
                 const fileContent = event.target.result;
                 setSelectedInput(fileContent); // set the file content into selectedInput
+
+                // match the input type to the file, so a GBK isn't parsed as FASTA
+                const detectedType = detectInputType(fileContent, file.name);
+                if (detectedType) setSelectedInputType(detectedType);
             };
             reader.readAsText(file);
         };
@@ -131,11 +164,11 @@ const Submit = () => {
 
     return (
         <>
-            <Box 
-                display='flex' 
-                flexDirection='column' 
-                alignItems='left' 
-                padding={4} 
+            <Box
+                display='flex'
+                flexDirection='column'
+                alignItems='left'
+                sx={{ px: { xs: 2, sm: 4 }, py: 4, maxWidth: 840, width: '100%' }}
                 margin='auto'
             >
                 <Typography variant='h4' gutterBottom>
@@ -179,7 +212,12 @@ const Submit = () => {
                             fullWidth
                             variant='outlined'
                             value={selectedInput}
-                            onChange={(e) => setSelectedInput(e.target.value)}
+                            onChange={(e) => {
+                                setSelectedInput(e.target.value);
+                                setLoadedExampleFileName(null);
+                                const detectedType = detectInputType(e.target.value);
+                                if (detectedType) setSelectedInputType(detectedType);
+                            }}
                             margin='normal'
                             placeholder='Paste your sequence here'
                         />
@@ -190,23 +228,20 @@ const Submit = () => {
                             </Typography>
                             <Input
                                 type='file'
-                                inputProps={{ accept: '.fasta,.fa,.gbk' }} // accept FASTA or GBK files
+                                inputProps={{ accept: [...fastaExtensions, ...gbkExtensions].join(',') }} // accept FASTA or GBK files
                                 onChange={handleFileUpload}
+                                inputRef={fileInputRef}
                             />
+                            {loadedExampleFileName && (
+                                <Typography variant='body2' color='textSecondary' sx={{ mt: 1 }}>
+                                    Using example file: <b>{loadedExampleFileName}</b>
+                                </Typography>
+                            )}
                         </Box>
                     )}
 
                     {/* load example button */}
-                    {inputMethod === 'paste' && (
-                        <Button
-                            ariant='text' 
-                            color='primary' 
-                            onClick={handleLoadExample}
-                            disabled={selectedInputType === 'gbk'}
-                        >
-                            Load example input
-                        </Button>
-                    )}
+                    <ExampleInputPicker onLoad={handleLoadExample} />
                 </Box>
 
                 {/* model selection */}
@@ -257,11 +292,11 @@ const Submit = () => {
                 </FormControl>
 
                 {/* settings, submit, and refresh buttons */}
-                <Box mt={4} display='flex' justifyContent='left' width='100%' gap={2}>
+                <Box mt={4} display='flex' flexWrap='wrap' justifyContent='left' width='100%' gap={2}>
                     <Button
                         variant='contained'
                         color='primary'
-                        startIcon={<MdSettings size={20} style={{ fill: 'white' }}/>}
+                        startIcon={<MdSettings size={20} style={{ fill: 'currentColor' }}/>}
                         onClick={handleOpenSettingsModal}
                     >
                         Settings

@@ -75,6 +75,11 @@ class Result:
             domain_sequence=self.domain.sequence,
             domain_signature=self.domain.signature,
             domain_extended_signature=self.domain.extended_signature,
+            # position of the parent gene along the input DNA, e.g. from a GenBank
+            # file; None when the domain wasn't extracted from a source that
+            # carries genomic coordinates (plain FASTA/protein input, or a
+            # signature submitted directly)
+            domain_genomic_position=self.domain.genomic_position,
             predictions=[
                 dict(substrate_name=sub_name, substrate_smiles=sub_smiles, probability=prob)
                 for sub_name, sub_smiles, prob in zip(
