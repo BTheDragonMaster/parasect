@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Box, IconButton, Divider, Typography, Button, Modal, Tooltip, TextField, Stack, Chip, CircularProgress, Link } from '@mui/material';
@@ -534,24 +534,23 @@ const AnnotationEditor = () => {
     };
 
     // For collecting protein annotations
+    const handleProteinAnnotationChange = useCallback((proteinId, data) => {
+        setProteinAnnotations((prev) => {
+            const updated = { ...prev };
 
-    const handleProteinAnnotationChange = (proteinId, data) => {
-    setProteinAnnotations((prev) => {
-        const updated = { ...prev };
+            // Check if domains object exists and has keys
+            const hasDomainAnnotations = data.domains && Object.keys(data.domains).length > 0;
 
-        // Check if domains object exists and has keys
-        const hasDomainAnnotations = data.domains && Object.keys(data.domains).length > 0;
+            if (data && hasDomainAnnotations) {
+                updated[proteinId] = data;
+            } else {
+                // Remove if no domain annotations (ignore synonym)
+                delete updated[proteinId];
+            }
 
-        if (data && hasDomainAnnotations) {
-            updated[proteinId] = data;
-        } else {
-            // Remove if no domain annotations (ignore synonym)
-            delete updated[proteinId];
-        }
-
-        return updated;
-    });
-};
+            return updated;
+        });
+    }, []);
 
     const OpenAnnotationsSubmissionsModal = () => {
         setOpenAnnotationsSubmissionModal(true);

@@ -2,7 +2,8 @@ import React, {useState, useEffect, useMemo} from 'react';
 import {
     ExpandMore,
     ExpandLess,
-    CheckCircle
+    CheckCircle,
+    Block
 } from '@mui/icons-material';
 
 import {
@@ -28,9 +29,11 @@ import SmilesChecker from './SmilesChecker';
  *
  * @param {Object} props - The component props.
  * @param {Object} props.result - The result object.
+ * @param {boolean} props.excluded - Whether the domain is excluded from the submission.
+ * @param {Function} props.onExcludedChange - Called with the new excluded state.
  * @returns {React.ReactElement} - The result tile component.
  */
-const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => {
+const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange, excluded = false, onExcludedChange}) => {
     const [expanded, setExpanded] = useState(false);  // Start expanded
     const toggleExpanded = () => setExpanded(prev => !prev);
     const [nameWarnings, setNameWarnings] = useState({});
@@ -247,6 +250,12 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                 updated.substrateSmiles = value.smiles;
             }
 
+            // clearing the selection must not leave the previous substrate behind
+            if (field === 'selectedSubstrate' && value === null) {
+                updated.substrateName = '';
+                updated.substrateSmiles = '';
+            }
+
             newSubs[index] = updated;
 
             recalculateAnnotationType(newSubs);
@@ -397,7 +406,23 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                     {expanded ? <ExpandLess/> : <ExpandMore/>}
                 </IconButton> */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {isAnnotated && (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        size="small"
+                        checked={excluded}
+                        onChange={(e) => onExcludedChange?.(e.target.checked)}
+                        sx={{ color: 'inherit', '&.Mui-checked': { color: 'inherit' } }}
+                      />
+                    }
+                    label="Exclude"
+                    sx={{ m: 0, whiteSpace: 'nowrap' }}
+                  />
+                  {excluded ? (
+                    <Tooltip title="Excluded from submission" arrow>
+                      <Block fontSize="small" aria-label="Excluded from submission" />
+                    </Tooltip>
+                  ) : isAnnotated && (
                     <Tooltip title="Annotated" arrow>
                       <CheckCircle
                         fontSize="small"
@@ -412,9 +437,21 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                 </Box>
             </Box>
 
-            {/* Collapsible content */}
+            {/* Collapsible content; kept visible but inert while excluded */}
             <Collapse in={expanded}>
-                <Box sx={{padding: 2}}>
+                {excluded && (
+                    <Typography sx={{px: 2, pt: 2, color: 'text.secondary', fontStyle: 'italic'}}>
+                        This domain is excluded from the submission.
+                    </Typography>
+                )}
+                <Box
+                    sx={{
+                        padding: 2,
+                        opacity: excluded ? 0.5 : 1,
+                        pointerEvents: excluded ? 'none' : 'auto',
+                    }}
+                    aria-disabled={excluded}
+                >
 
                     {/* domain signature */}
                     {parasResult['domain_signature'].length > 0 && (
