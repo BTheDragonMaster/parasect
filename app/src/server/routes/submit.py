@@ -2,22 +2,28 @@
 
 """Routes for making adenylation domain subtrate specificity predictions on raw input."""
 
+from __future__ import annotations
+
 import os
 import threading
 import time
 import uuid
-from typing import Dict
 
 import joblib
 from flask import Blueprint, Response, request, redirect, jsonify
 
 from parasect.api import run_paras, run_parasect, run_paras_for_signatures
 from parasect.core.domain import AdenylationDomain
+from parasect.core.hit import DomainType
 from pikachu.general import read_smiles
+
+from fetch_models import read_manifest
 
 from .app import app
 from .common import ResponseData, Status
-from .constants import MODEL_DIR, TEMP_DIR
+from .constants import MODEL_DIR, TEMP_DIR, cleanup_job_temp_dir, job_temp_dir
+from .examples import EXAMPLE_INPUTS, read_example_input
+from .job_store import claim_job, delete_job, get_job, set_job, update_job
 from .model_loader import ModelSpec, MultiModelLoader
 
 
@@ -36,6 +42,28 @@ loader = MultiModelLoader({
 })
 
 
+
+def model_provenance(key: str) -> dict:
+    """Describe the model file behind key, for storing with a job's results.
+
+    :param key: Model key in loader.
+    :return: Key, display name, Zenodo record, archive md5 and scikit-learn version.
+    """
+    spec = loader._specs[key]
+    entry = read_manifest(MODEL_DIR).get(os.path.basename(spec.path)) or {}
+    try:
+        matches = entry.get("size") == os.path.getsize(spec.path)
+    except OSError:
+        matches = False
+    return {
+        "key": key,
+        "name": spec.name,
+        "zenodo_record": entry.get("record") if matches else None,
+        "archive_md5": entry.get("archive_md5") if matches else None,
+        "sklearn_version": entry.get("verified_sklearn") if matches else None,
+    }
+
+
 blueprint_submit_raw = Blueprint("submit_raw", __name__)
 blueprint_submit_quick = Blueprint("submit_quick", __name__)
 
@@ -49,13 +77,13 @@ blueprint_submit_quick = Blueprint("submit_quick", __name__)
 ########################################################################################################################
 
 
-def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
+def run_prediction_raw(job_id: str, data: dict[str, str]) -> None:
     """Run prediction with PARAS or PARASECT on raw data.
 
     :param job_id: Job ID.
     :type job_id: str
     :param data: Data.
-    :type data: Dict[str, str]
+    :type data: dict[str, str]
     """
     try:
         # read settings
@@ -97,6 +125,10 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
             msg = f"failed to locate temp directory: {str(e)}"
             raise Exception(msg)
 
+        # give this job its own temp subdirectory so concurrent jobs don't
+        # clobber each other's intermediate files (see job_temp_dir docstring)
+        path_temp_dir = job_temp_dir(job_id)
+
         # load model
         # return error if not successful
         try:
@@ -113,7 +145,7 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
                 results = run_paras(
                     selected_input=selected_input,
                     selected_input_type=selected_input_type,
-                    path_temp_dir=TEMP_DIR,
+                    path_temp_dir=path_temp_dir,
                     model=model,
                     use_structure_guided_alignment=use_structure_guided_alignment,
                 )
@@ -160,7 +192,7 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
                 results = run_parasect(
                     selected_input=selected_input,
                     selected_input_type=selected_input_type,
-                    path_temp_dir=TEMP_DIR,
+                    path_temp_dir=path_temp_dir,
                     model=model,
                     custom_substrate_names=custom_substrate_names,
                     custom_substrate_smiles=custom_substrate_smiles,
@@ -180,23 +212,24 @@ def run_prediction_raw(job_id: str, data: Dict[str, str]) -> None:
         del model
 
         # store results
-        new_status = str(Status.Success).lower()
-        new_message = "Successfully ran predictions!"
-        new_results = [r.to_json() for r in results]
-
-        app.config["JOB_RESULTS"][job_id]["status"] = new_status
-        app.config["JOB_RESULTS"][job_id]["message"] = new_message
-        app.config["JOB_RESULTS"][job_id]["results"] = new_results
+        update_job(
+            job_id,
+            status=str(Status.Success).lower(),
+            message="Successfully ran predictions!",
+            results=[r.to_json() for r in results],
+            model=model_provenance(selected_model),
+        )
 
     except Exception as e:
-        # store results
-        new_status = str(Status.Failure).lower()
-        new_message = str(e)
-        new_results = []
+        # Log the traceback: the job store only keeps str(e), so without this a
+        # failure leaves nothing in the container logs to debug from.
+        app.logger.exception("job %s failed: %s", job_id, e)
 
-        app.config["JOB_RESULTS"][job_id]["status"] = new_status
-        app.config["JOB_RESULTS"][job_id]["message"] = new_message
-        app.config["JOB_RESULTS"][job_id]["results"] = new_results
+        # store results
+        update_job(job_id, status=str(Status.Failure).lower(), message=str(e), results=[])
+
+    finally:
+        cleanup_job_temp_dir(job_id)
 
 
 @blueprint_submit_raw.route("/api/submit_raw", methods=["POST"])
@@ -215,12 +248,12 @@ def submit_raw() -> Response:
     current_time = int(time.time())
 
     # initialize job with status as pending
-    app.config["JOB_RESULTS"][job_id] = {
+    set_job(job_id, {
         "status": str(Status.Pending).lower(),
         "message": "Job is pending!",
         "results": [],
         "timestamp": current_time,
-    }
+    })
 
     # run prediction in a separate thread
     threading.Thread(target=run_prediction_raw, args=(job_id, data)).start()
@@ -232,19 +265,86 @@ def submit_raw() -> Response:
 ########################################################################################################################
 ########################################################################################################################
 #
+# Example job shown from the home page
+#
+########################################################################################################################
+########################################################################################################################
+
+
+# One shared job, so visitors land on finished results instead of each
+# spending a prediction run. It expires with the normal job TTL and is simply
+# recomputed by the first visitor after that (or after a model update/flush).
+EXAMPLE_JOB_ID = "example-dptA"
+EXAMPLE_JOB_INPUT = "dptA"  # key in examples.EXAMPLE_INPUTS
+EXAMPLE_STALE_PENDING_SECONDS = 30 * 60  # a pending example this old was orphaned by a killed worker
+
+
+blueprint_submit_example = Blueprint("submit_example", __name__)
+
+
+@blueprint_submit_example.route("/api/example", methods=["GET"])
+def submit_example() -> Response:
+    """Return the job ID of the example (dptA) job, starting it if needed.
+
+    :return: Response.
+    :rtype: Response
+    """
+    try:
+        job = get_job(EXAMPLE_JOB_ID)
+        current_time = int(time.time())
+
+        # throw away a failed or orphaned run so the claim below can restart it
+        if job is not None and (
+            job["status"] == str(Status.Failure).lower()
+            or (
+                job["status"] == str(Status.Pending).lower()
+                and current_time - job.get("timestamp", 0) > EXAMPLE_STALE_PENDING_SECONDS
+            )
+        ):
+            delete_job(EXAMPLE_JOB_ID)
+
+        claimed = claim_job(EXAMPLE_JOB_ID, {
+            "status": str(Status.Pending).lower(),
+            "message": "Job is pending!",
+            "results": [],
+            "timestamp": current_time,
+        })
+
+        # only the request that created the job runs it; everyone else just polls
+        if claimed:
+            data = {"data": {
+                "selectedInputType": EXAMPLE_INPUTS[EXAMPLE_JOB_INPUT]["inputType"],
+                "selectedInput": read_example_input(EXAMPLE_JOB_INPUT),
+                "selectedModel": "parasAllSubstrates",
+                "useStructureGuidedAlignment": False,
+                "smilesFileContent": "",
+                "useOnlyUploadedSubstrates": False,
+                "uploadedSubstratesFileContentHasHeader": True,
+            }}
+            threading.Thread(target=run_prediction_raw, args=(EXAMPLE_JOB_ID, data)).start()
+
+        return ResponseData(Status.Success, payload={"jobId": EXAMPLE_JOB_ID}).to_dict()
+    except Exception as e:
+        app.logger.exception("failed to start example job: %s", e)
+        return ResponseData(Status.Failure, message=str(e)).to_dict()
+
+
+########################################################################################################################
+########################################################################################################################
+#
 # Submit settings with signature parameters directly in URL
 #
 ########################################################################################################################
 ########################################################################################################################
 
 
-def run_prediction_signature(job_id: str, data: Dict[str, str]) -> None:
+def run_prediction_signature(job_id: str, data: dict[str, str]) -> None:
     """Run prediction with PARAS or PARASECT on signatures.
 
     :param job_id: Job ID.
     :type job_id: str
     :param data: Data.
-    :type data: Dict[str, str]
+    :type data: dict[str, str]
     """
     try:
         # read settings
@@ -315,6 +415,7 @@ def run_prediction_signature(job_id: str, data: Dict[str, str]) -> None:
             for s in submissions:
                 domain = AdenylationDomain(
                     protein_name=s["protein_name"],
+                    domain_type=DomainType.AMP_BINDING,
                     domain_start=s["domain_start"],
                     domain_end=s["domain_end"],
                 )
@@ -345,23 +446,21 @@ def run_prediction_signature(job_id: str, data: Dict[str, str]) -> None:
         del model
 
         # store results
-        new_status = str(Status.Success).lower()
-        new_message = "Successfully ran predictions!"
-        new_results = [r.to_json() for r in results]
-
-        app.config["JOB_RESULTS"][job_id]["status"] = new_status
-        app.config["JOB_RESULTS"][job_id]["message"] = new_message
-        app.config["JOB_RESULTS"][job_id]["results"] = new_results
+        update_job(
+            job_id,
+            status=str(Status.Success).lower(),
+            message="Successfully ran predictions!",
+            results=[r.to_json() for r in results],
+            model=model_provenance("parasAllSubstrates"),
+        )
 
     except Exception as e:
-        # store results
-        new_status = str(Status.Failure).lower()
-        new_message = str(e)
-        new_results = []
+        # Log the traceback: the job store only keeps str(e), so without this a
+        # failure leaves nothing in the container logs to debug from.
+        app.logger.exception("job %s failed: %s", job_id, e)
 
-        app.config["JOB_RESULTS"][job_id]["status"] = new_status
-        app.config["JOB_RESULTS"][job_id]["message"] = new_message
-        app.config["JOB_RESULTS"][job_id]["results"] = new_results
+        # store results
+        update_job(job_id, status=str(Status.Failure).lower(), message=str(e), results=[])
 
 
 @blueprint_submit_quick.route("/api/submit_quick", methods=["GET"])
@@ -410,31 +509,31 @@ def submit_quick() -> Response:
         )
 
         if len(data["data"]["submissions"]) == 0:
-            app.config["JOB_RESULTS"][job_id] = {
+            set_job(job_id, {
                 "status": str(Status.Failure).lower(),
                 "message": "No valid signatures provided.",
                 "results": [],
                 "timestamp": int(time.time()),
-            }
+            })
 
         else:
             # Initialize job with pending status
-            app.config["JOB_RESULTS"][job_id] = {
+            set_job(job_id, {
                 "status": str(Status.Pending).lower(),
                 "message": "Job is pending!",
                 "results": [],
                 "timestamp": int(time.time()),
-            }
+            })
 
             threading.Thread(target=run_prediction_signature, args=(job_id, data)).start()
-    
+
     except Exception as e:
-        app.config["JOB_RESULTS"][job_id] = {
+        set_job(job_id, {
             "status": str(Status.Failure).lower(),
             "message": str(e),
             "results": [],
             "timestamp": int(time.time()),
-        }
+        })
 
     if app.config["ENV"] == "production":
         results_url = f"https://paras.bioinformatics.nl/results/{job_id}"

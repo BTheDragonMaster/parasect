@@ -7,8 +7,8 @@ from typing import Dict, List, Optional, Union, Any
 
 from sklearn.ensemble import RandomForestClassifier
 
-from parasect.core.constants import FINGERPRINTS_FILE, INCLUDED_SUBSTRATES_FILE, SMILES_FILE, \
-    INCLUDED_SUBSTRATES_FILE_BACTERIAL, BACTERIAL_FINGERPRINTS_FILE
+from parasect.core.constants import FINGERPRINTS_FILE, INCLUDED_SUBSTRATES_FILE_PARASECT, SMILES_FILE, \
+    INCLUDED_SUBSTRATES_FILE_PARASECT_BACTERIAL, BACTERIAL_FINGERPRINTS_FILE
 from parasect.core.domain import AdenylationDomain
 from parasect.database.build_database import AdenylationDomain as ADomain
 from parasect.core.featurisation import get_domain_features, get_domains
@@ -211,10 +211,10 @@ def run_parasect(
     """
     # get names of included substrates
     if bacterial_only:
-        substrates_file = INCLUDED_SUBSTRATES_FILE_BACTERIAL
+        substrates_file = INCLUDED_SUBSTRATES_FILE_PARASECT_BACTERIAL
         fingerprints_file = BACTERIAL_FINGERPRINTS_FILE
     else:
-        substrates_file = INCLUDED_SUBSTRATES_FILE
+        substrates_file = INCLUDED_SUBSTRATES_FILE_PARASECT
         fingerprints_file = FINGERPRINTS_FILE
 
     included_subs = parse_substrate_list(substrates_file)

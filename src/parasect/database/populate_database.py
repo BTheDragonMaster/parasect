@@ -1,3 +1,4 @@
+import logging
 from argparse import ArgumentParser, Namespace
 import re
 import traceback
@@ -12,8 +13,8 @@ from parasect.database.build_database import AdenylationDomain, Substrate, Domai
     ProteinDomainAssociation, Taxonomy
 from parasect.database.query_database import sequences_are_equivalent
 from parasect.core.chem import smiles_to_fingerprint, is_same_molecule_fingerprint
-from parasect.core.tabular import Tabular
 
+logger = logging.getLogger(__name__)
 
 def parse_args() -> Namespace:
     """Parse arguments for populating database with new entries
@@ -104,7 +105,7 @@ def create_protein_entries(session: Session, protein_path: str) -> tuple[list[Pr
     :return: lists of protein and protein synonym database entries
     :rtype: tuple[list[Protein], list[ProteinSynonym]]
     """
-    print("Creating protein entries...")
+    logger.info("Creating protein entries...")
     protein_entries: list[Protein] = []
     protein_synonyms: list[ProteinSynonym] = []
 
@@ -157,7 +158,7 @@ def create_substrate_entries(session: Session, smiles_file: str) -> list[Substra
     :return: list of new substrates
     :rtype: list[Substrate]
     """
-    print("Creating substrate entries...")
+    logger.info("Creating substrate entries...")
 
     new_substrates: list[Substrate] = []
     substrates: list[SubstrateData] = parse_smiles_mapping(smiles_file)
@@ -201,7 +202,7 @@ def create_domain_entries(session: Session, parasect_path: str, signature_path: 
     :return: list of domain entries and list of domain synonym entries
     :rtype: tuple[list[AdenylationDomain], list[DomainSynonym]]
     """
-    print("Creating domain entries...")
+    logger.info("Creating domain entries...")
     domain_entries: list[AdenylationDomain] = []
     domain_synonyms: list[DomainSynonym] = []
 
@@ -242,13 +243,13 @@ def create_domain_entries(session: Session, parasect_path: str, signature_path: 
                 if domain.sequence == sequence:
                     existing_domain = domain
                 elif sequences_are_equivalent(domain.sequence, sequence):
-                    print(f"Domains with equivalent but non-identical sequences found: {domain_id}, {'|'.join([s.synonym for s in domain.synonyms])}")
+                    logger.warning(f"Domains with equivalent but non-identical sequences found: {domain_id}, {'|'.join([s.synonym for s in domain.synonyms])}")
                     response = input("Merge domains (y/n)? ")
                     if response.lower().startswith('y'):
-                        print("Merging domains.")
+                        logger.info("Merging domains.")
                         existing_domain = domain
                     else:
-                        print(f"Creating new entry for {domain_id}")
+                        logger.info(f"Creating new entry for {domain_id}")
 
         if existing_domain is not None:
 
@@ -293,7 +294,7 @@ def create_domain_entries(session: Session, parasect_path: str, signature_path: 
             domain_entries.append(domain_entry)
 
         if i % 100 == 0 and i != 0:
-            print(f"Processed {i} domains.")
+            logger.info(f"Processed {i} domains.")
 
     return domain_entries, domain_synonyms
 
@@ -362,7 +363,7 @@ def _parse_domain_synonym(domain_synonym: str) -> tuple[str, int]:
 def link_domains_and_proteins(domain_entries: list[AdenylationDomain],
                               protein_entries: list[Protein],
                               session: Session) -> list[ProteinDomainAssociation]:
-    print("Mapping domains to proteins...")
+    logger.info("Mapping domains to proteins...")
     links: list[ProteinDomainAssociation] = []
 
     old_protein_entries: list[Protein] = list(session.scalars(select(Protein)).all())
@@ -470,6 +471,7 @@ def populate_db(session: Session, parasect_data_path: str, smiles_path: Optional
 
 
 def main():
+    logging.basicConfig(level="INFO")
     args = parse_args()
     engine = create_engine(f"sqlite:///{args.database}")
     with Session(engine) as session:
@@ -477,8 +479,8 @@ def main():
             populate_db(session, args.parasect, args.smiles, args.signature, args.extended, args.protein, args.taxonomy)
             session.commit()
         except Exception as e:
-            print(f"[ERROR] {type(e).__name__}: {e}")
-            print("Rolling back changes.")
+            logger.info(f"[ERROR] {type(e).__name__}: {e}")
+            logger.info("Rolling back changes.")
             traceback.print_exc()
             session.rollback()
         finally:

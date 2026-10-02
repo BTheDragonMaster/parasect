@@ -1,2 +1,0 @@
-recursive-include src/parasect/data *.txt *.tsv *.fasta *.hmm
-recursive-include src/parasect/data/database_files *.tsv

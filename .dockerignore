@@ -1,0 +1,25 @@
+# Build context for app/Dockerfile.server (context: repo root, see app/docker-compose.yml).
+# Keeps the context sent to the Docker daemon small. None of this is needed
+# to build the server image.
+
+.git
+.github
+.idea
+.vscode
+
+**/__pycache__
+*.pyc
+*.pyo
+*.egg-info
+
+# Client: irrelevant to the server image, and node_modules/build are huge
+app/src/client/node_modules
+app/src/client/build
+
+# Model files: volume-mounted read-only into the server container at runtime
+# (see docker-compose.yml), never baked into the image!
+app/models
+
+# Not needed by the server image
+benchmarking
+condensed

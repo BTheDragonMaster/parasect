@@ -2,7 +2,8 @@ import React, {useState, useEffect, useMemo} from 'react';
 import {
     ExpandMore,
     ExpandLess,
-    CheckCircle
+    CheckCircle,
+    Block
 } from '@mui/icons-material';
 
 import {
@@ -28,13 +29,14 @@ import SmilesChecker from './SmilesChecker';
  *
  * @param {Object} props - The component props.
  * @param {Object} props.result - The result object.
+ * @param {boolean} props.excluded - Whether the domain is excluded from the submission.
+ * @param {Function} props.onExcludedChange - Called with the new excluded state.
  * @returns {React.ReactElement} - The result tile component.
  */
-const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => {
+const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange, excluded = false, onExcludedChange}) => {
     const [expanded, setExpanded] = useState(false);  // Start expanded
     const toggleExpanded = () => setExpanded(prev => !prev);
     const [nameWarnings, setNameWarnings] = useState({});
-    const [nameValidity, setNameValidity] = useState({});
 
     const parasResult = result["paras_result"];
     const sequence = parasResult["domain_sequence"];
@@ -68,14 +70,18 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
         return `${proteinName}.A${domainIndex}`;
     }, [proteinName, domainIndex]);
 
+    // the annotation type depends on whether the domain is already in the
+    // dataset, so recompute it when that answer comes back; only then, since
+    // substrate edits recompute it themselves
     useEffect(() => {
         const hasValidSubstrate = substrates?.some(
             sub => sub.substrateName && sub.substrateSmiles
         );
 
         if (hasValidSubstrate) {
-            updateSubstrateField(substrates);
+            recalculateAnnotationType(substrates);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isDuplicateDomain]);
 
     useEffect(() => {
@@ -102,8 +108,7 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
         fetchDuplicateStatus();
     }, [domainName]);
 
-    {/* Initialize with one substrate entry, default to no selection & no custom smiles */
-    }
+    // Initialize with one substrate entry, default to no selection & no custom smiles
     const [substrates, setSubstrates] = useState([
         {
             selectedSubstrate: null,
@@ -181,8 +186,7 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
         setAnnotationType(type);
     };
 
-    {/* Load SMILES for substrate assignment */
-    }
+    // Load SMILES for substrate assignment
     useEffect(() => {
         fetch('/api/get_substrates')
             .then(res => res.json())
@@ -194,14 +198,14 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
             });
     }, []);
 
-    {/* Sort smilesOptions by PARAS predictions order */
-    }
+    // Sort smilesOptions by PARAS predictions order
     const [sortedOptions, setSortedOptions] = useState([]);
 
+    const predictions = parasResult["predictions"];
     useEffect(() => {
-        if (!smilesOptions.length || !parasResult["predictions"]) return;
+        if (!smilesOptions.length || !predictions) return;
 
-        const preferredOrder = parasResult["predictions"].map(p => p["substrate_name"]);
+        const preferredOrder = predictions.map(p => p["substrate_name"]);
         const orderMap = new Map(preferredOrder.map((name, i) => [name, i]));
 
         const sorted = [...smilesOptions].sort((a, b) => {
@@ -212,15 +216,13 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
         });
 
         setSortedOptions(sorted);
-    }, [smilesOptions, parasResult["predictions"]]);
+    }, [smilesOptions, predictions]);
 
-    {/* The first prediction for showing */
-    }
+    // The first prediction for showing
     const selectedPrediction = parasResult['predictions'][0];
 
 
-    {/* Handlers to update substrate entries */
-    }
+    // Handlers to update substrate entries
     const updateSubstrateField = (index, field, value) => {
         setSubstrates((prev) => {
             const newSubs = [...prev];
@@ -248,12 +250,24 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                 updated.substrateSmiles = value.smiles;
             }
 
+            // clearing the selection must not leave the previous substrate behind
+            if (field === 'selectedSubstrate' && value === null) {
+                updated.substrateName = '';
+                updated.substrateSmiles = '';
+            }
+
             newSubs[index] = updated;
 
             recalculateAnnotationType(newSubs);
             return newSubs;
         });
     };
+    // Keyed on the typed names/SMILES only: the effect writes substrateName and
+    // substrateSmiles back into `substrates`, so depending on the whole array
+    // would re-run it (and re-fetch) on its own update.
+    const customSubstrateKey = substrates.map((s) => `${s.newSubstrateName}|${s.customSmiles}`).join('|');
+    const newSubstrateNamesKey = substrates.map((s) => s.newSubstrateName).join('|');
+
     useEffect(() => {
         substrates.forEach((sub, i) => {
             const name = sub.newSubstrateName?.trim();
@@ -274,11 +288,6 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                             [i]: duplicate
                                 ? 'Substrate name already exists in the dataset.'
                                 : null,
-                        }));
-
-                        setNameValidity((prev) => ({
-                            ...prev,
-                            [i]: !duplicate,
                         }));
 
                         setSubstrates((prev) => {
@@ -307,7 +316,8 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                     });
             }
         });
-    }, [substrates.map((s) => `${s.newSubstrateName}|${s.customSmiles}`).join('|')]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [customSubstrateKey]);
 
     useEffect(() => {
         substrates.forEach((sub, i) => {
@@ -325,10 +335,6 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                             ...prev,
                             [i]: isDuplicate ? `Substrate name already exists in the dataset.` : null,
                         }));
-                        setNameValidity((prev) => ({
-                            ...prev,
-                            [i]: !isDuplicate,
-                        }));
                     })
                     .catch((err) => {
                         console.error('Failed to check substrate name:', err);
@@ -336,46 +342,43 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                             ...prev,
                             [i]: 'Error checking substrate name.',
                         }));
-                        setNameValidity((prev) => ({
-                            ...prev,
-                            [i]: false,
-                        }));
                     });
             } else {
                 setNameWarnings((prev) => ({
                     ...prev,
                     [i]: null,
                 }));
-                setNameValidity((prev) => ({...prev, [i]: true}));
             }
         });
-    }, [substrates.map((s) => s.newSubstrateName).join('|')]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [newSubstrateNamesKey]);
 
     return (
         <Box
             sx={{
                 flexGrow: 1,
                 borderRadius: '11px',
-                boxShadow: '0px 4px 10px rgba(100, 84, 31, 0.5)',
+                border: '1px solid',
+                borderColor: 'divider',
+                boxShadow: 2,
+                overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
-                backgroundColor: hasSequenceMatch ? '#e0e0e0' : 'white',
+                // a domain already in the database is shown sunken rather than
+                // greyed, so it still reads as a card in either colour mode
+                backgroundColor: hasSequenceMatch ? 'surface.sunken' : 'background.paper',
             }}
         >
             {/* Header with collapse toggle */}
             <Box
                 sx={{
-                    backgroundColor: hasSequenceMatch ? '#c0c0c0' : 'secondary.main',
-                    color: 'black.main',
+                    backgroundColor: hasSequenceMatch ? 'surface.borderStrong' : 'accent.main',
+                    color: hasSequenceMatch ? 'text.primary' : 'accent.contrastText',
+                    fontWeight: 600,
                     padding: '14px 8px',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    borderTopLeftRadius: '10px',
-                    borderTopRightRadius: '10px',
-                    // add radius to bottom corners if not expanded
-                    borderBottomLeftRadius: expanded ? '0' : '10px',
-                    borderBottomRightRadius: expanded ? '0' : '10px',
                 }}
             >
                 {/* Left side: domain info + optional warning stacked vertically */}
@@ -403,7 +406,23 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                     {expanded ? <ExpandLess/> : <ExpandMore/>}
                 </IconButton> */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {isAnnotated && (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        size="small"
+                        checked={excluded}
+                        onChange={(e) => onExcludedChange?.(e.target.checked)}
+                        sx={{ color: 'inherit', '&.Mui-checked': { color: 'inherit' } }}
+                      />
+                    }
+                    label="Exclude"
+                    sx={{ m: 0, whiteSpace: 'nowrap' }}
+                  />
+                  {excluded ? (
+                    <Tooltip title="Excluded from submission" arrow>
+                      <Block fontSize="small" aria-label="Excluded from submission" />
+                    </Tooltip>
+                  ) : isAnnotated && (
                     <Tooltip title="Annotated" arrow>
                       <CheckCircle
                         fontSize="small"
@@ -418,9 +437,21 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                 </Box>
             </Box>
 
-            {/* Collapsible content */}
+            {/* Collapsible content; kept visible but inert while excluded */}
             <Collapse in={expanded}>
-                <Box sx={{padding: 2}}>
+                {excluded && (
+                    <Typography sx={{px: 2, pt: 2, color: 'text.secondary', fontStyle: 'italic'}}>
+                        This domain is excluded from the submission.
+                    </Typography>
+                )}
+                <Box
+                    sx={{
+                        padding: 2,
+                        opacity: excluded ? 0.5 : 1,
+                        pointerEvents: excluded ? 'none' : 'auto',
+                    }}
+                    aria-disabled={excluded}
+                >
 
                     {/* domain signature */}
                     {parasResult['domain_signature'].length > 0 && (
@@ -506,7 +537,7 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                                             </Box>
                                             <Box
                                                 sx={{
-                                                    border: '1px solid #ccc',
+                                                    border: 1, borderColor: 'divider',
                                                     borderRadius: '4px',
                                                     padding: '8px',
                                                     minHeight: '40px',
@@ -528,7 +559,7 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                                                 display: 'flex',
                                                 gap: 2,
                                                 alignItems: 'flex-start',
-                                                border: '1px solid #ccc',
+                                                border: 1, borderColor: 'divider',
                                                 borderRadius: 1,
                                                 p: 1,
                                                 minWidth: 500,
@@ -655,9 +686,9 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'center',
-                                                            color: 'gray',
+                                                            color: 'text.secondary',
                                                             fontStyle: 'italic',
-                                                            border: '1px dashed #ccc',
+                                                            border: '1px dashed', borderColor: 'divider',
                                                         }}
                                                     >
                                                         No substrate selected
@@ -672,14 +703,15 @@ const DomainTile = ({result, domainIndex, protein_name, onAnnotationChange}) => 
                                     {showNoUpdateMessage && (
                                         <Box
                                             sx={{
-                                                border: '1px solid #aaa',
-                                                backgroundColor: '#f0f0f0',
+                                                border: 1,
+                                                borderColor: 'success.main',
+                                                backgroundColor: 'surface.sunken',
                                                 borderRadius: 1,
                                                 padding: 2,
                                                 mb: 2,
                                             }}
                                         >
-                                            <Typography sx={{fontWeight: 500, color: 'green'}}>
+                                            <Typography sx={{fontWeight: 500, color: 'success.main'}}>
                                                 Selected substrates match known substrates exactly. No update will be
                                                 made.
                                             </Typography>

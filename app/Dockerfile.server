@@ -14,9 +14,12 @@ RUN groupadd --gid $USER_GID $USERNAME \
 # Workdir
 WORKDIR /app
 
+# Build context is the repo root (see docker-compose.yml), not app/, so this
+# Dockerfile can also see src/parasect/ below. Everything here is app/-relative!
+
 # Copy env first to leverage Docker layer caching
-COPY server-environment.yml /app/
-COPY server-requirements.txt /app/
+COPY app/server-environment.yml /app/
+COPY app/server-requirements.txt /app/
 
 # Create Conda env with mamba (faster) and clean caches
 RUN mamba env create -n web -f server-environment.yml \
@@ -25,8 +28,14 @@ RUN mamba env create -n web -f server-environment.yml \
 # Ensure `conda run -n web ...` works for ENTRYPOINT/CMD
 RUN echo "conda activate web" >> /etc/bash.bashrc
 
+# Install the local checkout of the core parasect/paras package
+COPY pyproject.toml setup.cfg MANIFEST.in /tmp/parasect-src/
+COPY src/ /tmp/parasect-src/src/
+RUN conda run -n web pip install --no-cache-dir /tmp/parasect-src \
+ && rm -rf /tmp/parasect-src
+
 # Copy the app code and give ownership to the non-root user
-COPY --chown=${USER_UID}:${USER_GID} ./src/server/ /app/
+COPY --chown=${USER_UID}:${USER_GID} app/src/server/ /app/
 
 # Ensure temp dir exists and is writable
 RUN mkdir -p /app/temp && chown -R ${USER_UID}:${USER_GID} /app
@@ -38,7 +47,9 @@ ENV PYTHONUNBUFFERED=1 \
     OPENBLAS_NUM_THREADS=1 \
     MKL_NUM_THREADS=1 \
     NUMEXPR_NUM_THREADS=1 \
-    JOBLIB_MMAP_MODE=r
+    JOBLIB_MMAP_MODE=r \
+    GUNICORN_WORKERS=1 \
+    GUNICORN_THREADS=4
 
 # Use the unprivileged user at runtime
 USER $USERNAME
@@ -46,6 +57,9 @@ USER $USERNAME
 # Expose your service port
 EXPOSE 4009
 
-# Run everything inside the conda env without needing manual activation
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "web"]
-CMD ["gunicorn", "-b", ":4009", "--worker-class", "gthread", "--workers", "1", "--threads", "4", "--preload", "--timeout", "120", "api:app"]
+# Shell form (not exec-array) so $GUNICORN_WORKERS/$GUNICORN_THREADS are
+# expanded at container start: lets docker-compose/orchestrator override
+# worker count per-deployment without rebuilding the image. Job state lives
+# in Redis (see routes/job_store.py), so GUNICORN_WORKERS can safely be > 1.
+ENTRYPOINT ["/bin/bash", "-lc"]
+CMD ["exec conda run --no-capture-output -n web gunicorn -b :4009 --worker-class gthread --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} --preload --timeout 120 api:app"]

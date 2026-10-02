@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 from argparse import ArgumentParser, Namespace
 from joblib import dump
@@ -22,6 +23,7 @@ from parasect.model_training.rf.test_rf import test_paras_signatures, test_paras
     test_parasect_signatures, test_parasect_esm
 from parasect.database.flatfiles_from_db import write_domain_names, write_substrate_names
 
+logger = logging.getLogger(__name__)
 
 def parse_arguments() -> Namespace:
     """Parse arguments from command line
@@ -57,7 +59,7 @@ def parse_arguments() -> Namespace:
     return args
 
 
-def train_random_forest(features: NDArray[np.float64], labels: NDArray[np.str],
+def train_random_forest(features: NDArray[np.float64], labels: NDArray[str],
                         out_path: Optional[str] = None) -> RandomForestClassifier:
     """
 
@@ -135,7 +137,7 @@ def train_paras_esm(session: Session, domain_list: str, selection_mode: Substrat
     features = np.array([domain_to_pcs[domain.get_name()] for domain in domains])
     labels = np.array([domain_to_substrate[domain].name for domain in domains])
 
-    print("Training PARAS classifier...")
+    logger.info("Training PARAS classifier...")
 
     classifier = train_random_forest(features, labels, out_path=out_path)
 
@@ -200,11 +202,11 @@ def train_parasect_signatures(session: Session, domain_list: str,
 
     undersampler = RandomUnderSampler(random_state=25051989)
 
-    print("Sampling...")
+    logger.info("Sampling...")
 
     features, labels = undersampler.fit_resample(train_x, train_y)
 
-    print("Training PARASECT classifier...")
+    logger.info("Training PARASECT classifier...")
 
     classifier = train_random_forest(features, labels, out_path=out_path)
 
@@ -286,11 +288,11 @@ def train_parasect_esm(session: Session, domain_list: str,
 
     undersampler = RandomUnderSampler(random_state=25051989)
 
-    print("Sampling...")
+    logger.info("Sampling...")
 
     features, labels = undersampler.fit_resample(train_x, train_y)
 
-    print("Training PARASECT classifier...")
+    logger.info("Training PARASECT classifier...")
 
     classifier = train_random_forest(features, labels, out_path=out_path)
 
@@ -343,7 +345,7 @@ def train_paras_signatures(session: Session, domain_list: str,
     features = np.array([get_domain_features(domain.extended_signature) for domain in domains])
     labels = np.array([domain_to_substrate[domain].name for domain in domains])
 
-    print("Training PARAS classifier...")
+    logger.info("Training PARAS classifier...")
 
     classifier = train_random_forest(features, labels, out_path=out_path)
 
@@ -387,7 +389,7 @@ def main():
                 model, hashes = train_parasect_signatures(session, train_file, included_substrates_file,
                                                           args.bitvector_size, out_path=model_path)
 
-                print(f"Number of hashes: {len(hashes)}")
+                logger.info(f"Number of hashes: {len(hashes)}")
         else:
             if not args.parasect:
                 model = train_paras_esm(session, train_file, selection_mode,
@@ -397,7 +399,7 @@ def main():
                 model, hashes = train_parasect_esm(session, train_file, included_substrates_file, args.esm_embeddings,
                                                    args.n_components, args.bitvector_size, out_path=model_path)
 
-                print(f"Number of hashes: {len(hashes)}")
+                logger.info(f"Number of hashes: {len(hashes)}")
 
         if hashes:
             write_list(hashes, os.path.join(args.out, "hashes.txt"), sort=False)
@@ -435,7 +437,7 @@ def main():
             bacterial_domains = list(
                 set(DomainScope.get_domains(session, DomainScope.BACTERIAL_ONLY)).intersection(set(domains)))
 
-            print(f"\nTesting all domains...")
+            logger.info(f"\nTesting all domains...")
 
             if args.esm_embeddings is None:
                 if not args.parasect:
@@ -454,7 +456,7 @@ def main():
 
             if fungal_domains and set(fungal_domains) != set(domains):
                 write_list([f.get_name() for f in fungal_domains], os.path.join(args.out, "fungal_test.txt"))
-                print(f"\nTesting fungal domains...")
+                logger.info(f"\nTesting fungal domains...")
                 if args.esm_embeddings is None:
                     if not args.parasect:
                         test_paras_signatures(model, fungal_domains, included_substrates_file, test_dir_fungal)
@@ -470,7 +472,7 @@ def main():
                                           test_dir_fungal, hashes, n_components=args.n_components)
             if bacterial_domains and set(bacterial_domains) != set(domains):
                 write_list([b.get_name() for b in bacterial_domains], os.path.join(args.out, "bacterial_test.txt"))
-                print(f"\nTesting bacterial domains...")
+                logger.info(f"\nTesting bacterial domains...")
                 if args.esm_embeddings is None:
                     if not args.parasect:
                         test_paras_signatures(model, bacterial_domains, included_substrates_file, test_dir_bacterial)

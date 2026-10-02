@@ -2,8 +2,10 @@
 
 """Common utilities for the server."""
 
+from __future__ import annotations
+
 from enum import Enum, auto
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class Status(Enum):
@@ -34,26 +36,26 @@ class ResponseData:
     def __init__(
         self,
         status: Status,
-        payload: Optional[Dict[str, Any]] = None,
-        message: Optional[str] = None,
+        payload: dict[str, Any] | None = None,
+        message: str | None = None,
     ) -> None:
         """Create a new response object.
 
         :param status: The status of the response.
         :type status: Status
         :param payload: The payload of the response.
-        :type payload: Optional[Dict[str, Any]]
+        :type payload: dict[str, Any] | None
         :param message: The message of the response.
-        :type message: Optional[str]
+        :type message: str | None
         """
         self.status = status
         self.payload = payload if payload is not None else dict()
         self.message = message if message is not None else "no message provided"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Return the response as a dictionary.
 
         :return: The response as a dictionary.
-        :rtype: Dict[str, Any]
+        :rtype: dict[str, Any]
         """
         return dict(status=str(self.status), payload=self.payload, message=self.message)

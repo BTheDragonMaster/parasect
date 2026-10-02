@@ -1,4 +1,5 @@
 import os
+import logging
 from argparse import ArgumentParser, Namespace
 import traceback
 
@@ -10,6 +11,8 @@ from parasect.core.writers import write_fasta_file
 from parasect.core.tabular import Tabular
 
 from parasect.database.populate_database import populate_db
+
+logger = logging.getLogger(__name__)
 
 # TODO: Refactor such that entries are auto-added as pending to the database
 
@@ -158,13 +161,14 @@ def add_user_submissions(submission_dir: str, database_path: str) -> None:
                         session.flush()
             session.commit()
         except Exception as e:
-            print(f"[ERROR] {type(e).__name__}: {e}")
-            print("Rolling back changes.")
+            logger.info(f"[ERROR] {type(e).__name__}: {e}")
+            logger.info("Rolling back changes.")
             traceback.print_exc()
             session.rollback()
 
 
 def main() -> None:
+    logging.basicConfig(level="INFO")
     args = parse_arguments()
     add_user_submissions(args.u, args.db)
 

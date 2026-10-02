@@ -384,7 +384,7 @@ def main():
                     else:
                         raise ValueError(f"Unknown clade assignment: {assignment}")
 
-        included_substrates_file = os.path.join(args.output, "included_substrates.txt")
+        included_substrates_file = os.path.join(args.output, "parasect.txt")
         included_substrates = list(substrate_counts.keys())
         included_substrates.sort()
         write_list(included_substrates, included_substrates_file)

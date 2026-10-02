@@ -1,23 +1,51 @@
 @import "react-toastify/dist/ReactToastify.css";
 
-* {
-    font-family: "Arial", sans-serif;
-    color: black;
+/* Mirrors the tokens in src/theme/palette.js. Kept in CSS as well because the
+   toast library and the scrollbars are styled outside MUI's reach.
+   data-theme is stamped on <html> by ColorModeProvider. */
+:root,
+:root[data-theme="light"] {
+    --main-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --surface: #ffffff;
+    --surface-sunken: #efede8;
+    --border: #ddd9d1;
+    --text: #1c1d1a;
+    --shadow: rgba(28, 29, 26, 0.18);
+}
+
+:root[data-theme="dark"] {
+    --surface: #212120;
+    --surface-sunken: #2a2a27;
+    --border: #3a3935;
+    --text: #f2f1ee;
+    --shadow: rgba(0, 0, 0, 0.5);
 }
 
 html, body {
     margin: 0;
     overflow-x: hidden;
+    font-family: var(--main-font);
 }
 
 .Toastify__toast {
-    border-radius: 5;
+    border-radius: 8px;
     border-width: 1px;
     border-style: solid;
-    border-color: #d6d6d6;
+    border-color: var(--border);
     padding: 10px;
     font-family: var(--main-font);
-    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
-    background-color: white;
-    color: black;
+    box-shadow: 0 5px 5px var(--shadow);
+    background-color: var(--surface);
+    color: var(--text);
+}
+
+.Toastify__close-button {
+    color: var(--text);
+}
+
+/* The panels on the results and annotation pages force their scrollbars on;
+   the default thumb is invisible on a dark surface. */
+::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 10px;
 }

@@ -2,16 +2,16 @@
 
 """CLI for PARASECT."""
 
-import os
 import argparse
 import logging
 from joblib import load
+from shutil import rmtree
 
 from parasect.core.constants import SEPARATOR_1, SEPARATOR_2, SEPARATOR_3
 from parasect.api import run_parasect
-from parasect.core.helpers import download_and_unpack_or_fetch
-from parasect.core.writers import write_fasta_file, write_results
-from parasect.core.parsing import parse_smiles_mapping
+from parasect.core.helpers import prepare_folders, prepare_substrates, prepare_model
+from parasect.core.writers import write_results
+from parasect.core.models import ModelType
 
 
 def cli() -> argparse.Namespace:
@@ -29,11 +29,14 @@ def cli() -> argparse.Namespace:
     parser.add_argument('-o', "--output", type=str, required=True, help="Path to output directory.")
     parser.add_argument('-j', "--job_name", type=str, default="run_1",
                         help="Job name")
-    parser.add_argument('-n', "--number_predictions", type=int, default=3, help="Number of top predictions to report.")
+    parser.add_argument('-n', "--number_predictions", type=int, default=3,
+                        help="Number of top predictions to report.")
     parser.add_argument('-t', "--temp", type=str, default=None,
                         help="Temp dir. If not given, create temp folder in output dir")
     parser.add_argument('-p', "--profile_alignment", action='store_true',
                         help="Use profile alignment instead of HMM for active site extraction")
+    parser.add_argument('-m', "--model_dir", type=str, default=None,
+                        help="Path to model directory. If not given, use temp folder")
     parser.add_argument('-save_extended', action='store_true',
                         help="Save extended 34 amino acid signatures to file.")
     parser.add_argument('-save_signatures', action='store_true',
@@ -60,41 +63,22 @@ def cli() -> argparse.Namespace:
 
 def main() -> None:
     """Run CLI for PARASECT."""
-    """Run CLI for PARAS."""
-    args = cli()
-    logger = logging.getLogger(__name__)
     logging.basicConfig(level="INFO")
+    args = cli()
 
-    if not os.path.exists(args.output):
-        os.mkdir(args.output)
+    temp_dir, model_dir = prepare_folders(args.output, args.temp, args.model_dir)
 
-    if args.temp is None:
-        temp_dir = os.path.join(args.output, "temp")
-        if not os.path.exists(temp_dir):
-            os.mkdir(temp_dir)
-
+    if args.bacterial:
+        model_type = ModelType.PARASECT_BACTERIAL
     else:
-        temp_dir = args.temp
+        model_type = ModelType.PARASECT
 
-    if args.smiles is not None:
-        substrates = parse_smiles_mapping(args.smiles)
-        substrate_names = [s.name for s in substrates]
-        substrate_smiles = [s.smiles for s in substrates]
-    else:
-        substrate_names = None
-        substrate_smiles = None
+    substrate_names, substrate_smiles = prepare_substrates(args.smiles)
 
     if not substrate_names and args.exclude_standard_substrates:
         raise ValueError("No substrates to test! Either include standard substrates or pass custom substrate SMILES")
-    if not args.bacterial:
-        model_path = download_and_unpack_or_fetch(
-            r"https://zenodo.org/records/17224548/files/model.parasect.gz?download=1",
-            temp_dir, logger)
-    else:
-        model_path = download_and_unpack_or_fetch(
-            r"https://zenodo.org/records/17224548/files/bacterial_model.parasect.gz?download=1",
-            temp_dir, logger)
 
+    model_path = prepare_model(model_type, model_dir)
     model = load(model_path)
 
     with open(args.input, 'r') as input_file:
@@ -107,28 +91,14 @@ def main() -> None:
                            use_structure_guided_alignment=args.profile_alignment,
                            bacterial_only=args.bacterial)
 
-    id_to_sig = {}
-    id_to_ext = {}
-    id_to_seq = {}
+    write_results(results, args.output, args.number_predictions, model_type,
+                  args.s1, args.s2, args.s3,
+                  args.job_name,
+                  args.save_signatures,
+                  args.save_extended,
+                  args.save_domains)
 
-    for result in results:
-        domain_header = result.get_domain_header(args.s1, args.s2, args.s3)
-        if args.save_signatures:
-            id_to_sig[domain_header] = result.to_json()['domain_signature']
-        if args.save_extended:
-            id_to_ext[domain_header] = result.to_json()['domain_extended_signature']
-        if args.save_domains:
-            id_to_seq[domain_header] = result.to_json()['domain_sequence']
-
-    if args.save_signatures:
-        write_fasta_file(id_to_sig, os.path.join(args.output, f"{args.job_name}_signatures.fasta"))
-    if args.save_extended:
-        write_fasta_file(id_to_ext, os.path.join(args.output, f"{args.job_name}_extended_signatures.fasta"))
-    if args.save_domains:
-        write_fasta_file(id_to_seq, os.path.join(args.output, f"{args.job_name}_sequences.fasta"))
-
-    results_out = os.path.join(args.output, f"{args.job_name}_parasect_results.txt")
-    write_results(results, results_out, args.number_predictions)
+    rmtree(temp_dir)
 
 
 if __name__ == "__main__":

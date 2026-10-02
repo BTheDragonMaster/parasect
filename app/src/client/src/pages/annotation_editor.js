@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Box, IconButton, Divider, Typography, Button, Modal, Tooltip, TextField, Stack, Chip, CircularProgress } from '@mui/material';
+import { Box, IconButton, Divider, Typography, Button, Modal, Tooltip, TextField, Stack, Chip, CircularProgress, Link } from '@mui/material';
 import { CheckCircle, ErrorOutline } from "@mui/icons-material";
 import { MdClose } from 'react-icons/md';
 
@@ -338,16 +338,20 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
     return (
         <Modal open={open} onClose={onClose}>
             <Box
-                width={800}
-                bgcolor='white.main'
+                sx={{
+                    width: { xs: '92vw', sm: 500, md: 800 },
+                    maxHeight: '88vh',
+                    overflowY: 'auto',
+                }}
+                bgcolor='background.paper'
                 mx='auto'
-                my={10}
+                my={{ xs: 4, sm: 10 }}
                 borderRadius={4}
                 boxShadow={3}
             >
                 <Box
                     sx={{
-                        backgroundColor: 'secondary.main',
+                        backgroundColor: 'accent.main',
                         borderTopLeftRadius: '14px',
                         borderTopRightRadius: '14px',
                         display: 'flex',
@@ -360,7 +364,7 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                         variant='h5' 
                         gutterBottom
                         sx={{ 
-                            color: 'black.main', 
+                            color: 'accent.contrastText', 
                             textAlign: 'center',
                             pl: 2,
                             pt: 2, 
@@ -368,7 +372,7 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                     >
                         Submit annotations
                     </Typography>
-                    <IconButton onClick={onClose}>
+                    <IconButton onClick={onClose} sx={{ color: 'accent.contrastText' }}>
                         <MdClose size={24} />
                     </IconButton>
                 </Box>
@@ -465,12 +469,20 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                         )}
                         {refsPending && (
                             <Typography variant="body2" sx={{ mt: 1 }}>
-                                Validating references…
+                                Validating references...
                             </Typography>
                         )}
                     </Box>
 
                     {/* Turnstile widget */}
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                        This form uses Cloudflare Turnstile to help prevent automated spam submissions,
+                        which may set cookies as part of its verification check. See{' '}
+                        <Link href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">
+                            Cloudflare's privacy policy
+                        </Link>{' '}
+                        for details.
+                    </Typography>
                     <Turnstile
                         key={turnstileKey}
                         sitekey={SITE_KEY}
@@ -486,7 +498,7 @@ function SubmitAnnotationsModal({ open, onClose, proteinAnnotations }) {
                         disabled={!canSubmit}
                     >
                         {submitting 
-                            ? 'Submitting…' 
+                            ? 'Submitting...' 
                             : `Submit ${Object.keys(proteinAnnotations).length} annotated protein(s)`}
                     </Button>
                 </Box>
@@ -521,25 +533,24 @@ const AnnotationEditor = () => {
         setOpenAnnotationsSubmissionModal(false);
     };
 
-    {/* For collecting protein annotations */}
+    // For collecting protein annotations
+    const handleProteinAnnotationChange = useCallback((proteinId, data) => {
+        setProteinAnnotations((prev) => {
+            const updated = { ...prev };
 
-    const handleProteinAnnotationChange = (proteinId, data) => {
-    setProteinAnnotations((prev) => {
-        const updated = { ...prev };
+            // Check if domains object exists and has keys
+            const hasDomainAnnotations = data.domains && Object.keys(data.domains).length > 0;
 
-        // Check if domains object exists and has keys
-        const hasDomainAnnotations = data.domains && Object.keys(data.domains).length > 0;
+            if (data && hasDomainAnnotations) {
+                updated[proteinId] = data;
+            } else {
+                // Remove if no domain annotations (ignore synonym)
+                delete updated[proteinId];
+            }
 
-        if (data && hasDomainAnnotations) {
-            updated[proteinId] = data;
-        } else {
-            // Remove if no domain annotations (ignore synonym)
-            delete updated[proteinId];
-        }
-
-        return updated;
-    });
-};
+            return updated;
+        });
+    }, []);
 
     const OpenAnnotationsSubmissionsModal = () => {
         setOpenAnnotationsSubmissionModal(true);
@@ -651,7 +662,7 @@ const AnnotationEditor = () => {
                         </Typography>
 
                         <Typography variant='body1' gutterBottom>
-                            Domains which already exist in the PARAS/PARASECT dataset are displayed in grey. New domains are displayed in yellow. Please review the new domains and provide annotations where possible. You can proceed with submitting domains once they are annotated.
+                            Domains that already exist in the PARAS/PARASECT dataset have a muted header and a sunken card; new domains are headed in the PARAS orange. Please review the new domains and provide annotations where possible. You can proceed with submitting domains once they are annotated.
                         </Typography>
 
                         <Typography variant='body1' gutterBottom>
@@ -679,7 +690,7 @@ const AnnotationEditor = () => {
                     sx={{
                         overflowY: 'auto',
                         overflowX: 'auto',
-                        backgroundColor: 'white.main',
+                        backgroundColor: 'background.default',
                         flexDirection: 'row',
                         display: 'flex',
                         gap: '20px',
@@ -694,7 +705,7 @@ const AnnotationEditor = () => {
 
                         // scrollbar style
                         '&::-webkit-scrollbar-thumb': {
-                            backgroundColor: '#ceccca',
+                            backgroundColor: 'surface.borderStrong',
                             borderRadius: '10px',
                         },
                     }}

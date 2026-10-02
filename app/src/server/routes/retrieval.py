@@ -4,8 +4,8 @@
 
 from flask import Blueprint
 
-from .app import app
 from .common import ResponseData, Status
+from .job_store import get_job
 
 blueprint_retrieve = Blueprint("retrieve", __name__)
 
@@ -20,14 +20,14 @@ def retrieve(job_id: str):
     :rtype: Response
     """
     try:
-        results = app.config["JOB_RESULTS"][job_id]
+        results = get_job(job_id)
+        if results is None:
+            return ResponseData(Status.Failure, message="Job not found!").to_dict()
         if results["status"] == "pending":
             return ResponseData(Status.Pending, message="Job is pending!").to_dict()
         elif results["status"] == "failure":
             return ResponseData(Status.Failure, message=results["message"]).to_dict()
         else:
             return ResponseData(Status.Success, payload=results).to_dict()
-    except KeyError:
-        return ResponseData(Status.Failure, message="Job not found!").to_dict()
     except Exception as e:
         return ResponseData(Status.Failure, message=str(e)).to_dict()

@@ -14,6 +14,7 @@ from numpy.typing import NDArray
 from parasect.core.chem import smiles_to_fingerprint
 from parasect.core.constants import FINGERPRINTS_FILE, BACTERIAL_FINGERPRINTS_FILE
 from parasect.core.tabular import Tabular
+from parasect.core.models import ModelType
 
 
 @dataclass
@@ -37,6 +38,21 @@ class TaxonomyData:
     def __hash__(self):
 
         return hash((self.domain, self.kingdom, self.phylum, self.cls, self.order, self.family, self.genus, self.species, self.strain))
+
+def parse_model_metadata_file(model_metadata_file: str) -> dict[ModelType, str]:
+    """Parse model metadata file"""
+    model_to_version: dict[ModelType, str] = {}
+    with open(model_metadata_file, 'r') as model_metadata:
+        for line in model_metadata:
+            line = line.strip()
+            if line.startswith('sklearn_version'):
+                label, version = line.split('\t')
+                model_name = label.split('sklearn_version_')[1]
+                model_type = ModelType[model_name.upper()]
+                model_to_version[model_type] = version
+
+    return model_to_version
+
 
 def parse_taxonomy_file(taxonomy_file: str) -> dict[str, TaxonomyData]:
     """Return dictionary of protein id to taxonomy

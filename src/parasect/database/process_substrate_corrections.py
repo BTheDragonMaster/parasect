@@ -1,3 +1,4 @@
+import logging
 from argparse import ArgumentParser, Namespace
 import os
 import traceback
@@ -10,6 +11,7 @@ from parasect.database.query_database import get_domains_from_synonym
 from parasect.database.populate_database import create_substrate_entries
 from parasect.core.parsing import iterate_over_dir, parse_parasect_data
 
+logger = logging.getLogger(__name__)
 
 def parse_arguments() -> Namespace:
     """Parse arguments from command line
@@ -56,6 +58,7 @@ def correct_substrate(session: Session, domain_synonym: str, correct_substrates:
 
 
 def main():
+    logging.basicConfig(level="INFO")
     args = parse_arguments()
     engine = create_engine(f"sqlite:///{args.db}")
 
@@ -76,8 +79,8 @@ def main():
 
             session.commit()
         except Exception as e:
-            print(f"[ERROR] {type(e).__name__}: {e}")
-            print("Rolling back changes.")
+            logger.info(f"[ERROR] {type(e).__name__}: {e}")
+            logger.info("Rolling back changes.")
             traceback.print_exc()
             session.rollback()
         finally:

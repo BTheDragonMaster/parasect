@@ -1,20 +1,84 @@
-version: "3.3"
+name: paras
 
 services:
+  redis:
+    image: redis:7-alpine
+    restart: always
+    container_name: paras-redis
+    # Job results only, not durable app state: an AOF/RDB volume isn't
+    # needed since every key already carries a 7-day TTL (see job_store.py).
+    networks: [paras-network]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  # One-shot init: populates the models directory before the server starts,
+  # then exits.
+  paras-models:
+    image: paras-server
+    container_name: paras-models-init
+    command: ["exec conda run --no-capture-output -n web python /app/fetch_models.py"]
+    restart: "no"
+    volumes:
+      # Host path is configurable so the ~4 GB of models need not sit inside the
+      # repo checkout: set PARAS_MODELS_DIR to an absolute path in app/.env
+      # (gitignored, and read by compose for interpolation). Defaults to
+      # ./models, i.e. what it did before. This is the only service that writes
+      # there; paras-server mounts the same directory read-only.
+      - ${PARAS_MODELS_DIR:-./models}:/app/models
+    # mmap'ing a random forest costs a file descriptor per array, and the big
+    # PARAS model has enough of them to blow past a 1024 soft limit, which is
+    # what the daemon hands containers on some hosts. Raising it keeps the mmap
+    # path (JOBLIB_MMAP_MODE=r) working; without it every load falls back to
+    # reading the whole model into RAM, ~3.3 GB for the largest, per worker.
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    environment:
+      - MODEL_DIR=/app/models
+      - LOG_LEVEL=INFO
+      # Which models to fetch: any comma-separated subset of the keys the API
+      # accepts (parasAllSubstrates, parasCommonSubstrates, parasect,
+      # parasectBacterial), or "all".
+      - PARAS_MODELS=${PARAS_MODELS:-all}
+      # Which Zenodo release those models come from. Pinned, not floating.
+      - ZENODO_RECORD=${ZENODO_RECORD:-18682178}
+    networks: [paras-network]
+
   paras-server:
     build:
-      context: . 
-      dockerfile: Dockerfile.server
+      # repo root, not app/
+      context: ..
+      dockerfile: app/Dockerfile.server
     image: paras-server
     restart: always
     env_file:
       - .env  # Need secrets for submitting newly annotated domains
     container_name: paras-server
     volumes:
-      - ./models:/app/models:ro
+      - ${PARAS_MODELS_DIR:-./models}:/app/models:ro
+    # mmap'ing a random forest costs a file descriptor per array, and the big
+    # PARAS model has enough of them to blow past a 1024 soft limit, which is
+    # what the daemon hands containers on some hosts. Raising it keeps the mmap
+    # path (JOBLIB_MMAP_MODE=r) working; without it every load falls back to
+    # reading the whole model into RAM, ~3.3 GB for the largest, per worker.
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     environment:
       - MODEL_DIR=/app/models
       - LOG_LEVEL=INFO
+      - REDIS_URL=redis://redis:6379/0
+      # Single host today: worker processes share the model's mmap'd pages
+      # via the OS page cache, so extra workers are cheap in RAM. Job state
+      # now lives in Redis, so this is safe to raise above 1.
+      - GUNICORN_WORKERS=2
+      - GUNICORN_THREADS=4
       # Also set in Dockerfile, can override here
       - OMP_NUM_THREADS=1
       - OPENBLAS_NUM_THREADS=1
@@ -22,6 +86,12 @@ services:
       - NUMEXPR_NUM_THREADS=1
       - JOBLIB_MMAP_MODE=r
     networks: [paras-network]
+    depends_on:
+      redis:
+        condition: service_healthy
+      # Won't start until the models are actually on disk.
+      paras-models:
+        condition: service_completed_successfully
     healthcheck:
       # Use base Python; no curl/wget dependency needed
       test: [ "CMD", "/opt/conda/bin/python", "-c",
