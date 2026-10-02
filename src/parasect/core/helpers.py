@@ -14,6 +14,47 @@ from parasect.core.retrain_models import retrain_model, model_needs_retraining, 
 
 logger = logging.getLogger(__name__)
 
+
+# Zenodo record holding the published PARAS/PARASECT models.
+#
+# Pinned rather than Zenodo's "latest version" pointer: a floating pointer would
+# let a new upload silently change what this predicts, with no commit and no way
+# to reproduce a result someone got last week.
+#
+# This record and the scikit-learn pin in pyproject.toml are one unit, not two
+# independent choices. These models are pickled under scikit-learn 1.8.0, and
+# scikit-learn added a field to the decision-tree node dtype in 1.3. Meaning, a model
+# written before that fails to load outright on anything newer, with
+# "node array from the pickle has an incompatible dtype". Change it together with:
+#   - src/parasect/data/model_metadata.txt, which records the scikit-learn the
+#     models were written with and drives the retrain-vs-download decision, and
+#   - ZENODO_RECORD in app/docker-compose.yml, so the webapp agrees.
+ZENODO_RECORD = "18682178"
+
+#: Which file in that record backs each model type.
+MODEL_ARCHIVES = {
+    ModelType.PARAS_ALL_SUBSTRATES: "all_substrates_model.paras.gz",
+    ModelType.PARAS: "model.paras.gz",
+    ModelType.PARASECT: "model.parasect.gz",
+    ModelType.PARASECT_BACTERIAL: "bacterial_model.parasect.gz",
+}
+
+
+def model_url(model_type: ModelType) -> str:
+    """URL of the published archive for one model type.
+
+    :param model_type: a single model type, not a combination of them.
+    :type model_type: ModelType
+    :returns: the Zenodo download URL.
+    :rtype: str
+    :raises ValueError: if the type isn't one of the four published models.
+    """
+    archive = MODEL_ARCHIVES.get(model_type)
+    if archive is None:
+        raise ValueError("Unknown model type")
+    return f"https://zenodo.org/records/{ZENODO_RECORD}/files/{archive}?download=1"
+
+
 def prepare_model(model_type: ModelType, model_dir: str) -> str:
     """Download or retrain PARAS/PARASECT model"""
     metadata_path = os.path.join(model_dir, "model_metadata.txt")
@@ -28,24 +69,7 @@ def prepare_model(model_type: ModelType, model_dir: str) -> str:
         update_metadata_file(model_type, metadata_path)
 
     else:
-        if model_type == ModelType.PARAS_ALL_SUBSTRATES:
-            model_path = download_and_unpack_or_fetch(
-                r"https://zenodo.org/records/17224548/files/all_substrates_model.paras.gz?download=1",
-                model_dir, logger)
-        elif model_type == ModelType.PARAS:
-            model_path = download_and_unpack_or_fetch(
-                r"https://zenodo.org/records/17224548/files/model.paras.gz?download=1",
-                model_dir, logger)
-        elif model_type == ModelType.PARASECT:
-            model_path = download_and_unpack_or_fetch(
-                r"https://zenodo.org/records/17224548/files/model.parasect.gz?download=1",
-                model_dir, logger)
-        elif model_type == ModelType.PARASECT_BACTERIAL:
-            model_path = download_and_unpack_or_fetch(
-                r"https://zenodo.org/records/17224548/files/bacterial_model.parasect.gz?download=1",
-                model_dir, logger)
-        else:
-            raise ValueError("Unknown model type")
+        model_path = download_and_unpack_or_fetch(model_url(model_type), model_dir, logger)
 
     return model_path
 

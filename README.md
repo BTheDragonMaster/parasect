@@ -22,13 +22,13 @@ Do you have new datapoints that you think PARAS/PARASECT could benefit from in f
 
 ## Trained models
 
-The trained models for PARAS and PARASECT can be found on Zenodo [here](https://zenodo.org/records/17224548).
+The trained models for PARAS and PARASECT can be found on Zenodo [here](https://zenodo.org/records/18682178).
 
 ## Command line installation
 
 To install PARAS/PARASECT on the command line, run:
 
-```angular2html
+```bash
 conda create -n paras python=3.9
 conda activate paras
 

@@ -57,7 +57,7 @@ const SmilesChecker = ({ i, customSmiles, updateSubstrateField }) => {
       updateSubstrateField(i, 'substrateSmiles', null);
     }
 
-    setLastCheckedSmiles(candidateCustomSmiles);  // ✅ Set the last checked SMILES
+    setLastCheckedSmiles(candidateCustomSmiles);  // Set the last checked SMILES
   } catch (err) {
     console.error(err);
     setResult(null);
@@ -125,9 +125,10 @@ const SmilesChecker = ({ i, customSmiles, updateSubstrateField }) => {
                   justifyContent: 'space-between',
                   p: 2,
                   mb: 2,
-                  border: '1px solid #ccc',
+                  border: 1,
+                  borderColor: 'divider',
                   borderRadius: 2,
-                  backgroundColor: '#f9f9f9',
+                  backgroundColor: 'surface.sunken',
                 }}
               >
                 <Box sx={{ flexGrow: 1 }}>

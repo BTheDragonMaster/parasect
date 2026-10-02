@@ -1,189 +1,81 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { 
-  Box, 
+import {
+  Box,
   Button,
+  Card,
+  CardActionArea,
   Divider,
   LinearProgress,
+  Paper,
   Stack,
   TextField,
   Typography,
   Select,
   MenuItem,
   InputLabel,
-  Autocomplete,
-  CircularProgress
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import DownloadIcon from '@mui/icons-material/Download';
+import HubIcon from '@mui/icons-material/Hub';
+import StorageIcon from '@mui/icons-material/Storage';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { DataGrid, GridToolbarContainer, GridPagination } from '@mui/x-data-grid';
 import Statistics from '../components/Statistics';
+import LazyMultiSelect from '../components/LazyMultiSelect';
+import { downloadFile, makeDelimited } from '../utils/tabular';
 
 const DEFAULT_PAGE_SIZE = 100;
+
+// Build DataGrid columns from sample rows, for a response without column metadata
+const buildColumnsFromRows = (sampleRows) => {
+  if (!sampleRows.length) return [];
+  return Object.keys(sampleRows[0]).map((k) => ({
+    field: k,
+    headerName: k,
+    flex: 1,
+    minWidth: 120,
+  }));
+};
+
+// Ensure each row has a unique 'id' field for DataGrid; keyed on the page the
+// rows were fetched for, so ids stay unique across pages
+const ensureRowIds = (arr, page) => arr.map((r, i) => (r.id ? r : { id: `${page}-${i}`, ...r }));
 const MAX_EXPORT_ROWS = 100000;
 
+// Every preset's Editor reports a plain { paramName: value } object via setParams and
+// never SQL text. The server (routes/sql.py, PRESETS) holds the one fixed SQL template
+// per preset and binds these as parameters, so user input can never become SQL syntax
+// regardless of what's typed (quotes, semicolons, whatever). See /api/sql/preset for
+// presets.
 const QUERYOPTIONS = [
-  // {
-  //   key: 'free',
-  //   label: 'Free-form SQL',
-  //   kind: 'free',
-  //   defaultQuery: 'SELECT name, smiles FROM substrate LIMIT 500',
-  //   Editor: ({ query, setQuery }) => (
-  //     <TextField
-  //       label="SQL query"
-  //       value={query}
-  //       onChange={(e) => setQuery(e.target.value)}
-  //       fullWidth
-  //       multiline
-  //       minRows={3}
-  //       placeholder="e.g., SELECT * FROM substrate LIMIT 500"
-  //     />
-  //   ),
-  // },
-{
-  key: 'substrate',
-  label: 'A-domains by substrate',
-  kind: 'preset',
-  defaultQuery: "SELECT name, smiles FROM substrate LIMIT 500",
-  Editor: ({ setQuery }) => {
-    const [options, setOptions] = useState([]);
-    const [value, setValue] = useState(null);
-    const [loading, setLoading] = useState(false);
-
-    // Fetch substrate names once
-    useEffect(() => {
-      let mounted = true;
-      setLoading(true);
-      fetch('/api/sql', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: 'SELECT name FROM substrate ORDER BY name',
-          page: 0,
-          pageSize: 5000,
-        }),
-      })
-        .then((r) => r.json())
-        .then((d) => {
-          if (mounted) {
-            setOptions(d.rows?.map((r) => r.name) || []);
-          }
-        })
-        .catch(() => setOptions([]))
-        .finally(() => setLoading(false));
-
-      return () => {
-        mounted = false;
-      };
-    }, []);
-
-    // Compile SQL when a substrate is chosen
-    useEffect(() => {
-      if (!value) {
-        setQuery('');
-        return;
-      }
-
-      const sql = `
-SELECT
-  ad.id                          AS domain_id,
-  p.id                           AS protein_id,
-  group_concat(ps.synonym, ', ') AS protein_synonyms,
-  pda.domain_number,
-  ad.signature,
-  ad.extended_signature,
-  s.name                         AS substrate_name,
-  s.smiles                       AS substrate_smiles
-FROM substrate_domain_association sda
-JOIN substrate                    s   ON s.name = sda.substrate_name
-JOIN adenylation_domain           ad  ON ad.id = sda.domain_id
-JOIN protein_domain_association   pda ON pda.domain_id = ad.id
-JOIN protein                      p   ON p.id = pda.protein_id
-LEFT JOIN protein_synonym         ps  ON ps.protein_id = p.id
-WHERE s.name = '${value}' COLLATE NOCASE
-GROUP BY
-  ad.id, p.id, pda.domain_number,
-  ad.signature, ad.extended_signature,
-  s.name, s.smiles
-ORDER BY
-  p.id, pda.domain_number
-LIMIT 500
-      `.replace(/\s+/g, ' ').trim();
-
-      setQuery(sql);
-    }, [value, setQuery]);
-
-    return (
-      <Autocomplete
-        options={options}
-        value={value}
-        onChange={(_, newValue) => setValue(newValue)}
-        loading={loading}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Substrate"
-            placeholder="Start typing a substrate name…"
-            InputProps={{
-              ...params.InputProps,
-              endAdornment: (
-                <>
-                  {loading ? <CircularProgress size={18} /> : null}
-                  {params.InputProps.endAdornment}
-                </>
-              ),
-            }}
-          />
-        )}
-        fullWidth
-        autoHighlight
-        clearOnEscape
+  {
+    key: 'substrate',
+    label: 'A-domains by substrate',
+    kind: 'preset',
+    Editor: ({ params, setParams }) => (
+      <LazyMultiSelect
+        field='substrate'
+        label='Substrates'
+        placeholder='Start typing a substrate name...'
+        value={params.substrate_name || []}
+        onChange={(next) => setParams(next.length ? { substrate_name: next } : {})}
       />
-    );
+    ),
   },
-},
   {
     key: 'proteinId',
     label: 'Substrate specificities by protein ID',
     kind: 'preset',
-    defaultQuery: "SELECT * FROM protein_synonym LIMIT 500",
-    // Editor compiles SQL directly into the main query state
-    Editor: ({ presetInput, setPresetInput, setQuery }) => (
-      <TextField
-        label="Protein ID"
-        value={presetInput}
-        onChange={(e) => {
-          const v = e.target.value;
-          setPresetInput(v);
-          const t = v.trim();
-          setQuery(
-            t
-              ? `
-    SELECT
-      ad.id                    AS domain_id,
-      p.id                     AS protein_id,
-      ps.synonym               AS protein_synonym,
-      pda.domain_number,
-      ad.signature,
-      ad.extended_signature,
-      s.name                   AS substrate_name,
-      s.smiles                 AS substrate_smiles
-    FROM protein_synonym              ps
-    JOIN protein                      p    ON p.id = ps.protein_id
-    JOIN protein_domain_association   pda  ON pda.protein_id = p.id
-    JOIN adenylation_domain           ad   ON ad.id = pda.domain_id
-    LEFT JOIN substrate_domain_association sda ON sda.domain_id = ad.id
-    LEFT JOIN substrate               s    ON s.name = sda.substrate_name
-    WHERE ps.synonym = '${t}' COLLATE NOCASE
-    ORDER BY pda.domain_number, s.name
-    LIMIT 500
-              `.replace(/\s+/g, ' ').trim()
-              : ''
-          );
-        }}
-        fullWidth
-        placeholder="e.g., P48633.1"
+    Editor: ({ params, setParams }) => (
+      <LazyMultiSelect
+        field='protein'
+        label='Protein IDs'
+        placeholder='e.g. P48633.1'
+        value={params.protein_id || []}
+        onChange={(next) => setParams(next.length ? { protein_id: next } : {})}
       />
     ),
   },
@@ -191,132 +83,51 @@ LIMIT 500
     key: 'species',
     label: 'Substrate specificities by species',
     kind: 'preset',
-    defaultQuery: "SELECT DISTINCT species FROM taxonomy LIMIT 500",
-    // Editor compiles SQL directly into the main query state
-    Editor: ({ presetInput, setPresetInput, setQuery }) => (
-      <TextField
-        label="Species name"
-        value={presetInput}
-        onChange={(e) => {
-          const v = e.target.value;
-          setPresetInput(v);
-          const t = v.trim();
-          setQuery(
-            t
-              ? `
-    SELECT
-      ad.id                    AS domain_id,
-      p.id                     AS protein_id,
-      t.species                AS species,
-      pda.domain_number,
-      ad.signature,
-      ad.extended_signature,
-      s.name                   AS substrate_name,
-      s.smiles                 AS substrate_smiles
-    FROM taxonomy                     t
-    JOIN protein                      p    ON p.taxonomy_id = t.id
-    JOIN protein_domain_association   pda  ON pda.protein_id = p.id
-    JOIN adenylation_domain           ad   ON ad.id = pda.domain_id
-    LEFT JOIN substrate_domain_association sda ON sda.domain_id = ad.id
-    LEFT JOIN substrate               s    ON s.name = sda.substrate_name
-    WHERE t.species = '${t}' COLLATE NOCASE
-    ORDER BY pda.domain_number, s.name
-    LIMIT 500
-              `.replace(/\s+/g, ' ').trim()
-              : ''
-          );
-        }}
-        fullWidth
-        placeholder="e.g., Streptomyces coelicolor"
+    Editor: ({ params, setParams }) => (
+      <LazyMultiSelect
+        field='species'
+        label='Species'
+        placeholder='e.g. Streptomyces coelicolor'
+        value={params.species || []}
+        onChange={(next) => setParams(next.length ? { species: next } : {})}
       />
     ),
   },
   {
     key: 'signature',
-    label: 'Substrate specificities by A-domain signature (Hamming ≤ N)',
+    label: 'Substrate specificities by A-domain signature (Hamming <= N)',
     kind: 'preset',
-    defaultQuery: "SELECT * FROM adenylation_domain LIMIT 500",
-    // Local state inside editor; compiles SQL into `query` (no parsing back)
-    Editor: ({ setQuery }) => {
-      const [sig, setSig] = useState('');
-      const [maxDist, setMaxDist] = useState(3); // sensible default
-
-      const updateSQL = (s, d) => {
-        const clamped = Math.max(0, Math.min(10, Number.isFinite(+d) ? +d : 0));
-        const pad = s.toUpperCase().slice(0, 10).padEnd(10, '-'); // GAP token '-'
-        // build 10 char-by-char comparisons
-        const comps = Array.from({ length: 10 }, (_, i) => {
-          const idx = i + 1;
-          return `(substr('${pad}',${idx},1) <> substr(UPPER(substr(ad.signature || '----------',1,10)),${idx},1))`;
-        }).join(' + ');
-        const sql = `
-  WITH d AS (
-    SELECT
-      ad.id,
-      ad.signature,
-      ad.extended_signature,
-      (${comps}) AS hamming
-    FROM adenylation_domain ad
-  )
-  SELECT
-    d.id                       AS domain_id,
-    p.id                       AS protein_id,
-    group_concat(ps.synonym, ', ') AS protein_synonyms,
-    pda.domain_number,
-    ad.signature,
-    ad.extended_signature,
-    s.name                     AS substrate_name,
-    s.smiles                   AS substrate_smiles,
-    d.hamming
-  FROM d
-  JOIN adenylation_domain           ad  ON ad.id = d.id
-  JOIN protein_domain_association   pda ON pda.domain_id = ad.id
-  JOIN protein                      p   ON p.id = pda.protein_id
-  LEFT JOIN substrate_domain_association sda ON sda.domain_id = ad.id
-  LEFT JOIN substrate               s   ON s.name = sda.substrate_name
-  LEFT JOIN protein_synonym         ps  ON ps.protein_id = p.id
-  WHERE d.hamming <= ${clamped}
-  GROUP BY
-    d.id, p.id, pda.domain_number,
-    ad.signature, ad.extended_signature,
-    s.name, s.smiles, d.hamming
-  ORDER BY pda.domain_number, s.name
-  LIMIT 500
-        `.replace(/\s+/g, ' ').trim();
-        setQuery(sql);
-      };
-
-      return (
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-          <TextField
-            label="Signature (max 10)"
-            value={sig}
-            inputProps={{ maxLength: 10 }}
-            onChange={(e) => {
-              const v = e.target.value;
-              setSig(v);
-              updateSQL(v, maxDist);
-            }}
-            fullWidth
-            placeholder="e.g., S/T-A-V-I-G-H-D-L"
-          />
-          <TextField
-            label="Max Hamming distance"
-            type="number"
-            value={maxDist}
-            inputProps={{ min: 0, max: 10, step: 1 }}
-            onChange={(e) => {
-              const v = e.target.value;
-              setMaxDist(v);
-              updateSQL(sig, v);
-            }}
-            sx={{ width: 200 }}
-          />
-        </Stack>
-      );
-    },
+    Editor: ({ params, setParams }) => (
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+        <TextField
+          label="Signature (max 10)"
+          value={params.signature || ''}
+          inputProps={{ maxLength: 10 }}
+          onChange={(e) => setParams({ ...params, signature: e.target.value })}
+          fullWidth
+          placeholder="e.g., S/T-A-V-I-G-H-D-L"
+        />
+        <TextField
+          label="Max Hamming distance"
+          type="number"
+          value={params.max_distance ?? 3}
+          inputProps={{ min: 0, max: 10, step: 1 }}
+          onChange={(e) => setParams({ ...params, max_distance: e.target.value })}
+          sx={{ width: 200 }}
+        />
+      </Stack>
+    ),
   },
 ];
+
+/** True once a preset's params object has at least one non-empty required value. */
+function hasUsableParams(params) {
+  return Object.values(params || {}).some((v) => {
+    // a multi-select contributes an array, and an empty one is still no filter
+    if (Array.isArray(v)) return v.length > 0;
+    return v !== '' && v !== null && v !== undefined;
+  });
+}
 
 const CustomTopToolbar = () => (
   <GridToolbarContainer sx={{ justifyContent: 'flex-end', mb: 1 }}>
@@ -332,8 +143,7 @@ const QueryDatabase = () => {
     [selectedKey]
   );
 
-  const [presetInput, setPresetInput] = useState('');
-  const [query, setQuery] = useState(selectedOption.defaultQuery || '');
+  const [presetParams, setPresetParams] = useState({});
 
   // grid state
   const [rows, setRows] = useState([]);
@@ -343,6 +153,9 @@ const QueryDatabase = () => {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sortModel, setSortModel] = useState([]);
+  // distinguishes "you haven't searched yet" from "that search found nothing";
+  // an empty grid can't say which, so it isn't shown for either
+  const [hasSearched, setHasSearched] = useState(false);
   const lastRequestRef = useRef(0);
 
   // Memoized active sort parameters
@@ -352,59 +165,48 @@ const QueryDatabase = () => {
     return { sortBy: field, sortDir: sort };
   }, [sortModel]);
 
-  // Function to build columns from sample rows
-  const buildColumnsFromRows = (sampleRows) => {
-    if (!sampleRows.length) return [];
-    const keys = Object.keys(sampleRows[0]);
-    return keys.map((k) => ({
-      field: k,
-      headerName: k,
-      flex: 1,
-      minWidth: 120,
-    }))
-  };
-
-  // Ensure each row has a unique 'id' field for DataGrid
-  const ensureRowIds = (arr) => arr.map((r, i) => (r.id ? r : { id: `${page}-${i}`, ...r }));
-
-  // Fetch results from the server
-  const fetchResults = useCallback(async ({ q, p, ps, sortBy, sortDir }) => {
-    if (!q.trim()) {
-      toast.warn('Please enter a SQL query.');
+  // Fetch results from the server via the safe, parameterized preset endpoint
+  // (see routes/sql.py: PRESETS). Params are always bound SQL parameters, never
+  // interpolated into query text, so this can't be used to inject SQL
+  const fetchResults = useCallback(async ({ presetKey, params, p, ps, sortBy, sortDir }) => {
+    if (!hasUsableParams(params)) {
+      toast.warn('Please fill in the filter above.');
       return;
     }
     setLoading(true);
     const reqId = Date.now();
     lastRequestRef.current = reqId;
     try {
-      const res = await fetch('/api/sql', {
+      const res = await fetch('/api/sql/preset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: q, page: p, pageSize: ps, sortBy, sortDir }),
+        body: JSON.stringify({ preset: presetKey, params, page: p, pageSize: ps, sortBy, sortDir }),
       })
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       if (lastRequestRef.current !== reqId) return;
       const cols = data.columns?.length ? data.columns.map((c) => ({ flex: 1, minWidth: 120, ...c })) : buildColumnsFromRows(data.rows || []);
-      const withIds = ensureRowIds(data.rows || []);
+      const withIds = ensureRowIds(data.rows || [], p);
       setColumns(cols);
       setRows(withIds);
       setRowCount(Number.isFinite(data.total) ? data.total : withIds.length);
+      setHasSearched(true);
     } catch (err) {
       toast.error(`Query failed: ${err.message}`);
       setColumns([]);
       setRows([]);
       setRowCount(0);
+      setHasSearched(true);
     } finally {
       setLoading(false);
     }
-  }, [page, selectedOption]);
+  }, []);
 
   // Fetch results when page, pageSize, or activeSort changes
   const onSearch = useCallback(() => {
     setPage(0);
-    fetchResults({ q: query, p: 0, ps: pageSize, ...activeSort });
-  }, [query, pageSize, activeSort, fetchResults]);
+    fetchResults({ presetKey: selectedKey, params: presetParams, p: 0, ps: pageSize, ...activeSort });
+  }, [selectedKey, presetParams, pageSize, activeSort, fetchResults]);
 
   // Clear all results and reset state
   const clearAll = () => {
@@ -413,47 +215,20 @@ const QueryDatabase = () => {
     setRowCount(0);
     setPage(0);
     setSortModel([]);
-    // keep current query text; if preset is active and its editor cleared, query may be ''
-  };
-
-  // Export helpers
-  const makeDelimited = (cols, data, delim) => {
-    const header = cols.map((c) => c.field).join(delim);
-    const lines = data.map((r) => cols.map((c) => String(r[c.field] ?? '').replace(/\n|\r/g, ' ')).join(delim));
-    return [header, ...lines].join('\n');
-  };
-
-  const downloadFile = (content, filename, mime) => {
-    const blob = new Blob([content], { type: mime });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  };
-
-  const exportCurrentPage = (format) => {
-    if (!columns.length || !rows.length) {
-      toast.info('Nothing to export.');
-      return;
-    }
-    const delim = format === 'csv' ? ',' : '\t';
-    const text = makeDelimited(columns, rows, delim);
-    downloadFile(text, `results_page${page + 1}.${format}`, format === 'csv' ? 'text/csv' : 'text/tab-separated-values');
+    setHasSearched(false);
+    // keep current filter values; if preset is active and its editor cleared, params may be {}
   };
 
   const exportAll = async (format) => {
     setLoading(true);
     try {
-      if (!query.trim()) return toast.warn('Please enter a SQL query first!');
-      const res = await fetch('/api/sql', {
+      if (!hasUsableParams(presetParams)) return toast.warn('Please fill in the filter above first!');
+      const res = await fetch('/api/sql/preset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          query,
+          preset: selectedKey,
+          params: presetParams,
           page: 0,
           pageSize: MAX_EXPORT_ROWS,
           sortBy: activeSort.sortBy,
@@ -475,9 +250,9 @@ const QueryDatabase = () => {
 
   useEffect(() => {
     // only refetch if we've already run at least once
-    if (!query.trim()) return;
+    if (!hasUsableParams(presetParams)) return;
     if (rows.length === 0 && rowCount === 0) return;
-    fetchResults({ q: query, p: page, ps: pageSize, ...activeSort });
+    fetchResults({ presetKey: selectedKey, params: presetParams, p: page, ps: pageSize, ...activeSort });
   }, [page, pageSize, activeSort.sortBy, activeSort.sortDir]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -491,6 +266,44 @@ const QueryDatabase = () => {
 
       <Statistics />
 
+      <Card variant="outlined" sx={{ mt: 2, borderRadius: 3 }}>
+        <CardActionArea
+          component={RouterLink}
+          to="/network"
+          sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}
+        >
+          <HubIcon color="primary" sx={{ fontSize: 28, flexShrink: 0 }} />
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+              Explore the sequence similarity network
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              See how these domains relate to each other, clustered by their signatures, instead of as a table.
+            </Typography>
+          </Box>
+          <ArrowForwardIcon sx={{ flexShrink: 0, display: { xs: 'none', sm: 'block' } }} />
+        </CardActionArea>
+      </Card>
+
+      <Card variant="outlined" sx={{ mt: 2, borderRadius: 3 }}>
+        <CardActionArea
+          component={RouterLink}
+          to="/dataset"
+          sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}
+        >
+          <StorageIcon color="primary" sx={{ fontSize: 28, flexShrink: 0 }} />
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+              Download the full dataset
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Get the whole database as one SQLite file, and inspect its entity-relationship diagram.
+            </Typography>
+          </Box>
+          <ArrowForwardIcon sx={{ flexShrink: 0, display: { xs: 'none', sm: 'block' } }} />
+        </CardActionArea>
+      </Card>
+
       <Divider sx={{ my: 2 }} />
 
       <Stack spacing={1} sx={{ mb: 1 }}>
@@ -503,15 +316,14 @@ const QueryDatabase = () => {
             onChange={(e) => {
               const nextKey = e.target.value;
               setSelectedKey(nextKey);
-              const next = QUERYOPTIONS.find((o) => o.key === nextKey);
-              setQuery(next?.defaultQuery || '');
-              // clear results on type switch
-              setPresetInput('');
+              // clear filter values and results on mode switch
+              setPresetParams({});
               setRows([]);
               setColumns([]);
               setRowCount(0);
               setPage(0);
               setSortModel([]);
+              setHasSearched(false);
             }}
           >
             {QUERYOPTIONS.map((o) => (
@@ -520,14 +332,8 @@ const QueryDatabase = () => {
           </Select>
         </Box>
 
-        {/* Per-option editor:
-            - 'free' shows SQL textarea
-            - presets render inputs that directly update the main query via setQuery
-        */}
         {selectedOption.Editor ? (
-          selectedOption.key === 'free'
-            ? <selectedOption.Editor query={query} setQuery={setQuery} />
-            : <selectedOption.Editor presetInput={presetInput} setPresetInput={setPresetInput} setQuery={setQuery} />
+          <selectedOption.Editor params={presetParams} setParams={setPresetParams} />
         ) : null}
       </Stack>
 
@@ -554,38 +360,62 @@ const QueryDatabase = () => {
 
       <Divider sx={{ my: 2 }} />
 
-      <Box sx={{ height: 520, width: '100%' }}>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          pagination
-          paginationMode="server"
-          sortingMode="server"
-          pageSizeOptions={[10, 25, 50, 100]}
-          rowCount={rowCount}
-          page={page}
-          onPaginationModelChange={(model) => {
-            if (model.pageSize !== pageSize) setPageSize(model.pageSize);
-            if (model.page !== page) setPage(model.page);
-          }}
-          sortingOrder={["asc", "desc"]}
-          sortModel={sortModel}
-          onSortModelChange={(model) => setSortModel(model)}
-          disableRowSelectionOnClick
-          loading={loading}
-          slots={{
-            toolbar: CustomTopToolbar,
-            loadingOverlay: LinearProgress,
-            noRowsOverlay: () => (
-              <Stack height="100%" alignItems="center" justifyContent="center">
-                <Typography variant="body2" color="text.secondary">
-                  {rows.length === 0 && !loading ? 'Sorry, no results for query' : ''}
-                </Typography>
-              </Stack>
-            ),
-          }}
-        />
-      </Box>
+      {rows.length > 0 ? (
+        <Box sx={{ height: 520, width: '100%' }}>
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            pagination
+            paginationMode="server"
+            sortingMode="server"
+            pageSizeOptions={[10, 25, 50, 100]}
+            rowCount={rowCount}
+            page={page}
+            onPaginationModelChange={(model) => {
+              if (model.pageSize !== pageSize) setPageSize(model.pageSize);
+              if (model.page !== page) setPage(model.page);
+            }}
+            sortingOrder={["asc", "desc"]}
+            sortModel={sortModel}
+            onSortModelChange={(model) => setSortModel(model)}
+            disableRowSelectionOnClick
+            loading={loading}
+            slots={{
+              toolbar: CustomTopToolbar,
+              loadingOverlay: LinearProgress,
+            }}
+          />
+        </Box>
+      ) : (
+        /* an empty grid is all chrome and no information: a header row, paging
+           controls and 500px of nothing. Say what's going on instead. */
+        <Paper
+          variant="outlined"
+          sx={{ py: 5, px: 3, textAlign: 'center', borderStyle: 'dashed' }}
+        >
+          {loading ? (
+            <Typography variant="body2" color="text.secondary">Running your query...</Typography>
+          ) : hasSearched ? (
+            <>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                No matches
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                Nothing in the reference database fits that filter. Try adding more values, or a different query mode.
+              </Typography>
+            </>
+          ) : (
+            <>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                Pick a filter and hit search
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                You can select several values at once, and every match is combined into one table.
+              </Typography>
+            </>
+          )}
+        </Paper>
+      )}
 
       {loading && (
         <Box sx={{ position: 'fixed', left: 0, right: 0, top: 0, zIndex: 1200 }}>

@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import threading, logging, errno
 from dataclasses import dataclass
-from typing import Callable, Dict, Optional, Any
+from typing import Callable, Any
 
 
 try:
@@ -21,15 +23,15 @@ except Exception:
 class ModelSpec:
     name: str
     path: str
-    loader: Optional[Callable[[str], Any]] = None  # custom loader
+    loader: Callable[[str], Any] | None = None  # custom loader
     mmap: bool = True  # if True and joblib available, mmap arrays (lower peak RAM)
 
 
 class MultiModelLoader:
-    def __init__(self, specs: Dict[str, ModelSpec]):
+    def __init__(self, specs: dict[str, ModelSpec]):
         self._specs = specs
-        self._models: Dict[str, Any] = {}
-        self._locks: Dict[str, threading.Lock] = {k: threading.Lock() for k in specs}
+        self._models: dict[str, Any] = {}
+        self._locks: dict[str, threading.Lock] = {k: threading.Lock() for k in specs}
 
     def _rss(self) -> str:
         """Return the resident set size (RSS) memory usage of the process."""

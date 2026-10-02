@@ -2,7 +2,7 @@
 
 """Version module for PARASECT."""
 
-VERSION = "2.0.0"
+VERSION = "2.0.2"
 
 
 def get_version() -> str:

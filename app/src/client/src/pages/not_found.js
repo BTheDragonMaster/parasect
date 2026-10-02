@@ -31,11 +31,11 @@ const NotFound = () => {
                     component='img'
                     src='/paras_error.png'
                     alt='PARAS Error'
-                    sx={{ width: 300 }}
+                    sx={{ width: 300, borderRadius: 3, backgroundColor: '#FFFFFF', p: 1, border: '1px solid', borderColor: 'divider' }}
                 />
             </Box>
             <Button component={Link} to='/' variant='contained' color='primary'>
-                <Typography sx={{ color: 'white.main' }}>
+                <Typography sx={{ color: 'primary.contrastText' }}>
                     Go back to the home page
                 </Typography>
             </Button>

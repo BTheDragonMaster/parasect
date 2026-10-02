@@ -19,11 +19,11 @@ const Retrieve = () => {
     };
 
     return (
-        <Box 
-            display='flex' 
-            flexDirection='column' 
-            alignItems='left' 
-            padding={4} 
+        <Box
+            display='flex'
+            flexDirection='column'
+            alignItems='left'
+            sx={{ px: { xs: 2, sm: 4 }, py: 4, maxWidth: 840, width: '100%' }}
             margin='auto'
         >
             

@@ -340,6 +340,31 @@ def _domains_from_fasta(
     return a_domains
 
 
+def _no_sequences_message(path_in: str, file_type: str) -> str:
+    """Explain why no protein sequences were read from an input file.
+
+    Input is parsed strictly as the given file type, so the usual cause is a
+    GenBank file parsed as FASTA (or vice versa); name that when it's the case.
+
+    :param path_in: Path to input file.
+    :param file_type: File type the input was parsed as. Must be 'fasta' or 'gbk'.
+    :return: Error message.
+    """
+    with open(path_in, "r") as fo:
+        start = fo.read(1024).lstrip()
+
+    if file_type == "fasta" and start.startswith("LOCUS"):
+        return "no protein sequences found: input looks like a GenBank file, but was parsed as FASTA. Set the input type to GBK."  # noqa: E501
+
+    if file_type == "gbk" and start.startswith(">"):
+        return "no protein sequences found: input looks like a FASTA file, but was parsed as GenBank. Set the input type to FASTA."  # noqa: E501
+
+    if file_type == "gbk":
+        return "no protein sequences found: GenBank input contains no CDS features with a translation."
+
+    return "no protein sequences found in FASTA input."
+
+
 def get_domains(
     path_in: str,
     path_temp_dir: str,
@@ -371,12 +396,14 @@ def get_domains(
             f"Only supported file types are 'fasta' or 'gbk'. Got {file_type}."
         )  # noqa: E501
 
+    gene_positions: dict = {}
+
     if file_type == "gbk":
         # parse genbank file
         original_fasta = os.path.join(path_temp_dir, "proteins_from_genbank.fasta")
-        genbank_to_fasta(
+        gene_positions = genbank_to_fasta(
             path_in=path_in, path_out=original_fasta
-        )  # creates a fasta file at path_out
+        )  # creates a fasta file at path_out, and returns each gene's position along the DNA
         mapping_file, renamed_fasta_file = rename_sequences(
             path_in=original_fasta, path_out=path_temp_dir
         )
@@ -384,6 +411,10 @@ def get_domains(
     else:
         # parse fasta file
         mapping_file, renamed_fasta_file = rename_sequences(path_in=path_in, path_out=path_temp_dir)
+
+    # HMMER rejects an empty sequence file with an opaque error, so say what's wrong
+    if not parse_fasta_file(renamed_fasta_file):
+        raise ValueError(_no_sequences_message(path_in, file_type))
 
     if extraction_method == "profile":
         a_domains = _domains_from_fasta(
@@ -402,5 +433,10 @@ def get_domains(
         raise ValueError(msg)
 
     reverse_renaming(adenylation_domains=a_domains, path_in_mapping_file=mapping_file)
+
+    # attach each domain's gene position along the DNA, when known (gbk input only)
+    if gene_positions:
+        for a_domain in a_domains:
+            a_domain.set_genomic_position(gene_positions.get(a_domain.protein_name))
 
     return a_domains

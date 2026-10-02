@@ -241,6 +241,22 @@ class AdenylationDomain:
         self.signature_positions: list[Optional[int]] = []
         self.extended_signature_positions: list[Optional[int]] = []
 
+        # position of the parent gene/CDS along the input DNA sequence, e.g. from a
+        # GenBank file (see genbank.genbank_to_fasta). None when the domain wasn't
+        # extracted from a source that carries genomic coordinates (e.g. a plain
+        # FASTA/protein input, or a signature submitted directly).
+        self.genomic_position: Optional[int] = None
+
+    def set_genomic_position(self, genomic_position: Optional[int]) -> None:
+        """Set the position of the parent gene/CDS along the input DNA sequence.
+
+        :param genomic_position: Genomic start position, or None if unknown.
+        :type genomic_position: Optional[int]
+
+        .. note:: This function modifies the genomic_position attribute.
+        """
+        self.genomic_position = genomic_position
+
     def domains_overlap(self, other: "AdenylationDomain", threshold: int = 50) -> bool:
         """
         Check if two domains overlap by at least a certain threshold of base pairs.
