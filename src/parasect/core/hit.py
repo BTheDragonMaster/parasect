@@ -110,19 +110,19 @@ def _resolve_n_terminal_hits(group: list[HmmHit]) -> list[HmmHit]:
     for hit in group:
         if hit.domain_type == DomainType.A_OX:
             # Check if the A-OX HMM covers the OX-domain
-            ox_cover += _get_overlap_length(hit.get_seq_start(),
-                                            hit.get_seq_end(),
+            ox_cover += _get_overlap_length(hit.get_hmm_start(),
+                                            hit.get_hmm_end(),
                                             AOX_HMM.ox_start,
                                             AOX_HMM.ox_end)
 
             # Check if the A-OX HMM covers the AMP-binding domain
-            amp_cover += _get_overlap_length(hit.get_seq_start(),
-                                             hit.get_seq_end(),
+            amp_cover += _get_overlap_length(hit.get_hmm_start(),
+                                             hit.get_hmm_end(),
                                              AOX_HMM.amp_upstream_start,
                                              AOX_HMM.amp_upstream_end)
 
-            amp_cover += _get_overlap_length(hit.get_seq_start(),
-                                             hit.get_seq_end(),
+            amp_cover += _get_overlap_length(hit.get_hmm_start(),
+                                             hit.get_hmm_end(),
                                              AOX_HMM.amp_downstream_start,
                                              AOX_HMM.amp_downstream_end)
 
@@ -149,18 +149,20 @@ def _group_hits(hits: list[HmmHit]) -> list[HmmHit]:
         return []
     grouped_hits = []
     group = [hits[0]]
+    # Compare against the furthest end seen in the current group, not the previous hit's end:
+    # a short hit nested inside a longer one must not make the next hit look far away.
+    group_end = hits[0].get_seq_end()
 
-    for i, hit_1 in enumerate(hits):
-        if i + 1 < len(hits):
-            hit_2 = hits[i + 1]
-            if hit_2.get_seq_start() - hit_1.get_seq_end() < 60:
-                group.append(hit_2)
-            else:
-                grouped_hits.append(group[:])
-                group = [hit_2]
+    for hit in hits[1:]:
+        if hit.get_seq_start() - group_end < 60:
+            group.append(hit)
+            group_end = max(group_end, hit.get_seq_end())
         else:
-            grouped_hits.append(group[:])
-            group = []
+            grouped_hits.append(group)
+            group = [hit]
+            group_end = hit.get_seq_end()
+
+    grouped_hits.append(group)
 
     return grouped_hits
 
