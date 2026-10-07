@@ -270,6 +270,9 @@ def create_domain_entries(session: Session, parasect_path: str, signature_path: 
                     f"Parsed:   {substrates}"
                 )
 
+            # A re-import can change the order without changing the substrate set.
+            existing_domain.substrates = [name_to_substrate[name] for name in substrates]
+
             existing_synonyms: set[str] = {s.synonym for s in existing_domain.synonyms}
 
             for synonym in synonyms:

@@ -19,6 +19,7 @@ from parasect.database.build_database import (
     ProteinDomainAssociation,
     ProteinSynonym,
     Substrate,
+    SubstrateDomainAssociation,
     Taxonomy,
 )
 
@@ -93,7 +94,7 @@ def _domain_row(domain: AdenylationDomain) -> dict[str, Any]:
         "domain_number": association.domain_number if association else None,
         "signature": domain.signature or "",
         "extended_signature": domain.extended_signature or "",
-        "substrates": sorted(s.name for s in domain.substrates),
+        "substrates": [s.name for s in domain.substrates],
         "taxonomy": {
             rank: _clean_taxon(getattr(taxonomy, rank, None)) if taxonomy else "unknown"
             for rank in TAXONOMY_RANKS
@@ -137,7 +138,8 @@ def compare_domains():
             select(AdenylationDomain)
             .where(or_(*conditions))
             .options(
-                selectinload(AdenylationDomain.substrates),
+                selectinload(AdenylationDomain.substrate_associations)
+                .selectinload(SubstrateDomainAssociation.substrate),
                 selectinload(AdenylationDomain.proteins)
                 .selectinload(ProteinDomainAssociation.protein)
                 .selectinload(Protein.synonyms),

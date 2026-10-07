@@ -25,7 +25,9 @@ from flask import Blueprint, jsonify, request
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from parasect.database.build_database import AdenylationDomain, Protein, ProteinDomainAssociation
+from parasect.database.build_database import (
+    AdenylationDomain, Protein, ProteinDomainAssociation, SubstrateDomainAssociation,
+)
 
 from .database import get_db
 
@@ -90,7 +92,8 @@ def _build_cache() -> dict[str, Any]:
     try:
         query = select(AdenylationDomain).options(
             selectinload(AdenylationDomain.synonyms),
-            selectinload(AdenylationDomain.substrates),
+            selectinload(AdenylationDomain.substrate_associations)
+            .selectinload(SubstrateDomainAssociation.substrate),
             selectinload(AdenylationDomain.proteins)
             .selectinload(ProteinDomainAssociation.protein)
             .selectinload(Protein.taxonomy),
@@ -114,7 +117,7 @@ def _build_cache() -> dict[str, Any]:
 
         ids.append(domain.id)
         names.append(domain.get_name() or f"domain_{domain.id}")
-        substrate_lists.append(sorted({s.name for s in domain.substrates}))
+        substrate_lists.append([s.name for s in domain.substrates])
 
         genus = "unknown"
         kingdom = "unknown"
