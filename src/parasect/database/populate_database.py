@@ -186,7 +186,8 @@ def create_substrate_entries(session: Session, smiles_file: str) -> list[Substra
 
 
 def create_domain_entries(session: Session, parasect_path: str, signature_path: str, extended_path: str,
-                          substrate_entries: list[Substrate]) -> tuple[list[AdenylationDomain], list[DomainSynonym]]:
+                          substrate_entries: list[Substrate], *,
+                          check_sequence_overlap: bool = True) -> tuple[list[AdenylationDomain], list[DomainSynonym]]:
     """Create new domain database entries
 
     :param session: database session
@@ -199,6 +200,9 @@ def create_domain_entries(session: Session, parasect_path: str, signature_path: 
     :type extended_path: str
     :param substrate_entries: list of database substrate entries (new and old)
     :type substrate_entries: list[Substrate]
+    :param check_sequence_overlap: Prompt about merging non-identical overlapping sequences.
+        Disable for fresh builds from an already curated dataset.
+    :type check_sequence_overlap: bool
     :return: list of domain entries and list of domain synonym entries
     :rtype: tuple[list[AdenylationDomain], list[DomainSynonym]]
     """
@@ -242,7 +246,7 @@ def create_domain_entries(session: Session, parasect_path: str, signature_path: 
             for domain in existing_domains:
                 if domain.sequence == sequence:
                     existing_domain = domain
-                elif sequences_are_equivalent(domain.sequence, sequence):
+                elif check_sequence_overlap and sequences_are_equivalent(domain.sequence, sequence):
                     logger.warning(f"Domains with equivalent but non-identical sequences found: {domain_id}, {'|'.join([s.synonym for s in domain.synonyms])}")
                     response = input("Merge domains (y/n)? ")
                     if response.lower().startswith('y'):
@@ -444,7 +448,8 @@ def link_domains_and_proteins(domain_entries: list[AdenylationDomain],
 
 
 def populate_db(session: Session, parasect_data_path: str, smiles_path: Optional[str], signature_path: str,
-                extended_path: str, protein_path: str, taxonomy_path: str):
+                extended_path: str, protein_path: str, taxonomy_path: str, *,
+                check_sequence_overlap: bool = True):
 
     protein_entries, protein_synonyms = create_protein_entries(session, protein_path)
 
@@ -458,7 +463,8 @@ def populate_db(session: Session, parasect_data_path: str, smiles_path: Optional
     all_substrates: list[Substrate] = new_substrate_entries + list(session.scalars(select(Substrate)).all())
 
     domain_entries, domain_synonyms = create_domain_entries(session, parasect_data_path, signature_path, extended_path,
-                                                            all_substrates)
+                                                            all_substrates,
+                                                            check_sequence_overlap=check_sequence_overlap)
     protein_domain_links = link_domains_and_proteins(domain_entries, protein_entries, session)
 
     entries: list[Any] = []

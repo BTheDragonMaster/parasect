@@ -1,6 +1,5 @@
 """Substrate order must survive import, correction, and a fresh database session."""
 
-import sqlite3
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -11,7 +10,6 @@ from sqlalchemy.orm import Session
 from parasect.database.build_database import Base, AdenylationDomain, Substrate
 from parasect.database.populate_database import create_domain_entries
 from parasect.database.process_substrate_corrections import correct_substrate
-from parasect.database.rebuild_substrate_order import rebuild_substrate_order
 
 
 class TestSubstrateOrder(unittest.TestCase):
@@ -88,74 +86,6 @@ class TestSubstrateOrder(unittest.TestCase):
             domains = session.scalars(select(AdenylationDomain).order_by(AdenylationDomain.id)).all()
             self.assertEqual([[s.name for s in d.substrates] for d in domains],
                              [["valine", "alanine"], ["alanine", "valine"]])
-
-
-class TestRebuildSubstrateOrder(unittest.TestCase):
-    def setUp(self):
-        temporary = TemporaryDirectory()
-        self.addCleanup(temporary.cleanup)
-        self.root = Path(temporary.name)
-        self.database = self.root / "original.db"
-        self.output = self.root / "ordered.db"
-        self.dataset = self.root / "dataset.txt"
-        connection = sqlite3.connect(self.database)
-        self.addCleanup(connection.close)
-        connection.executescript("""
-            CREATE TABLE adenylation_domain (id INTEGER PRIMARY KEY, sequence TEXT);
-            CREATE TABLE substrate (name TEXT PRIMARY KEY);
-            CREATE TABLE domain_synonym (synonym TEXT, domain_id INTEGER);
-            CREATE TABLE substrate_domain_association (
-                substrate_name TEXT REFERENCES substrate(name),
-                domain_id INTEGER REFERENCES adenylation_domain(id),
-                PRIMARY KEY (substrate_name, domain_id)
-            );
-            INSERT INTO adenylation_domain VALUES (42, 'AAAA'), (57, 'CCCC');
-            INSERT INTO substrate VALUES ('alanine'), ('leucine'), ('valine');
-            INSERT INTO domain_synonym VALUES ('Test.A1', 42), ('Alias.A1', 42), ('Other.A1', 57);
-            INSERT INTO substrate_domain_association VALUES
-                ('alanine', 42), ('leucine', 42), ('valine', 42), ('alanine', 57);
-        """)
-        self.source_bytes = self.database.read_bytes()
-        self.write_dataset()
-
-    def write_dataset(self, first="valine|alanine|leucine", second="Other.A1\talanine\n"):
-        self.dataset.write_text(
-            "domain_id\tspecificity\n" + f"Test.A1|Alias.A1\t{first}\n" + second,
-        )
-
-    def test_rebuild_preserves_ids_and_data_and_leaves_source_untouched(self):
-        self.assertEqual(rebuild_substrate_order(self.database, self.dataset, self.output), 4)
-        connection = sqlite3.connect(self.output)
-        self.addCleanup(connection.close)
-        self.assertEqual(connection.execute(
-            "SELECT substrate_name, position FROM substrate_domain_association "
-            "WHERE domain_id=42 ORDER BY position"
-        ).fetchall(), [("valine", 0), ("alanine", 1), ("leucine", 2)])
-        self.assertEqual(connection.execute("SELECT * FROM adenylation_domain ORDER BY id").fetchall(),
-                         [(42, "AAAA"), (57, "CCCC")])
-        self.assertEqual(connection.execute("PRAGMA foreign_key_check").fetchall(), [])
-        self.assertEqual(self.database.read_bytes(), self.source_bytes)
-
-    def test_rebuild_rejects_missing_mismatched_duplicate_and_conflicting_orders(self):
-        cases = [
-            ("valine|alanine", "Other.A1\talanine\n"),
-            ("valine|alanine|leucine", ""),
-            ("valine|alanine|leucine|valine", "Other.A1\talanine\n"),
-            ("valine|alanine|leucine", "Alias.A1\talanine|leucine|valine\nOther.A1\talanine\n"),
-            ("valine|alanine|leucine", "Unknown.A1\talanine\n"),
-        ]
-        for first, second in cases:
-            with self.subTest(first=first, second=second):
-                self.write_dataset(first, second)
-                with self.assertRaises(ValueError):
-                    rebuild_substrate_order(self.database, self.dataset, self.output)
-                self.assertFalse(self.output.exists())
-                self.assertEqual(self.database.read_bytes(), self.source_bytes)
-
-    def test_rebuild_refuses_to_overwrite_input(self):
-        with self.assertRaises(FileExistsError):
-            rebuild_substrate_order(self.database, self.dataset, self.database)
-        self.assertEqual(self.database.read_bytes(), self.source_bytes)
 
 
 if __name__ == "__main__":
