@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 #   - src/parasect/data/model_metadata.txt, which records the scikit-learn the
 #     models were written with and drives the retrain-vs-download decision, and
 #   - ZENODO_RECORD in app/docker-compose.yml, so the webapp agrees.
-ZENODO_RECORD = "18682178"
+ZENODO_RECORD = "23262276"
 
 #: Which file in that record backs each model type.
 MODEL_ARCHIVES = {
