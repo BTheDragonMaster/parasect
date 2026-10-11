@@ -93,7 +93,7 @@ def _domain_row(domain: AdenylationDomain) -> dict[str, Any]:
         "domain_number": association.domain_number if association else None,
         "signature": domain.signature or "",
         "extended_signature": domain.extended_signature or "",
-        "substrates": sorted(s.name for s in domain.substrates),
+        "substrates": [s.name for s in domain.substrates],
         "taxonomy": {
             rank: _clean_taxon(getattr(taxonomy, rank, None)) if taxonomy else "unknown"
             for rank in TAXONOMY_RANKS

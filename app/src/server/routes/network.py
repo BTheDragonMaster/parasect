@@ -114,7 +114,7 @@ def _build_cache() -> dict[str, Any]:
 
         ids.append(domain.id)
         names.append(domain.get_name() or f"domain_{domain.id}")
-        substrate_lists.append(sorted({s.name for s in domain.substrates}))
+        substrate_lists.append([s.name for s in domain.substrates])
 
         genus = "unknown"
         kingdom = "unknown"
