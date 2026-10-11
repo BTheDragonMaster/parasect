@@ -1,7 +1,9 @@
 from typing import Any, Optional
 from sys import argv
 
-from sqlalchemy import create_engine, Column, ForeignKey, Table, String, JSON
+from sqlalchemy import create_engine, CheckConstraint, ForeignKey, JSON
+from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
+from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -9,12 +11,19 @@ class Base(DeclarativeBase):
     pass
 
 
-substrate_domain_association = Table(
-    "substrate_domain_association",
-    Base.metadata,
-    Column("substrate_name", String, ForeignKey("substrate.name"), primary_key=True),
-    Column("domain_id", ForeignKey("adenylation_domain.id"), primary_key=True),
-)
+class SubstrateDomainAssociation(Base):
+    __tablename__ = "substrate_domain_association"
+    __table_args__ = (CheckConstraint("position >= 0"),)
+
+    substrate_name: Mapped[str] = mapped_column(ForeignKey("substrate.name"), primary_key=True)
+    domain_id: Mapped[int] = mapped_column(ForeignKey("adenylation_domain.id"), primary_key=True)
+    position: Mapped[int]
+
+    substrate: Mapped["Substrate"] = relationship(back_populates="domain_associations")
+    domain: Mapped["AdenylationDomain"] = relationship(back_populates="substrate_associations")
+
+
+substrate_domain_association = SubstrateDomainAssociation.__table__
 
 
 class ProteinDomainAssociation(Base):
@@ -41,8 +50,13 @@ class Substrate(Base):
     name: Mapped[str] = mapped_column(primary_key=True)
     fingerprint: Mapped[list[int]] = mapped_column(JSON)
     smiles: Mapped[str]
-    domains: Mapped[list["AdenylationDomain"]] = relationship(secondary=substrate_domain_association,
-                                                              back_populates="substrates")
+    domain_associations: Mapped[list["SubstrateDomainAssociation"]] = relationship(
+        back_populates="substrate", cascade="all, delete-orphan",
+    )
+    domains: AssociationProxy[list["AdenylationDomain"]] = association_proxy(
+        "domain_associations", "domain",
+        creator=lambda domain: SubstrateDomainAssociation(domain=domain),
+    )
 
     def __repr__(self):
         return self.name
@@ -136,8 +150,16 @@ class AdenylationDomain(Base):
         cascade="all, delete-orphan",
         lazy="selectin",
     )
-    substrates: Mapped[list["Substrate"]] = relationship(secondary=substrate_domain_association,
-                                                         back_populates="domains")
+    substrate_associations: Mapped[list["SubstrateDomainAssociation"]] = relationship(
+        back_populates="domain",
+        cascade="all, delete-orphan",
+        order_by="SubstrateDomainAssociation.position",
+        collection_class=ordering_list("position"),
+    )
+    substrates: AssociationProxy[list["Substrate"]] = association_proxy(
+        "substrate_associations", "substrate",
+        creator=lambda substrate: SubstrateDomainAssociation(substrate=substrate),
+    )
 
     proteins: Mapped[list["ProteinDomainAssociation"]] = relationship(
         back_populates="domain",

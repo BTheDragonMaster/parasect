@@ -192,7 +192,7 @@ def _build_by_substrate(params: dict):
         LEFT JOIN protein_synonym         ps  ON ps.protein_id = p.id
         WHERE s.name COLLATE NOCASE IN (PLACEHOLDERS)
         GROUP BY ad.id, p.id, pda.domain_number, ad.signature, ad.extended_signature, s.name, s.smiles
-        ORDER BY s.name, p.id, pda.domain_number
+        ORDER BY p.id, pda.domain_number, ad.id, sda.position
     """.replace("PLACEHOLDERS", placeholders)
     return sql, bound
 
@@ -217,7 +217,7 @@ def _build_by_protein_id(params: dict):
         LEFT JOIN substrate_domain_association sda ON sda.domain_id = ad.id
         LEFT JOIN substrate               s    ON s.name = sda.substrate_name
         WHERE ps.synonym COLLATE NOCASE IN (PLACEHOLDERS)
-        ORDER BY ps.synonym, pda.domain_number, s.name
+        ORDER BY ps.synonym, pda.domain_number, ad.id, sda.position
     """.replace("PLACEHOLDERS", placeholders)
     return sql, bound
 
@@ -242,7 +242,7 @@ def _build_by_species(params: dict):
         LEFT JOIN substrate_domain_association sda ON sda.domain_id = ad.id
         LEFT JOIN substrate               s    ON s.name = sda.substrate_name
         WHERE t.species COLLATE NOCASE IN (PLACEHOLDERS)
-        ORDER BY t.species, pda.domain_number, s.name
+        ORDER BY t.species, p.id, pda.domain_number, ad.id, sda.position
     """.replace("PLACEHOLDERS", placeholders)
     return sql, bound
 
@@ -288,7 +288,7 @@ def _build_by_signature(params: dict):
         LEFT JOIN protein_synonym         ps  ON ps.protein_id = p.id
         WHERE d.hamming <= :max_distance
         GROUP BY d.id, p.id, pda.domain_number, ad.signature, ad.extended_signature, s.name, s.smiles, d.hamming
-        ORDER BY pda.domain_number, s.name
+        ORDER BY pda.domain_number, p.id, ad.id, sda.position
     """
     return sql, {"padded": padded, "max_distance": max_distance}
 

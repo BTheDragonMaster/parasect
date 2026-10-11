@@ -51,8 +51,9 @@ def correct_substrate(session: Session, domain_synonym: str, correct_substrates:
     if missing:
         raise ValueError(f"Substrates not found in DB: {', '.join(missing)}")
 
-    domain.substrates.clear()
-    domain.substrates.extend(substrates)
+    # IN queries do not preserve the order of the submitted names.
+    by_name = {substrate.name: substrate for substrate in substrates}
+    domain.substrates = [by_name[name] for name in dict.fromkeys(correct_substrates)]
 
     session.add(domain)
 

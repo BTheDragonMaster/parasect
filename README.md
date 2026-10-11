@@ -10,6 +10,18 @@ You can find a live version of the web application [here](https://paras.bioinfor
 
 Browse the data that PARAS and PARASECT were trained on [here](https://paras.bioinformatics.nl/query_database).
 
+Create a fresh database from the checked-in source files in an environment with
+this checkout installed (`pip install -e .`):
+
+```bash
+python -m parasect.database.create_database --output /tmp/parasect-new.db
+```
+
+The output path must not already exist. Use `--data-dir /path/to/database_files`
+to supply another dataset directory. The command creates the tables, imports the
+data, and validates the database. Substrates retain their order from each domain's
+pipe-separated `specificity` field in `parasect_dataset.txt`.
+
 ## License
 
 The PARAS/PARASECT source code is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0), see [LICENSE.txt](LICENSE.txt).
