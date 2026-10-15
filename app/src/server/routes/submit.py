@@ -15,6 +15,7 @@ from flask import Blueprint, Response, request, redirect, jsonify
 from parasect.api import run_paras, run_parasect, run_paras_for_signatures
 from parasect.core.domain import AdenylationDomain
 from parasect.core.hit import DomainType
+from parasect.core.model_bundle import fingerprint_path
 from pikachu.general import read_smiles
 
 from fetch_models import read_manifest
@@ -37,8 +38,10 @@ MODEL_PARASECT_BACTERIAL = os.path.join(MODEL_DIR, "bacterial_model.parasect")
 loader = MultiModelLoader({
     "parasAllSubstrates": ModelSpec(name="PARAS (all substrates)", path=MODEL_PARAS_ALL_SUBSTRATES, mmap=True),
     "parasCommonSubstrates": ModelSpec(name="PARAS (common substrates)", path=MODEL_PARAS_COMMON_SUBSTRATES, mmap=True),
-    "parasect": ModelSpec(name="PARASECT", path=MODEL_PARASECT, mmap=True),
-    "parasectBacterial": ModelSpec(name="PARASECT (bacterial)", path=MODEL_PARASECT_BACTERIAL, mmap=True),
+    "parasect": ModelSpec(name="PARASECT", path=MODEL_PARASECT, mmap=True,
+                          fingerprints_file=fingerprint_path(MODEL_PARASECT)),
+    "parasectBacterial": ModelSpec(name="PARASECT (bacterial)", path=MODEL_PARASECT_BACTERIAL, mmap=True,
+                                   fingerprints_file=fingerprint_path(MODEL_PARASECT_BACTERIAL)),
 })
 
 
@@ -47,7 +50,7 @@ def model_provenance(key: str) -> dict:
     """Describe the model file behind key, for storing with a job's results.
 
     :param key: Model key in loader.
-    :return: Key, display name, Zenodo record, archive md5 and scikit-learn version.
+    :return: Model identity, release, scikit-learn version and fingerprint provenance.
     """
     spec = loader._specs[key]
     entry = read_manifest(MODEL_DIR).get(os.path.basename(spec.path)) or {}
@@ -61,6 +64,8 @@ def model_provenance(key: str) -> dict:
         "zenodo_record": entry.get("record") if matches else None,
         "archive_md5": entry.get("archive_md5") if matches else None,
         "sklearn_version": entry.get("verified_sklearn") if matches else None,
+        "fingerprints_file": entry.get("fingerprints_file") if matches else None,
+        "fingerprints_sha256": entry.get("fingerprints_sha256") if matches else None,
     }
 
 
@@ -199,6 +204,7 @@ def run_prediction_raw(job_id: str, data: dict[str, str]) -> None:
                     only_custom=use_only_uploaded_substrates,
                     use_structure_guided_alignment=use_structure_guided_alignment,
                     bacterial_only=(selected_model == "parasectBacterial"),
+                    fingerprints_file=loader._specs[selected_model].fingerprints_file,
                 )
 
             else:

@@ -4,12 +4,11 @@
 
 import argparse
 import logging
-from joblib import load
 from shutil import rmtree
 
 from parasect.core.constants import SEPARATOR_1, SEPARATOR_2, SEPARATOR_3
 from parasect.api import run_parasect
-from parasect.core.helpers import prepare_folders, prepare_substrates, prepare_model
+from parasect.core.helpers import prepare_folders, prepare_substrates, prepare_model, load_parasect_bundle
 from parasect.core.writers import write_results
 from parasect.core.models import ModelType
 
@@ -79,7 +78,7 @@ def main() -> None:
         raise ValueError("No substrates to test! Either include standard substrates or pass custom substrate SMILES")
 
     model_path = prepare_model(model_type, model_dir)
-    model = load(model_path)
+    model, fingerprints_file = load_parasect_bundle(model_path)
 
     with open(args.input, 'r') as input_file:
         protein_data = input_file.read()
@@ -89,7 +88,8 @@ def main() -> None:
                            custom_substrate_smiles=substrate_smiles,
                            only_custom=args.exclude_standard_substrates,
                            use_structure_guided_alignment=args.profile_alignment,
-                           bacterial_only=args.bacterial)
+                           bacterial_only=args.bacterial,
+                           fingerprints_file=fingerprints_file)
 
     write_results(results, args.output, args.number_predictions, model_type,
                   args.s1, args.s2, args.s3,

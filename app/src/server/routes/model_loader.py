@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-import threading, logging, errno
+import threading, logging, errno, os
 from dataclasses import dataclass
 from typing import Callable, Any
+
+from fetch_models import read_manifest
+from parasect.core.model_bundle import validate_bundle, validate_fingerprints
 
 
 try:
@@ -25,6 +28,7 @@ class ModelSpec:
     path: str
     loader: Callable[[str], Any] | None = None  # custom loader
     mmap: bool = True  # if True and joblib available, mmap arrays (lower peak RAM)
+    fingerprints_file: str | None = None
 
 
 class MultiModelLoader:
@@ -69,8 +73,15 @@ class MultiModelLoader:
             if key in self._models:  # double check
                 return self._models[key]
             logging.info(f"Loading model '%s' from %s (rss=%s)", spec.name, spec.path, self._rss())
+            if spec.fingerprints_file:
+                entry = read_manifest(os.path.dirname(spec.path)).get(os.path.basename(spec.path), {})
+                expected_path = validate_bundle(spec.path, entry)
+                if os.path.abspath(expected_path) != os.path.abspath(spec.fingerprints_file):
+                    raise ValueError("Configured fingerprints do not belong to this model bundle.")
             loader = spec.loader or (lambda p: self._default_load(p, spec.mmap))
             model = loader(spec.path)
+            if spec.fingerprints_file:
+                validate_fingerprints(model, spec.fingerprints_file, entry["fingerprints_sha256"])
             self._models[key] = model
             logging.info(f"Loaded model '%s' from (rss=%s)", spec.name, self._rss())
             return model

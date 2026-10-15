@@ -5,7 +5,8 @@
 The server needs the trained PARAS/PARASECT models in `app/models`. You don't place them
 there by hand as `docker-compose` runs a one-shot `paras-models` init service that downloads
 them from Zenodo, checks each md5, expands them and exits; `paras-server` won't start until it
-has finished. Files already on disk are left alone, so this costs nothing after the first run.
+has finished. Each PARASECT model is downloaded with its matching fingerprint file from the
+same record. Complete, verified bundles already on disk are reused without network access.
 
 For local (non-Docker) development, do the same thing by hand once:
 
@@ -22,9 +23,9 @@ Configure it with environment variables (set on `paras-models` in `docker-compos
 | Variable | Default | What it does |
 |---|---|---|
 | `PARAS_MODELS` | `all` | Which models to fetch, comma-separated, using the same keys the API takes: `parasAllSubstrates`, `parasCommonSubstrates`, `parasect`, `parasectBacterial`. Trim it to shrink the download. |
-| `ZENODO_RECORD` | `18682178` | Which Zenodo release to pin to. |
+| `ZENODO_RECORD` | `23262276` | Which Zenodo release to pin to, including PARASECT fingerprint files. |
 | `MODEL_DIR` | `app/models` | Where the files go. |
-| `PARAS_MODELS_KEEP_EXISTING` | unset | Keep model files the script didn't fetch itself, instead of replacing them with the pinned versions. |
+| `PARAS_MODELS_KEEP_EXISTING` | unset | Keep untracked PARAS model files. Untracked PARASECT files are rejected because their matching fingerprints cannot be verified. |
 
 `PARAS_MODELS` can't drop `parasAllSubstrates` while `routes/data_annotation.py` and
 `routes/submit_domain.py` request it unconditionally.
@@ -43,7 +44,7 @@ Three pins keep that pairing honest, and they move together:
 
 | Where | Pin | Why |
 |---|---|---|
-| `docker-compose.yml` -> `ZENODO_RECORD` | `18682178` | The models, re-pickled under scikit-learn 1.8.0. |
+| `docker-compose.yml` -> `ZENODO_RECORD` | `23262276` | Models and matching fingerprint files for scikit-learn 1.8.0. |
 | `server-requirements.txt` | `scikit-learn==1.8.0` | The deployment runs exactly what the models were written with. |
 | `server-environment.yml` | `python=3.11` | scikit-learn 1.8.0 requires Python >= 3.11. On 3.9 the ceiling below is unreachable and pip quietly settles for 1.6.1. |
 
@@ -55,7 +56,38 @@ at all. Python 3.9 users get 1.6, which is verified against the current models.
 To make a mismatch impossible to ship quietly, `fetch_models.py` loads every requested model
 before exiting, and fails if one won't open. Since `MultiModelLoader` loads lazily, without that
 check a broken pairing stays invisible until a user submits a prediction, long after the server
-has come up and reported healthy. Set `PARAS_MODELS_VERIFY=0` to skip it.
+has come up and reported healthy. Set `PARAS_MODELS_VERIFY=0` to skip the load check;
+the PARASECT model/fingerprint checksum checks still run.
+
+### PARASECT fingerprints belong to the model
+
+The init service installs `fingerprints.txt` beside `model.parasect`, and
+`fingerprints_bacterial.txt` beside `bacterial_model.parasect`. Both files are fetched from
+the selected Zenodo record, staged before installation, and recorded together in
+`.fetch_manifest.json`. The server passes the matching path explicitly for both standard
+and uploaded substrates. It never uses the package's bundled fingerprints for predictions.
+
+The manifest includes SHA-256 checksums for the expanded model and fingerprint file. This
+detects a changed column order even when the number of features and file size stay the same.
+The lazy loader checks the pair before loading, and predictions check that the fingerprint
+file still matches the cached model. Job provenance records the fingerprint filename and checksum.
+
+On the first deployment of this change, existing PARASECT models with older manifests are
+downloaded again with their sidecars, even if they already came from record `23262276`.
+Records that lack fingerprint files cannot be used for PARASECT. Stop backend workers before
+refreshing the files and restart them afterward; an already-loaded classifier is cached in memory.
+
+To update the backend while retaining Redis results, run from `app/` after pulling the changes:
+
+```bash
+docker compose build paras-server
+docker compose stop paras-server
+docker compose run --rm --no-deps paras-models &&
+docker compose up -d --no-deps --force-recreate paras-server
+```
+
+Confirm that the init logs show the intended record and successful model verification.
+Existing stored predictions are unchanged and need a fresh submission to use the corrected pair.
 
 The CLI pins the same record, in `ZENODO_RECORD` in `parasect/core/helpers.py`. The two are
 separate constants because the webapp can be re-pinned per deployment without touching the core

@@ -29,8 +29,8 @@ Environment:
     ZENODO_RECORD   Zenodo record id to pin to (default below).
     PARAS_MODELS_KEEP_EXISTING
                     if set to 1/true/yes, leave already-present files alone
-                    even when they didn't come from the pinned record. For
-                    when you are deliberately running your own weights.
+                    for untracked PARAS weights. Untracked PARASECT weights
+                    cannot be kept without matching fingerprint metadata.
     PARAS_MODELS_VERIFY
                     set to 0/false/no to skip the post-fetch load check.
 """
@@ -45,9 +45,14 @@ import logging
 import os
 import shutil
 import sys
+from tempfile import TemporaryDirectory
 from typing import NamedTuple
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+
+from parasect.core.model_bundle import (
+    FINGERPRINT_FILES, bundle_checksums, validate_bundle, validate_fingerprints,
+)
 
 DEFAULT_ZENODO_RECORD = "23262276"
 
@@ -186,6 +191,12 @@ def present_and_pinned(model: ModelFile, model_dir: str, record: str,
 
     entry = manifest.get(model.target)
     if entry and entry.get("record") == record and entry.get("size") == os.path.getsize(target):
+        if model.target in FINGERPRINT_FILES:
+            try:
+                validate_bundle(target, entry)
+            except (OSError, ValueError) as error:
+                logging.warning("%s: replacing incomplete or mismatched bundle: %s", model.label, error)
+                return False
         logging.info("%s: already present from record %s", model.label, record)
         return True
 
@@ -195,6 +206,11 @@ def present_and_pinned(model: ModelFile, model_dir: str, record: str,
         return False
 
     if keep_existing:
+        if model.target in FINGERPRINT_FILES:
+            raise SystemExit(
+                f"{model.label}: cannot keep an unverified PARASECT model without its matching "
+                "fingerprint metadata. Unset PARAS_MODELS_KEEP_EXISTING to fetch a complete bundle."
+            )
         logging.warning(
             "%s: %s is already there but wasn't fetched by this script, so it "
             "can't be checked against record %s. Keeping it "
@@ -291,7 +307,7 @@ def expand(archive: str, target: str) -> None:
 
 def ensure(model: ModelFile, model_dir: str, record: str,
            record_files: dict[str, dict]) -> dict:
-    """Download and expand one model. Returns its manifest entry."""
+    """Stage a model and its fingerprint sidecar from the same release."""
     entry = record_files.get(model.archive)
     if entry is None:
         raise SystemExit(
@@ -299,30 +315,34 @@ def ensure(model: ModelFile, model_dir: str, record: str,
             f"'{model.archive}'. Available: {', '.join(sorted(record_files))}."
         )
 
-    expected_md5 = entry["checksum"].split(":", 1)[-1]  # Zenodo reports "md5:<hex>"
-    archive = os.path.join(model_dir, f"{model.archive}.part")
-    target = os.path.join(model_dir, model.target)
+    fingerprints = FINGERPRINT_FILES.get(model.target)
+    if fingerprints and fingerprints not in record_files:
+        raise SystemExit(f"{model.label}: record {record} is missing {fingerprints}; refusing an unpaired model.")
 
-    logging.info("%s: downloading %s (%.1f MB)", model.label, model.archive, entry["size"] / 1e6)
-    download(entry["links"]["self"], archive, expected_md5, entry.get("size", 0))
-
-    logging.info("%s: expanding to %s", model.label, model.target)
-    try:
+    expected_md5 = entry["checksum"].split(":", 1)[-1]
+    with TemporaryDirectory(prefix=".fetch-", dir=model_dir) as staging:
+        archive = os.path.join(staging, model.archive)
+        target = os.path.join(staging, model.target)
+        logging.info("%s: downloading %s (%.1f MB)", model.label, model.archive, entry["size"] / 1e6)
+        download(entry["links"]["self"], archive, expected_md5, entry.get("size", 0))
         expand(archive, target)
-    finally:
-        # The compressed copy has served its purpose; keeping it is how a model
-        # directory ends up holding both a .gz and its expansion, which is only
-        # ever confusing.
-        if os.path.exists(archive):
-            os.remove(archive)
-
-    size = os.path.getsize(target)
-    logging.info("%s: ready (%.2f GB)", model.label, size / 1e9)
-    return {"record": record, "archive_md5": expected_md5, "size": size}
+        result = {"record": record, "archive_md5": expected_md5, "size": os.path.getsize(target)}
+        if fingerprints:
+            fp_entry = record_files[fingerprints]
+            fp_md5 = fp_entry["checksum"].split(":", 1)[-1]
+            download(fp_entry["links"]["self"], os.path.join(staging, fingerprints),
+                     fp_md5, fp_entry.get("size", 0))
+            result.update(bundle_checksums(target))
+            result["fingerprints_md5"] = fp_md5
+            os.replace(os.path.join(staging, fingerprints), os.path.join(model_dir, fingerprints))
+        os.replace(target, os.path.join(model_dir, model.target))
+    # The caller commits this metadata last. A partial replacement is rejected
+    # by its checksums on the next startup, including equal-sized files.
+    return result
 
 
 def verify(models: list[ModelFile], model_dir: str, manifest: dict[str, dict]) -> None:
-    """Actually load every requested model, and fail loudly if one won't.
+    """Validate PARASECT pair integrity and load every requested model.
 
     This is the check whose absence let a real breakage sit unnoticed: a random
     forest pickled under one scikit-learn and read under another can fail
@@ -339,6 +359,11 @@ def verify(models: list[ModelFile], model_dir: str, manifest: dict[str, dict]) -
     Loading with mmap keeps this cheap in memory; it costs a few seconds, in a
     one-shot container whose whole job is to fail before the server starts.
     """
+    # Pair integrity is mandatory even when an operator skips unpickling.
+    for model in models:
+        if model.target in FINGERPRINT_FILES:
+            validate_bundle(os.path.join(model_dir, model.target), manifest.get(model.target, {}))
+
     if not env_flag_default_true("PARAS_MODELS_VERIFY"):
         logging.warning("PARAS_MODELS_VERIFY is off, and not checking that the "
                         "models actually load.")
@@ -358,7 +383,7 @@ def verify(models: list[ModelFile], model_dir: str, manifest: dict[str, dict]) -
         target = os.path.join(model_dir, model.target)
         try:
             try:
-                joblib.load(target, mmap_mode="r")
+                loaded_model = joblib.load(target, mmap_mode="r")
             except OSError as e:
                 # Mirror MultiModelLoader._default_load in routes/model_loader.py:
                 # mmap'ing a random forest costs a descriptor per array, so a low
@@ -370,7 +395,11 @@ def verify(models: list[ModelFile], model_dir: str, manifest: dict[str, dict]) -
                     raise
                 logging.warning("  too many open files, retrying without mmap: %s",
                                 model.target)
-                joblib.load(target, mmap_mode=None)
+                loaded_model = joblib.load(target, mmap_mode=None)
+            if model.target in FINGERPRINT_FILES:
+                validate_fingerprints(loaded_model, os.path.join(model_dir, FINGERPRINT_FILES[model.target]),
+                                      manifest[model.target]["fingerprints_sha256"])
+            del loaded_model
             logging.info("  ok: %s", model.target)
             if model.target in manifest:
                 manifest[model.target]["verified_sklearn"] = sklearn.__version__

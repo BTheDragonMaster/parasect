@@ -10,7 +10,7 @@ from tempfile import TemporaryDirectory
 from joblib import load
 
 from parasect.api import run_paras, run_parasect, Result
-from parasect.core.helpers import prepare_model
+from parasect.core.helpers import prepare_model, load_parasect_bundle
 from parasect.core.writers import write_results
 from parasect.core.models import ModelType
 
@@ -36,7 +36,10 @@ class BaseModelTest(unittest.TestCase):
         cls.addClassCleanup(cls.output_dir.cleanup)
 
         model_path = prepare_model(cls.MODEL_TYPE, cls.model_dir.name)
-        cls.model = load(model_path)
+        if cls.MODEL_TYPE in (ModelType.PARASECT, ModelType.PARASECT_BACTERIAL):
+            cls.model, cls.fingerprints_file = load_parasect_bundle(model_path)
+        else:
+            cls.model = load(model_path)
 
     def _read_input(self, file_name: str) -> str:
         input_file = os.path.join(self.data_dir, file_name)
@@ -87,7 +90,9 @@ class ParasectBaseTest(BaseModelTest):
         results = run_parasect(domain_data,
                                "fasta",
                                self.temp_dir.name,
-                               self.model)
+                               self.model,
+                               bacterial_only=self.MODEL_TYPE == ModelType.PARASECT_BACTERIAL,
+                               fingerprints_file=self.fingerprints_file)
 
         return results
 
@@ -163,8 +168,29 @@ class TestParasAllSubstrates(ParasBaseTest):
             self._run_and_save(job_name)
         self.assertEqual(str(error.exception), "no adenylation domains found")
 
+@pytest.mark.integration
 class TestParasect(ParasectBaseTest):
-    pass
+    __test__ = True
+    MODEL_TYPE = ModelType.PARASECT
 
-class TestParasectBacterial(ParasectBaseTest):
-    pass
+    def test_dpta_standard_and_custom_substrates_agree(self):
+        results = self._run_model(self._read_input("dptA.fasta"))
+        self.assertEqual(len(results), 5)
+        self._assert_custom_predictions_match(results)
+
+    def _assert_custom_predictions_match(self, results):
+        reference = results[0]
+        custom = run_parasect(
+            self._read_input("dptA.fasta"), "fasta", self.temp_dir.name, self.model,
+            custom_substrate_names=reference.prediction_labels,
+            custom_substrate_smiles=[row["substrate_smiles"] for row in reference.to_json()["predictions"]],
+            only_custom=True,
+            bacterial_only=self.MODEL_TYPE == ModelType.PARASECT_BACTERIAL,
+            fingerprints_file=self.fingerprints_file,
+        )
+        for standard_result, custom_result in zip(results, custom):
+            self.assertEqual(standard_result.predictions, custom_result.predictions)
+
+@pytest.mark.integration
+class TestParasectBacterial(TestParasect):
+    MODEL_TYPE = ModelType.PARASECT_BACTERIAL
