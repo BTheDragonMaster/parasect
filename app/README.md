@@ -1,5 +1,19 @@
 # Webapp
 
+## Deploy dev and production
+
+For `paras-dev.bioinformatics.nl` and `paras.bioinformatics.nl`, use the
+[deployment guide](deployment/README.md). The helper builds a committed version on
+dev and promotes the same images to production:
+
+```bash
+python3 app/deploy.py dev origin/dev
+python3 app/deploy.py promote FULL_COMMIT_ID
+python3 app/deploy.py rollback
+```
+
+Run these from the repo root on the Docker server after the guide's one-time setup.
+
 ## Models
 
 The server needs the trained PARAS/PARASECT models in `app/models`. You don't place them
@@ -151,10 +165,11 @@ Visit `https://localhost:3000/` in your browser to view the app.
 Run the following script to build and run the app in a Docker container:
 
 ```bash
-docker-compose up --build --force-recreate --remove-orphans -d
+docker compose up --build -d
 ```
 
-The app will be available at `https://localhost:4010/`. Run it from `app/` as shown. The compose
+The app will be available at `http://localhost:4010/` (TLS is handled by the public
+server's reverse proxy). Run it from `app/`. The compose
 file's build context for `paras-server` is the repo root (`..`), not `app/`, so it can install
 the `src/parasect/` checkout you actually have on disk (whatever branch/commit that is) into the
 image, rather than pulling `parasect` from GitHub's default branch.

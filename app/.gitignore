@@ -1,4 +1,5 @@
 .DS_Store
+.deploy/
 
 # any file inside the src/server/temp directory, apart from .gitkeep
 src/server/temp/*

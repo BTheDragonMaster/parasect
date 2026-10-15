@@ -535,11 +535,10 @@ def submit_quick() -> Response:
             "timestamp": int(time.time()),
         })
 
-    if app.config["ENV"] == "production":
-        results_url = f"https://paras.bioinformatics.nl/results/{job_id}"
-    else:
-        # frontend is running on localhost port 3000
-        results_url = f"http://localhost:3000/results/{job_id}"
+    # A relative redirect stays on the submitting hostname behind either proxy.
+    # Local Flask development uses the separate React development server.
+    frontend = "http://localhost:3000" if app.config["ENV"] == "development" else ""
+    results_url = f"{frontend}/results/{job_id}"
 
     return redirect(results_url)
 

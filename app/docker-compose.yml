@@ -1,10 +1,10 @@
-name: paras
+name: ${COMPOSE_PROJECT_NAME:-paras}
 
 services:
   redis:
     image: redis:7-alpine
     restart: always
-    container_name: paras-redis
+    container_name: ${COMPOSE_PROJECT_NAME:-paras}-redis
     # Job results only, not durable app state: an AOF/RDB volume isn't
     # needed since every key already carries a 7-day TTL (see job_store.py).
     networks: [paras-network]
@@ -18,8 +18,8 @@ services:
   # One-shot init: populates the models directory before the server starts,
   # then exits.
   paras-models:
-    image: paras-server
-    container_name: paras-models-init
+    image: paras-server:${PARAS_IMAGE_TAG:-latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-paras}-models-init
     command: ["exec conda run --no-capture-output -n web python /app/fetch_models.py"]
     restart: "no"
     volumes:
@@ -54,11 +54,11 @@ services:
       # repo root, not app/
       context: ..
       dockerfile: app/Dockerfile.server
-    image: paras-server
+    image: paras-server:${PARAS_IMAGE_TAG:-latest}
     restart: always
     env_file:
-      - .env  # Need secrets for submitting newly annotated domains
-    container_name: paras-server
+      - ${PARAS_ENV_FILE:-.env}
+    container_name: ${COMPOSE_PROJECT_NAME:-paras}-server
     volumes:
       - ${PARAS_MODELS_DIR:-./models}:/app/models:ro
     # mmap'ing a random forest costs a file descriptor per array, and the big
@@ -74,11 +74,14 @@ services:
       - MODEL_DIR=/app/models
       - LOG_LEVEL=INFO
       - REDIS_URL=redis://redis:6379/0
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - PARAS_RELEASE=${PARAS_IMAGE_TAG:-local}
       # Single host today: worker processes share the model's mmap'd pages
       # via the OS page cache, so extra workers are cheap in RAM. Job state
       # now lives in Redis, so this is safe to raise above 1.
-      - GUNICORN_WORKERS=2
-      - GUNICORN_THREADS=4
+      - GUNICORN_WORKERS=${GUNICORN_WORKERS:-2}
+      - GUNICORN_THREADS=${GUNICORN_THREADS:-4}
       # Also set in Dockerfile, can override here
       - OMP_NUM_THREADS=1
       - OPENBLAS_NUM_THREADS=1
@@ -106,15 +109,22 @@ services:
       context: . 
       dockerfile: Dockerfile.client 
       args:
-        - REACT_APP_TURNSTILE_SITE_KEY=${REACT_APP_TURNSTILE_SITE_KEY}
-    image: paras-client
+        - REACT_APP_TURNSTILE_SITE_KEY=${REACT_APP_TURNSTILE_SITE_KEY:-}
+    image: paras-client:${PARAS_IMAGE_TAG:-latest}
     ports:
-      - "4010:80"
+      - "${PARAS_BIND_ADDRESS:-0.0.0.0}:${PARAS_CLIENT_PORT:-4010}:80"
     restart: always
-    container_name: paras-client
+    container_name: ${COMPOSE_PROJECT_NAME:-paras}-client
     networks: [paras-network]
     depends_on:
-      - paras-server
+      paras-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
 networks:
   paras-network:

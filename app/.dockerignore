@@ -1,0 +1,6 @@
+.env*
+.deploy
+models
+src/client/node_modules
+src/client/build
+**/__pycache__

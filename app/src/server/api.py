@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """API for PARSECT."""
 
+import os
+
 from flask import Response, jsonify
 from routes.app import app
 from routes.retrieval import blueprint_retrieve
@@ -55,4 +57,4 @@ def index() -> Response:
 # api endpoint for fetching version
 @app.route("/api/version")
 def version() -> Response:
-    return jsonify({"version": get_version()})
+    return jsonify({"version": get_version(), "release": os.getenv("PARAS_RELEASE", "local")})
