@@ -1,12 +1,8 @@
 
-from joblib import dump
-import os
-
 import sklearn
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from parasect.core.constants import FINGERPRINTS_FILE, BACTERIAL_FINGERPRINTS_FILE
 from parasect.model_training.rf.train_rf import train_paras_signatures, train_parasect_signatures
 from parasect.model_training.train_test_splits.substrate_selection import SubstrateSelectionMode
 from parasect.core.constants import INCLUDED_SUBSTRATES_FILE_PARASECT, \
@@ -58,7 +54,10 @@ def update_metadata_file(model_type: ModelType, model_metadata_file: str) -> Non
     write_model_metadata_file(model_to_version, model_metadata_file)
 
 
-def retrain_model(model_to_retrain: ModelType) -> Model:
+def retrain_model(model_to_retrain: ModelType, fingerprints_out_file: str = None) -> Model:
+
+    if model_to_retrain in (ModelType.PARASECT, ModelType.PARASECT_BACTERIAL) and not fingerprints_out_file:
+        raise ValueError("PARASECT retraining requires a fingerprint output path beside the model.")
 
     engine = create_engine(f"sqlite:///{DATABASE_FILE}")
     with Session(engine) as session:
@@ -75,13 +74,13 @@ def retrain_model(model_to_retrain: ModelType) -> Model:
         elif model_to_retrain == ModelType.PARASECT :
             model, hashes = train_parasect_signatures(session, TRAIN_DOMAINS_FILE_PARASECT,
                                                  INCLUDED_SUBSTRATES_FILE_PARASECT)
-            update_fingerprints(session, hashes, INCLUDED_SUBSTRATES_FILE_PARASECT, FINGERPRINTS_FILE)
+            update_fingerprints(session, hashes, INCLUDED_SUBSTRATES_FILE_PARASECT, fingerprints_out_file)
             return Model(model, "model.parasect.gz")
         elif model_to_retrain == ModelType.PARASECT_BACTERIAL:
             model, hashes = train_parasect_signatures(session, TRAIN_DOMAINS_FILE_PARASECT_BACTERIAL,
                                                  INCLUDED_SUBSTRATES_FILE_PARASECT_BACTERIAL)
             update_fingerprints(session, hashes, INCLUDED_SUBSTRATES_FILE_PARASECT_BACTERIAL,
-                                BACTERIAL_FINGERPRINTS_FILE)
+                                fingerprints_out_file)
             return Model(model, "bacterial_model.parasect.gz")
         else:
             raise ValueError(f"Unsupported model type: {model_to_retrain}. Please attempt to retrain a single model.")

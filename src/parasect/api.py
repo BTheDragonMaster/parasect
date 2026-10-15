@@ -7,8 +7,9 @@ from typing import Dict, List, Optional, Union, Any
 
 from sklearn.ensemble import RandomForestClassifier
 
-from parasect.core.constants import FINGERPRINTS_FILE, INCLUDED_SUBSTRATES_FILE_PARASECT, SMILES_FILE, \
-    INCLUDED_SUBSTRATES_FILE_PARASECT_BACTERIAL, BACTERIAL_FINGERPRINTS_FILE
+from parasect.core.constants import INCLUDED_SUBSTRATES_FILE_PARASECT, SMILES_FILE, \
+    INCLUDED_SUBSTRATES_FILE_PARASECT_BACTERIAL
+from parasect.core.model_bundle import validate_fingerprints
 from parasect.core.domain import AdenylationDomain
 from parasect.database.build_database import AdenylationDomain as ADomain
 from parasect.core.featurisation import get_domain_features, get_domains
@@ -182,7 +183,9 @@ def run_parasect(
     custom_substrate_smiles: Optional[List[str]] = None,
     only_custom: bool = False,
     use_structure_guided_alignment: bool = False,
-    bacterial_only: bool = False
+    bacterial_only: bool = False,
+    *,
+    fingerprints_file: str,
 ) -> List[Result]:
     """Predict adenylation domain substrate specificity with PARASECT on raw input.
 
@@ -204,25 +207,27 @@ def run_parasect(
     :type use_structure_guided_alignment: bool
     :param bacterial_only: Use bacterial model
     :type bacterial_only: bool
+    :param fingerprints_file: Fingerprint file shipped with this exact model.
+    :type fingerprints_file: str
     :return: Results.
     :rtype: List[Result]
     :raises ValueError: If substrate names, smiles, and fingerprints are not of the same length.
     :raises RuntimeError: If no feature vectors are found.
     """
+    validate_fingerprints(model, fingerprints_file)
+
     # get names of included substrates
     if bacterial_only:
         substrates_file = INCLUDED_SUBSTRATES_FILE_PARASECT_BACTERIAL
-        fingerprints_file = BACTERIAL_FINGERPRINTS_FILE
     else:
         substrates_file = INCLUDED_SUBSTRATES_FILE_PARASECT
-        fingerprints_file = FINGERPRINTS_FILE
 
     included_subs = parse_substrate_list(substrates_file)
 
     # get smiles and fingerprints for the included substrates
     if not only_custom:
 
-        sub_names, sub_smiles, sub_fps = data_from_substrate_names(included_subs, bacterial_only=bacterial_only)
+        sub_names, sub_smiles, sub_fps = data_from_substrate_names(included_subs, fingerprints_file)
     else:
         sub_names, sub_smiles, sub_fps = [], [], []
 

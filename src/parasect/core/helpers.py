@@ -1,5 +1,8 @@
 import tarfile
 import logging
+import hashlib
+import json
+from tempfile import TemporaryDirectory
 from urllib.parse import urlsplit
 from urllib.request import urlopen, Request
 from pathlib import Path
@@ -8,9 +11,15 @@ from parasect.core.parsing import parse_smiles_mapping
 import os
 from shutil import copy
 
+import sklearn
+from joblib import load
+
 from parasect.core.models import ModelType
 from parasect.core.constants import MODEL_METADATA_FILE
 from parasect.core.retrain_models import retrain_model, model_needs_retraining, update_metadata_file
+from parasect.core.model_bundle import (
+    bundle_checksums, fingerprint_path, validate_bundle, validate_fingerprints,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +66,9 @@ def model_url(model_type: ModelType) -> str:
 
 def prepare_model(model_type: ModelType, model_dir: str) -> str:
     """Download or retrain PARAS/PARASECT model"""
+    if model_type in (ModelType.PARASECT, ModelType.PARASECT_BACTERIAL):
+        return _prepare_parasect_bundle(model_type, model_dir)
+
     metadata_path = os.path.join(model_dir, "model_metadata.txt")
     if not os.path.exists(metadata_path):
         copy(MODEL_METADATA_FILE, metadata_path)
@@ -72,6 +84,78 @@ def prepare_model(model_type: ModelType, model_dir: str) -> str:
         model_path = download_and_unpack_or_fetch(model_url(model_type), model_dir, logger)
 
     return model_path
+
+
+def _download_release_file(entry: dict, destination: str) -> None:
+    """Download into a staging directory and check the release checksum."""
+    digest = hashlib.md5()
+    request = Request(entry["links"]["self"], headers={"User-Agent": "parasect model fetcher"})
+    with urlopen(request, timeout=60) as response, open(destination, "wb") as output:
+        for chunk in iter(lambda: response.read(1024 * 1024), b""):
+            output.write(chunk)
+            digest.update(chunk)
+    if entry["checksum"] != f"md5:{digest.hexdigest()}":
+        raise ValueError(f"Checksum mismatch for {os.path.basename(destination)}")
+
+
+def _prepare_parasect_bundle(model_type: ModelType, model_dir: str) -> str:
+    """Cache weights and fingerprints together, invalidating legacy/unpaired caches."""
+    os.makedirs(model_dir, exist_ok=True)
+    model_name = MODEL_ARCHIVES[model_type]
+    model_path = os.path.join(model_dir, model_name)
+    fingerprints = fingerprint_path(model_path)
+    metadata_path = model_path + ".json"
+    retraining = model_needs_retraining(MODEL_METADATA_FILE, model_type)
+    source = {"record": ZENODO_RECORD, "sklearn_version": sklearn.__version__, "retrained": retraining}
+    try:
+        with open(metadata_path) as source_file:
+            metadata = json.load(source_file)
+        if isinstance(metadata, dict) and metadata.get("source") == source:
+            validate_bundle(model_path, metadata)
+            return model_path
+    except (OSError, ValueError):
+        pass
+
+    # A stale model must never be combined with a newly downloaded sidecar.
+    # Stage the pair first and commit its checksums last, so an interrupted
+    # replacement cannot pass validation on the next invocation.
+    with TemporaryDirectory(prefix=".parasect-", dir=model_dir) as staging:
+        staged_model = os.path.join(staging, model_name)
+        staged_fingerprints = fingerprint_path(staged_model)
+        if retraining:
+            logger.info("Retraining PARASECT and its fingerprints for scikit-learn %s", sklearn.__version__)
+            model = retrain_model(model_type, fingerprints_out_file=staged_fingerprints)
+            model.save(staging)
+        else:
+            logger.info("Downloading PARASECT model and fingerprints from Zenodo %s", ZENODO_RECORD)
+            request = Request(f"https://zenodo.org/api/records/{ZENODO_RECORD}",
+                              headers={"User-Agent": "parasect model fetcher"})
+            with urlopen(request, timeout=60) as response:
+                files = {entry["key"]: entry for entry in json.load(response)["files"]}
+            names = (model_name, os.path.basename(fingerprints))
+            for name in names:
+                if name not in files:
+                    raise ValueError(f"Zenodo record {ZENODO_RECORD} is missing {name}.")
+            for name in names:
+                _download_release_file(files[name], os.path.join(staging, name))
+        metadata = {"source": source, **bundle_checksums(staged_model)}
+        staged_metadata = staged_model + ".json"
+        with open(staged_metadata, "w") as output:
+            json.dump(metadata, output, indent=2)
+        os.replace(staged_fingerprints, fingerprints)
+        os.replace(staged_model, model_path)
+        os.replace(staged_metadata, metadata_path)
+    return model_path
+
+
+def load_parasect_bundle(model_path: str) -> tuple:
+    """Load a prepared CLI model and bind it to its verified fingerprint sidecar."""
+    with open(model_path + ".json") as source:
+        metadata = json.load(source)
+    fingerprints = validate_bundle(model_path, metadata)
+    model = load(model_path)
+    validate_fingerprints(model, fingerprints, metadata["fingerprints_sha256"])
+    return model, fingerprints
 
 
 def prepare_substrates(smiles_mapping: Optional[str]) -> tuple[Optional[list[str]], Optional[list[str]]]:

@@ -22,7 +22,32 @@ Do you have new datapoints that you think PARAS/PARASECT could benefit from in f
 
 ## Trained models
 
-The trained models for PARAS and PARASECT can be found on Zenodo [here](https://zenodo.org/records/18682178).
+The trained models for PARAS and PARASECT can be found on Zenodo [here](https://zenodo.org/records/23262276).
+
+PARASECT models must be used with the fingerprint file from the same release:
+`model.parasect.gz` with `fingerprints.txt`, and `bacterial_model.parasect.gz` with
+`fingerprints_bacterial.txt`. The order of fingerprint columns is part of the model.
+The CLI downloads and checks both files together in the model directory; legacy caches
+without pairing metadata are refreshed automatically. If a different scikit-learn version
+requires local retraining, the new fingerprints are saved alongside that trained model.
+
+Python callers must pass the matching file explicitly to `run_parasect()`:
+
+```python
+from parasect.api import run_parasect
+from parasect.core.helpers import prepare_model, load_parasect_bundle
+from parasect.core.models import ModelType
+
+model_path = prepare_model(ModelType.PARASECT, "models")
+model, fingerprints_file = load_parasect_bundle(model_path)
+# input_text contains FASTA data; temp_dir must be an existing directory.
+results = run_parasect(input_text, "fasta", temp_dir, model,
+                      fingerprints_file=fingerprints_file)
+```
+
+For the bacterial model, use `ModelType.PARASECT_BACTERIAL` and pass
+`bacterial_only=True` to `run_parasect()`. Callers supplying their own classifier must
+supply its matching fingerprint file; prediction no longer falls back to package data.
 
 ## Command line installation
 
