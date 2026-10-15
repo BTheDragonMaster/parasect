@@ -49,25 +49,7 @@ from typing import NamedTuple
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-
-# Zenodo record 18682178 ("v5", Feb 2026): the models re-pickled under
-# scikit-learn 1.8.0.
-#
-# The same record parasect/core/helpers.py pins for the CLI (ZENODO_RECORD
-# there). Kept as a separate constant so a deployment can be re-pinned without
-# touching the core package, but the two should normally agree.
-#
-# It replaced record 17224548, whose models were pickled under sklearn 1.2.0:
-# sklearn grew a field in the decision-tree node dtype in 1.3, so those fail to
-# load on anything newer with "node array from the pickle has an incompatible
-# dtype". This is an error, not a warning. Move this together with the scikit-learn
-# pin in server-requirements.txt; they are one unit.
-#
-# Pinned rather than tracking Zenodo's "latest version" pointer: a floating
-# pointer would let someone else's upload silently change what this deployment
-# predicts, with no commit and no way to reproduce a result a user got last
-# week. Bumping this should be a visible one-line change.
-DEFAULT_ZENODO_RECORD = "18682178"
+DEFAULT_ZENODO_RECORD = "23262276"
 
 ZENODO_API = "https://zenodo.org/api/records/{record}"
 

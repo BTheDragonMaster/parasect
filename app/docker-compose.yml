@@ -46,7 +46,7 @@ services:
       # parasectBacterial), or "all".
       - PARAS_MODELS=${PARAS_MODELS:-all}
       # Which Zenodo release those models come from. Pinned, not floating.
-      - ZENODO_RECORD=${ZENODO_RECORD:-18682178}
+      - ZENODO_RECORD=${ZENODO_RECORD:-23262276}
     networks: [paras-network]
 
   paras-server:
